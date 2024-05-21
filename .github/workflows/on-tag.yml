@@ -1,0 +1,80 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
+
+name: CI laa-ccms-spring-boot-common tag and deploy
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  define-image-tag:
+    runs-on: ubuntu-latest
+    # map a step output to job output
+    outputs:
+      tag_name: ${{ steps.extract_tag_name.outputs.tag_name }}
+      repo_name: ${{ steps.extract_repo_name.outputs.repo_name }}
+    steps:
+      - name: Extract short repo name
+        shell: bash
+        run: echo "repo_name=${GITHUB_REPOSITORY#*\/laa-ccms-}" >> $GITHUB_OUTPUT
+        id: extract_repo_name
+
+  build-test-publish:
+    runs-on: ubuntu-latest
+    outputs:
+      app_version: ${{ steps.capture_version.outputs.app_version }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Build with Gradle
+        uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629
+        with:
+          arguments: build
+
+      - name: Test
+        uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629
+        with:
+          arguments: test
+
+      - name: Capture version
+        shell: bash
+        id: capture_version
+        run: |
+          VERSION=$(grep "version=" gradle.properties | cut -d'=' -f2)
+          echo "app_version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Captured version: $VERSION"
+
+      - name: Publish package
+        uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629
+        with:
+          arguments: publish
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: upload jarfile
+        uses: actions/upload-artifact@v3
+        with:
+          name: laa-ccms-java-gradle-plugin-jar
+          path: laa-ccms-java-gradle-plugin/build/libs/laa-ccms-java-gradle-plugin-jar-${{ steps.capture_version.outputs.app_version }}.jar
+
+      - name: upload jarfile
+        uses: actions/upload-artifact@v3
+        with:
+          name: laa-ccms-spring-boot-gradle-plugin-jar
+          path: laa-ccms-spring-boot-gradle-plugin/build/libs/laa-ccms-spring-boot-gradle-plugin-${{ steps.capture_version.outputs.app_version }}.jar
+
+  # TODO Update dependent apps

@@ -1,0 +1,30 @@
+plugins {
+    id 'java-platform'
+}
+
+group = 'uk.gov.laa.ccms.springboot'
+
+javaPlatform {
+    allowDependencies()
+}
+
+rootProject.project(':laa-ccms-spring-boot-starters').subprojects.each {
+    evaluationDependsOn it.path
+}
+
+publishing.publications {
+    springBootDependencies(MavenPublication) {
+        from(components.javaPlatform)
+    }
+}
+
+dependencies {
+
+    api platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
+
+    constraints {
+        project.project(':laa-ccms-spring-boot-starters').subprojects.each {
+            api group: it.group, name: it.name, version: it.version
+        }
+    }
+}

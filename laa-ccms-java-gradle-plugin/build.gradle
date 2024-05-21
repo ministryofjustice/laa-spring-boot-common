@@ -1,0 +1,25 @@
+plugins {
+    id 'gradle-plugin-conventions'
+    id 'java-gradle-plugin'
+    id 'maven-publish'
+}
+
+group = 'uk.gov.laa.ccms.java'
+
+repositories {
+    gradlePluginPortal()
+}
+
+dependencies {
+    implementation "net.researchgate:gradle-release:${gradleReleasePluginVersion}"
+    implementation "com.github.ben-manes:gradle-versions-plugin:${gradleVersionsPluginVersion}"
+}
+
+gradlePlugin {
+    plugins {
+        simplePlugin {
+            id = 'uk.gov.laa.ccms.java.laa-ccms-java-gradle-plugin'
+            implementationClass = 'uk.gov.laa.ccms.gradle.LaaCcmsJavaGradlePlugin'
+        }
+    }
+}

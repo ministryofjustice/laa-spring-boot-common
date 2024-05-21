@@ -1,0 +1,6 @@
+rootProject.name = 'laa-ccms-spring-boot-common'
+
+include ':laa-ccms-spring-boot-dependencies'
+include ':laa-ccms-spring-boot-gradle-plugin'
+include ':laa-ccms-spring-boot-starters'
+include ':laa-ccms-java-gradle-plugin'

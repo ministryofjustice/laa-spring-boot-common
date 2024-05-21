@@ -1,0 +1,51 @@
+plugins {
+    id 'java-gradle-plugin'
+    id 'maven-publish'
+    id 'java'
+    id 'groovy'
+}
+
+group = 'uk.gov.laa.ccms.springboot'
+
+repositories {
+    gradlePluginPortal()
+}
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(javaVersion))
+}
+
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+
+    // Make sure we're using the same version of the Java plugin that we're adding into the starters
+    implementation project(':laa-ccms-java-gradle-plugin')
+    implementation "org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion"
+    implementation "io.spring.gradle:dependency-management-plugin:$springBootDependencyManagementPluginVersion"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+gradlePlugin {
+    plugins {
+        simplePlugin {
+            id = 'uk.gov.laa.ccms.springboot.laa-ccms-spring-boot-gradle-plugin'
+            implementationClass = 'uk.gov.laa.ccms.gradle.springboot.LaaCcmsSpringBootGradlePlugin'
+        }
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+                "Implementation-Title": "LAA CCMS Spring Boot Conventions Plugin",
+                "Implementation-Version": project.version
+        )
+    }
+}
