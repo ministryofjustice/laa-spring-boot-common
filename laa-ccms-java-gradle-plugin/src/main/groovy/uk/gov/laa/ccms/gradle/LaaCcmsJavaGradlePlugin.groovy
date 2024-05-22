@@ -1,7 +1,6 @@
 package uk.gov.laa.ccms.gradle
 
 import com.github.benmanes.gradle.versions.VersionsPlugin
-import net.researchgate.release.ReleasePlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
@@ -22,7 +21,6 @@ class LaaCcmsJavaGradlePlugin implements Plugin<Project> {
 
         target.pluginManager.apply JavaPlugin
         target.pluginManager.apply JacocoPlugin
-        target.pluginManager.apply ReleasePlugin
         target.pluginManager.apply VersionsPlugin
         target.pluginManager.apply CheckstylePlugin
         target.pluginManager.apply MavenPublishPlugin
@@ -170,10 +168,6 @@ class LaaCcmsJavaGradlePlugin implements Plugin<Project> {
                 logger.lifecycle("Published Maven artifact: " +
                         "${publication.groupId}:${publication.artifactId}:${publication.version}")
             }
-        }
-
-        target.release {
-            tagTemplate = '$name-$version'
         }
 
         // Used for deploying snapshot packages
