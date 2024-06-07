@@ -1,23 +1,17 @@
 plugins {
-    id 'java-gradle-plugin'
-    id 'maven-publish'
     id 'java'
     id 'groovy'
+    id 'java-gradle-plugin'
+    id 'maven-publish'
 }
 
 group = 'uk.gov.laa.ccms.springboot'
-
-repositories {
-    gradlePluginPortal()
-}
 
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(javaVersion))
 }
 
 dependencies {
-    implementation gradleApi()
-    implementation localGroovy()
 
     // Make sure we're using the same version of the Java plugin that we're adding into the starters
     implementation project(':laa-ccms-java-gradle-plugin')
