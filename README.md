@@ -69,12 +69,17 @@ This tells Gradle where to search for plugins. The plugins in this repository ar
 
 Your credentials to the GitHub Packages repository need to be defined in your local `gradle.properties` file, which you can find in your home directory, e.g. `~/.gradle/gradle.properties`.
 
-Please add the following parameters:
+Before doing this, ensure you have [created a personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)
+in GitHub and configured it with `repo`, `write:packages` and `read:packages` access. The token must also be [authorized with (MoJ) SSO](https://docs.github.com/en/enterprise-cloud@latest/authentication/authenticating-with-saml-single-sign-on/authorizing-a-personal-access-token-for-use-with-saml-single-sign-on).
+
+Once you have your personal access token, please add the following parameters to `~/.gradle/gradle.properties`:
 
 ```yaml
 project.ext.gitPackageUser = <your GitHub username>
 project.ext.gitPackageKey = <your GitHub access token>
 ```
+
+Do not include `'` or `"` around your username or token as these are treated literally as part of the value by gradle.
 
 ### Applying the Plugin
 
@@ -96,6 +101,6 @@ apply plugin: 'uk.gov.laa.ccms.springboot.laa-ccms-spring-boot-gradle-plugin'
 
 ## Available Starters
 
+- [Authentication](laa-ccms-spring-boot-starters/laa-ccms-spring-boot-starter-auth/README.md)
 - _**[TODO]**_ Exception Handling
 - _**[TODO]**_ Entity Converters
-- _**[TODO]**_ Auth

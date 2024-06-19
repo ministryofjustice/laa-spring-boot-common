@@ -1,14 +1,13 @@
 package uk.gov.laa.ccms.springboot.auth.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class OpenApiConfigurationTest {
 
@@ -17,7 +16,7 @@ public class OpenApiConfigurationTest {
             .withPropertyValues("laa.ccms.springboot.starter.auth.authentication-header=Authorization");
 
     private final String OPEN_API_CONFIGURATION_BEAN = "openApiConfiguration";
-    private final String OPEN_API_BEAN = "openAPI";
+    private final String OPEN_API_BEAN = "openApi";
     private final String SECURITY_SCHEME_NAME = "ApiKeyAuth";
 
     @Test

@@ -167,4 +167,29 @@ graph
 
 ```
 
+## OpenAPI Configuration
 
+Included in the starter is an autoconfigured OpenAPI bean which will be set up with a security scheme for API key authentication that will be applied to all endpoints.
+
+This will be enabled by default without any additional configuration, but can be disabled via application properties:
+
+```yaml
+laa.ccms.springboot.starter.open-api.security-scheme.enabled: false
+```
+
+This can be used if you would like to instead configure your own OpenAPI Bean.
+
+However, if you would instead like to add to the provided bean, you can use OpenApiCustomizer from SpringDoc, e.g.
+
+```java
+@Bean
+public OpenApiCustomizer customize() {
+    return openApi -> {
+      openApi.info(
+          new Info()
+              .title("API Title")
+              .description("API Description")
+              .version("API Version"));
+    };
+}
+```

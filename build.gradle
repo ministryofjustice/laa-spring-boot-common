@@ -1,5 +1,6 @@
 plugins {
     id 'net.researchgate.release'
+    id 'checkstyle'
 }
 
 subprojects {

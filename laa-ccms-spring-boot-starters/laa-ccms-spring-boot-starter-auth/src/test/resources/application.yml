@@ -27,13 +27,13 @@ laa.ccms.springboot.starter.auth:
   authorized-roles: '[
       {
           "name": "GROUP1",
-          "URIs": [
+          "uris": [
               "/resource1/requires-group1-role/**"
           ]
       },
       {
           "name": "GROUP2",
-          "URIs": [
+          "uris": [
               "/*/requires-group2-role/**"
           ]
       }
