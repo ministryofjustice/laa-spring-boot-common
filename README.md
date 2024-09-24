@@ -13,6 +13,7 @@ A general purpose Java plugin for LAA CCMS projects.
   - apply [Jacoco](https://docs.gradle.org/current/userguide/jacoco_plugin.html) plugin, and configure sensible defaults.
   - apply [Versions](https://github.com/ben-manes/gradle-versions-plugin) plugin, and configure the recommended versioning strategy.
   - apply [Checkstyle](https://docs.gradle.org/current/userguide/checkstyle_plugin.html) plugin, and configure sensible defaults.
+  - apply [Test Logger](https://github.com/radarsh/gradle-test-logger-plugin) plugin for better readability of test outputs.
   - apply [Maven Publish](https://docs.gradle.org/current/userguide/publishing_maven.html) plugin, and configure LAA CCMS repositories and credential resolution for local development and pipelines. For publishing, the repository name can be overridden by setting the `repositoryName` property in your `gradle.properties`. This is helpful when your repository name is different from your project name.
   - apply [Gradle Release](https://github.com/researchgate/gradle-release) plugin, and define a release tag format.
 

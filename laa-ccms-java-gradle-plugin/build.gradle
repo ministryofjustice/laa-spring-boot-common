@@ -7,6 +7,7 @@ group = 'uk.gov.laa.ccms.java'
 
 dependencies {
     implementation "com.github.ben-manes:gradle-versions-plugin:${gradleVersionsPluginVersion}"
+    implementation "com.adarshr:gradle-test-logger-plugin:${testLoggerPluginVersion}"
 }
 
 gradlePlugin {

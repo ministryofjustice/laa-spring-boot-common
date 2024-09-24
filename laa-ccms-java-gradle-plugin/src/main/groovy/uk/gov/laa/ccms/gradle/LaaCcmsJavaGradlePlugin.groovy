@@ -1,5 +1,6 @@
 package uk.gov.laa.ccms.gradle
 
+import com.adarshr.gradle.testlogger.TestLoggerPlugin
 import com.github.benmanes.gradle.versions.VersionsPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -14,7 +15,7 @@ import org.gradle.testing.jacoco.plugins.JacocoPlugin
 class LaaCcmsJavaGradlePlugin implements Plugin<Project> {
 
     private static final String JAVA_VERSION = "21"
-    private static final String CHECKSTYLE_VERSION = "10.12.4"
+    private static final String CHECKSTYLE_VERSION = "10.18.1"
 
     @Override
     void apply(Project target) {
@@ -23,6 +24,7 @@ class LaaCcmsJavaGradlePlugin implements Plugin<Project> {
         target.pluginManager.apply JacocoPlugin
         target.pluginManager.apply VersionsPlugin
         target.pluginManager.apply CheckstylePlugin
+        target.pluginManager.apply TestLoggerPlugin
         target.pluginManager.apply MavenPublishPlugin
 
         target.java {
@@ -30,12 +32,6 @@ class LaaCcmsJavaGradlePlugin implements Plugin<Project> {
         }
 
         /** Test Tasks **/
-
-        // Additional logging
-        target.tasks.withType(Test).configureEach {
-            testLogging.showStandardStreams = true
-            testLogging.showStackTraces = true
-        }
 
         // Integration tests
         if (target.tasks.findByName('integrationTest') == null) {
