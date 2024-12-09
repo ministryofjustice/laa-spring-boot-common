@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  uk.gov.laa.ccms.springboot.dialect.GovUkThymeleafDialectConfig
