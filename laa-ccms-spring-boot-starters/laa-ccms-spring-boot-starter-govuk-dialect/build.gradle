@@ -1,0 +1,25 @@
+plugins {
+    id 'spring-boot-starter-conventions'
+    id 'checkstyle'
+}
+
+dependencies {
+    api("org.thymeleaf:thymeleaf-spring6")
+}
+
+checkstyle {
+    maxWarnings = 0
+    toolVersion = checkstyleVersion
+    sourceSets = sourceSets.main as SourceSetContainer
+    showViolations = true
+}
+
+publishing.publications {
+    library(MavenPublication) {
+        from components.java
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
