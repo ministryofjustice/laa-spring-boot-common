@@ -102,6 +102,8 @@ apply plugin: 'uk.gov.laa.ccms.springboot.laa-ccms-spring-boot-gradle-plugin'
 
 ## Available Starters
 
+- [Gov-uk custom thymeleaf dialect](laa-ccms-spring-boot-starters/laa-ccms-spring-boot-starter-govuk-dialect)
+
 - [Authentication](laa-ccms-spring-boot-starters/laa-ccms-spring-boot-starter-auth/README.md)
 - _**[TODO]**_ Exception Handling
 - _**[TODO]**_ Entity Converters
