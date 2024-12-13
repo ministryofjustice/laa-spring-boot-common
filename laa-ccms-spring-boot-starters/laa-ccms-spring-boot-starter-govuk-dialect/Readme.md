@@ -61,3 +61,22 @@ This ensures that all attributes, including conditional and computed values, are
 </body>
 </html>
 ```
+
+### Details Element Tag Processor
+
+The `DetailsElementTagProcessor` is a custom Thymeleaf tag processor that enables the use of a `<govuk:details>` tag to generate a `<details>` HTML element styled with the GOV.UK Design System classes.
+
+#### Features
+- Generates a `<details>` element with the `govuk-details` class.
+- Includes a `<summary>` element with a customizable summary text.
+- Includes a `<div>` element for detailed content.
+
+#### Usage
+To use this processor, define a `govuk:details` tag in your Thymeleaf templates and provide the following attributes:
+
+- **`summaryText`**: The text displayed in the summary section of the `<details>` element.
+- **`text`**: The content displayed inside the `<div>` when the details are expanded.
+
+#### Example
+```html
+<govuk:details summaryText="Click to view details" text="This is the detailed content."></govuk:details>
