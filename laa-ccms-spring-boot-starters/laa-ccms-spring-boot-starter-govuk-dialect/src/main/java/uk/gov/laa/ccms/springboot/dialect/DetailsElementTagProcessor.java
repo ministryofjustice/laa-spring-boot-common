@@ -29,9 +29,10 @@ public class DetailsElementTagProcessor extends AbstractElementTagProcessor {
     Map<String, String> attributes = ProcessorUtils.parseAttributes(context, tag);
     String summaryText = attributes.getOrDefault("summaryText", "");
     String text = attributes.getOrDefault("text", "");
+    String classNames = buildClassNames(attributes);
 
     // Build the HTML structure
-    String detailsHtml = buildDetailsHtml(summaryText, text);
+    String detailsHtml = buildDetailsHtml(summaryText, text, classNames);
 
     // Create the model and replace the tag
     final IModelFactory modelFactory = context.getModelFactory();
@@ -39,9 +40,17 @@ public class DetailsElementTagProcessor extends AbstractElementTagProcessor {
     structureHandler.replaceWith(model, false);
   }
 
-  private String buildDetailsHtml(String summaryText, String text) {
+  private String buildClassNames(Map<String, String> attributes) {
+    String classNames = "govuk-details";
+    if (attributes.containsKey("classes")) {
+      classNames += " " + attributes.get("classes");
+    }
+    return classNames;
+  }
+
+  private String buildDetailsHtml(String summaryText, String text, String classNames) {
     return new StringBuilder()
-        .append("<details class=\"").append("govuk-details").append("\">")
+        .append("<details class=\"").append(classNames).append("\">")
         .append("<summary class=\"").append("govuk-details__summary").append("\">")
         .append("<span class=\"").append("govuk-details__summary-text").append("\">")
         .append(summaryText)
