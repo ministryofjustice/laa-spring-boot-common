@@ -1,6 +1,5 @@
 package uk.gov.laa.ccms.springboot.dialect;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.util.Strings;
@@ -10,10 +9,8 @@ import org.thymeleaf.model.IModelFactory;
 import org.thymeleaf.model.IProcessableElementTag;
 import org.thymeleaf.processor.element.AbstractElementTagProcessor;
 import org.thymeleaf.processor.element.IElementTagStructureHandler;
-import org.thymeleaf.standard.expression.IStandardExpression;
-import org.thymeleaf.standard.expression.IStandardExpressionParser;
-import org.thymeleaf.standard.expression.StandardExpressions;
 import org.thymeleaf.templatemode.TemplateMode;
+
 
 /**
  * Transforms <govuk:button/> elements into standard HTML button elements.
@@ -32,7 +29,7 @@ public class ButtonElementTagProcessor extends AbstractElementTagProcessor {
   protected void doProcess(ITemplateContext context, IProcessableElementTag tag,
                            IElementTagStructureHandler structureHandler) {
 
-    Map<String, String> attributes = parseAttributes(context, tag);
+    Map<String, String> attributes = ProcessorUtils.parseAttributes(context, tag);
     String classNames = buildClassNames(attributes);
     String commonAttributes = buildCommonAttributes(classNames, attributes);
     String buttonAttributes = buildButtonAttributes(attributes);
@@ -43,26 +40,6 @@ public class ButtonElementTagProcessor extends AbstractElementTagProcessor {
     replaceElementWithHtml(context, structureHandler, html);
   }
 
-  private Map<String, String> parseAttributes(ITemplateContext context,
-                                              IProcessableElementTag tag) {
-    Map<String, String> attributes = tag.getAttributeMap();
-    Map<String, String> resolvedAttributes = new HashMap<>();
-    IStandardExpressionParser parser =
-        StandardExpressions.getExpressionParser(context.getConfiguration());
-
-    for (Map.Entry<String, String> entry : attributes.entrySet()) {
-      String key = entry.getKey();
-      String value = entry.getValue();
-      if (key.startsWith("th:")) {
-        IStandardExpression expression = parser.parseExpression(context, value);
-        resolvedAttributes.put(key.replace("th:", ""), (String) expression.execute(context));
-      } else {
-        resolvedAttributes.put(key, value);
-      }
-    }
-
-    return resolvedAttributes;
-  }
 
   private String buildClassNames(Map<String, String> attributes) {
     String classNames = "govuk-button";

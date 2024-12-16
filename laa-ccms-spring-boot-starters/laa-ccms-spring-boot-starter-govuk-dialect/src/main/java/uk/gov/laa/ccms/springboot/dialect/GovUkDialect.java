@@ -19,6 +19,6 @@ public class GovUkDialect extends AbstractProcessorDialect {
 
   @Override
   public Set<IProcessor> getProcessors(String dialectPrefix) {
-    return Set.of(new ButtonElementTagProcessor());
+    return Set.of(new ButtonElementTagProcessor(), new DetailsElementTagProcessor());
   }
 }
