@@ -19,7 +19,6 @@ class DetailsElementTagProcessorTest {
 
     Context context = new Context();
     String renderedHtml = templateEngine.process("test-details", context);
-    System.out.println(renderedHtml);
     assertThat(renderedHtml)
         .contains(
             "<details class=\"govuk-details\"><summary class=\"govuk-details__summary\">" +
