@@ -24,7 +24,13 @@ class DetailsElementTagProcessorTest {
             "<details class=\"govuk-details\"><summary class=\"govuk-details__summary\">" +
                 "<span class=\"govuk-details__summary-text\">Help with nationality</span>" +
                 "</summary><div class=\"govuk-details__text\">We need to know your nationality " +
-                "so we can work out which elections you're entitled to vote in.</div></details>");
+                "so we can work out which elections you're entitled to vote in.</div></details>")
+        .contains(
+            "<details class=\"govuk-details govuk-!-margin-top-2\"><summary " +
+                "class=\"govuk-details__summary\"><span class=\"govuk-details__summary-text\">" +
+                "Help with nationality</span></summary><div class=\"govuk-details__text\">" +
+                "We need to know your nationality so we can work out which elections you're " +
+                "entitled to vote in.</div></details>");
 
   }
 
