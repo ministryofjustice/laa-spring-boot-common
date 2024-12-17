@@ -10,7 +10,7 @@ plugins {
 ext.springBootVersion = "3.4.0"
 
 // io.spring.gradle:dependency-management-plugin
-ext.springBootDependencyManagementPluginVersion = "1.1.6"
+ext.springBootDependencyManagementPluginVersion = "1.1.7"
 
 // com.github.ben-manes:gradle-versions-plugin
 ext.gradleVersionsPluginVersion = "0.51.0"
