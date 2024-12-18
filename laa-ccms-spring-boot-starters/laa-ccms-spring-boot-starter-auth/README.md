@@ -122,37 +122,37 @@ graph
         
     end
     
-    client -- <span style='color:black;font-weight:bold;font-size:25px' style=''>START</span><br>1. Request (protected endpoint) --> authenticationFilter
+    client -- <span style='color:black;font-weight:bold;font-size:25px' style=''>START</span><br>[1] Request (protected endpoint) --> authenticationFilter
 
-    authenticationFilter -- 2. Create authentication token --> authenticationService
+    authenticationFilter -- [2] Create authentication token --> authenticationService
     
-    authenticationFilter -- 3. check authentication --> authenticationCheck
+    authenticationFilter -- [3] check authentication --> authenticationCheck
 
-    authenticationCheck -- 4a. Yes - Store authentication token --> creds
+    authenticationCheck -- [4a] Yes - Store authentication token --> creds
     
-    authenticationCheck -- 4b. No - 401 Unauthorized --> client
+    authenticationCheck -- [4b] No - 401 Unauthorized --> client
     
-    authenticationFilter -- 5. doFilter --> authorizationFilter
+    authenticationFilter -- [5] doFilter --> authorizationFilter
 
-    authorizationFilter -- 6. Get authentication token --> creds
+    authorizationFilter -- [6] Get authentication token --> creds
 
-    authorizationFilter -- 7. Check authorization --> authorizationM
+    authorizationFilter -- [7] Check authorization --> authorizationM
     
     authorizationM --> rmdAuthorizationM
 
-    rmdAuthorizationM -- 8. Identify matching request mapping--> rmdAuthorizationM
+    rmdAuthorizationM -- [8] Identify matching request mapping --> rmdAuthorizationM
 
     rmdAuthorizationM --> authorityAuthorizationM
 
-    authorityAuthorizationM -- 9. Compare client's role<br>against role required<br>for endpoint --> authorityAuthorizationM
+    authorityAuthorizationM -- [9] Compare client's role<br>against role required<br>for endpoint --> authorityAuthorizationM
     
     authorityAuthorizationM --> authorizationCheck
     
-    authorizationCheck -- 10a. No --> accessDeniedHandler
-    accessDeniedHandler -- 11a. 403 Forbidden --> client
+    authorizationCheck -- [10a] No --> accessDeniedHandler
+    accessDeniedHandler -- [11a] 403 Forbidden --> client
 
-    authorizationCheck -- 10b. Yes --> businessLogic
-    businessLogic -- 11b. Normal response --> client
+    authorizationCheck -- [10b] Yes --> businessLogic
+    businessLogic -- [11b] Normal response --> client
 
 
     classDef green fill:#206020,stroke:#333,stroke-width:2px;
@@ -164,7 +164,6 @@ graph
     linkStyle 4 stroke:red,color:red
     linkStyle 14 stroke:red,color:red
     linkStyle 16 stroke:green,color:green
-
 ```
 
 ## OpenAPI Configuration
