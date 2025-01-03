@@ -7,5 +7,5 @@ repositories {
 }
 
 dependencies {
-    implementation 'net.researchgate:gradle-release:3.0.2'
+    implementation 'net.researchgate:gradle-release:3.1.0'
 }
