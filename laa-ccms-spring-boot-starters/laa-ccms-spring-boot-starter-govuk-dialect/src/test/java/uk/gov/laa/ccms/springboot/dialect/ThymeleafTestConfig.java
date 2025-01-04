@@ -13,6 +13,7 @@ public class ThymeleafTestConfig {
   public SpringTemplateEngine testTemplateEngine() {
     SpringTemplateEngine templateEngine = new SpringTemplateEngine();
     templateEngine.addDialect(new GovUkDialect());
+    templateEngine.addDialect(new MojCustomDialect());
     templateEngine.addTemplateResolver(templateResolver());
     return templateEngine;
   }

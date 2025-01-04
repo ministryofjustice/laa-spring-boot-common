@@ -10,7 +10,7 @@ import org.thymeleaf.processor.element.IElementTagStructureHandler;
 import org.thymeleaf.templatemode.TemplateMode;
 
 /**
- * hello.
+ * Transforms <moj:datepicker/> elements into standard HTML button elements.
  */
 public class DatePickerElementTagProcessor extends AbstractElementTagProcessor {
 
@@ -26,74 +26,77 @@ public class DatePickerElementTagProcessor extends AbstractElementTagProcessor {
                            IElementTagStructureHandler structureHandler) {
 
     Map<String, String> attributes = ProcessorUtils.parseAttributes(context, tag);
+    DatePickerAttributes datePickerAttributes = new DatePickerAttributes(
+        attributes.getOrDefault("id", "date"),
+        attributes.getOrDefault("name", "date"),
+        attributes.getOrDefault("label", "Date"),
+        attributes.get("hint"),
+        attributes.get("errorMessage"),
+        attributes.get("value"),
+        attributes.get("minDate"),
+        attributes.get("maxDate")
+    );
 
-    String id = attributes.getOrDefault("id", "date");
-    String name = attributes.getOrDefault("name", "date");
-    String value = attributes.get("value");
-    String label = attributes.getOrDefault("label", "Date");
-    String hint = attributes.getOrDefault("hint", "For example, 17/5/2024.");
-    String errorMessage = attributes.getOrDefault("errorMessage", "Enter or select a date");
-    String minDate = attributes.get("minDate");
-    String maxDate = attributes.get("maxDate");
-
-    boolean hasError = !errorMessage.isEmpty();
-
-    String datePickerHtml =
-        buildDatePickerHtml(id, name, label, hint, errorMessage, hasError, minDate, maxDate);
-
+    String datePickerHtml = buildDatePickerHtml(datePickerAttributes);
     final IModelFactory modelFactory = context.getModelFactory();
     final IModel model = modelFactory.parse(context.getTemplateData(), datePickerHtml);
     structureHandler.replaceWith(model, false);
 
   }
 
-  private String buildDatePickerHtml(String id, String name, String label, String hint,
-                                     String errorMessage, boolean hasError, String minDate,
-                                     String maxDate) {
+  private String buildDatePickerHtml(DatePickerAttributes datePickerAttributes) {
     StringBuilder html = new StringBuilder();
     html.append("<div class=\"moj-datepicker\" data-module=\"moj-date-picker\"");
 
-    if (!minDate.isEmpty()) {
-      html.append(" data-min-date=\"").append(minDate).append("\"");
+    if (!datePickerAttributes.minDate().isEmpty()) {
+      html.append(" data-min-date=\"").append(datePickerAttributes.minDate()).append("\"");
     }
-    if (!maxDate.isEmpty()) {
-      html.append(" data-max-date=\"").append(maxDate).append("\"");
+    if (!datePickerAttributes.maxDate().isEmpty()) {
+      html.append(" data-max-date=\"").append(datePickerAttributes.maxDate()).append("\"");
     }
 
     html.append(">")
         .append("<div class=\"govuk-form-group");
 
-    if (hasError) {
+    if (datePickerAttributes.hasError()) {
       html.append(" govuk-form-group--error");
     }
 
     html.append("\">")
-        .append("<label class=\"govuk-label\" for=\"").append(id).append("\">")
-        .append(label)
+        .append("<label class=\"govuk-label\" for=\"").append(datePickerAttributes.id())
+        .append("\">")
+        .append(datePickerAttributes.label())
         .append("</label>")
-        .append("<div id=\"").append(id).append("-hint\" class=\"govuk-hint\">")
-        .append(hint)
+        .append("<div id=\"").append(datePickerAttributes.id())
+        .append("-hint\" class=\"govuk-hint\">")
+        .append(datePickerAttributes.hint())
         .append("</div>");
 
-    if (hasError) {
-      html.append("<p id=\"").append(id).append("-error\" class=\"govuk-error-message\">")
+    if (datePickerAttributes.hasError()) {
+      html.append("<p id=\"").append(datePickerAttributes.id())
+          .append("-error\" class=\"govuk-error-message\">")
           .append("<span class=\"govuk-visually-hidden\">Error:</span> ")
-          .append(errorMessage)
+          .append(datePickerAttributes.errorMessage())
           .append("</p>");
     }
 
     html.append("<input class=\"govuk-input moj-js-datepicker-input");
 
-    if (hasError) {
+    if (datePickerAttributes.hasError()) {
       html.append(" govuk-input--error");
     }
 
-    html.append("\" id=\"").append(id)
-        .append("\" name=\"").append(name)
-        .append("\" type=\"text\" aria-describedby=\"").append(id).append("-hint");
+    html.append("\" id=\"").append(datePickerAttributes.id())
+        .append("\" name=\"").append(datePickerAttributes.name())
+        .append("\" type=\"text\" aria-describedby=\"").append(datePickerAttributes.id())
+        .append("-hint");
 
-    if (hasError) {
-      html.append(" ").append(id).append("-error");
+    if (datePickerAttributes.hasError()) {
+      html.append(" ").append(datePickerAttributes.id()).append("-error");
+    }
+
+    if (!datePickerAttributes.value().isEmpty()) {
+      html.append("\" value=\"").append(datePickerAttributes.value());
     }
 
     html.append("\" autocomplete=\"off\">")
