@@ -29,7 +29,16 @@ class MoJDatePickerElementTagProcessorTest {
                 "Please enter a valid date of birth.</p><input class=\"govuk-input moj-js-datepicker-input " +
                 "govuk-input--error\" id=\"dob\" name=\"dateOfBirth\" type=\"text\" " +
                 "aria-describedby=\"dob-hint dob-error\" value=\"2024-01-01\" autocomplete=\"off\">" +
-                "</div></div>");
+                "</div></div>")
+        .contains(
+            "<div class=\"moj-datepicker\" data-module=\"moj-date-picker\" " +
+                "data-min-date=\"2000-01-01\" data-max-date=\"2025-12-31\">" +
+                "<div class=\"govuk-form-group\"><label class=\"govuk-label\" " +
+                "for=\"dob\">Date of Birth</label><div id=\"dob-hint\" " +
+                "class=\"govuk-hint\">For example, 01/01/2000.</div><input " +
+                "class=\"govuk-input moj-js-datepicker-input\" id=\"dob\" name=\"dateOfBirth\" " +
+                "type=\"text\" aria-describedby=\"dob-hint\" value=\"2024-01-01\" " +
+                "autocomplete=\"off\"></div></div>");
 
   }
 

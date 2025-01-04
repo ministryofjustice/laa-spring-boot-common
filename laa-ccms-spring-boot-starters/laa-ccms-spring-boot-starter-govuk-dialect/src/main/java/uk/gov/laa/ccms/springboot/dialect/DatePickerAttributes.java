@@ -14,6 +14,6 @@ public record DatePickerAttributes(
     String maxDate) {
 
   public boolean hasError() {
-    return !errorMessage.isEmpty();
+    return errorMessage != null && !errorMessage.isBlank();
   }
 }
