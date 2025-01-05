@@ -1,5 +1,7 @@
 package uk.gov.laa.ccms.springboot.dialect;
 
+import static org.springframework.util.StringUtils.hasText;
+
 import java.util.Map;
 import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.model.IModel;
@@ -48,10 +50,10 @@ public class DatePickerElementTagProcessor extends AbstractElementTagProcessor {
     StringBuilder html = new StringBuilder();
     html.append("<div class=\"moj-datepicker\" data-module=\"moj-date-picker\"");
 
-    if (!datePickerAttributes.minDate().isEmpty()) {
+    if (hasText(datePickerAttributes.minDate())) {
       html.append(" data-min-date=\"").append(datePickerAttributes.minDate()).append("\"");
     }
-    if (!datePickerAttributes.maxDate().isEmpty()) {
+    if (hasText(datePickerAttributes.maxDate())) {
       html.append(" data-max-date=\"").append(datePickerAttributes.maxDate()).append("\"");
     }
 
@@ -95,7 +97,7 @@ public class DatePickerElementTagProcessor extends AbstractElementTagProcessor {
       html.append(" ").append(datePickerAttributes.id()).append("-error");
     }
 
-    if (!datePickerAttributes.value().isEmpty()) {
+    if (hasText(datePickerAttributes.value())) {
       html.append("\" value=\"").append(datePickerAttributes.value());
     }
 
