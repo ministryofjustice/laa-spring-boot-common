@@ -19,4 +19,9 @@ public class GovUkThymeleafDialectConfig {
     return new GovUkDialect();
   }
 
+  @Bean
+  public MojCustomDialect mojCustomDialect() {
+    return new MojCustomDialect();
+  }
+
 }
