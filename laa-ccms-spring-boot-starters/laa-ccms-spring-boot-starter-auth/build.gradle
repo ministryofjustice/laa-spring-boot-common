@@ -12,7 +12,7 @@ dependencies {
         transitive = false
     }
 
-    implementation 'io.swagger.core.v3:swagger-models:2.2.27'
+    implementation 'io.swagger.core.v3:swagger-models:2.2.28'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
@@ -25,7 +25,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-    testImplementation 'org.assertj:assertj-core:3.27.0'
+    testImplementation 'org.assertj:assertj-core:3.27.3'
 }
 
 checkstyle {
