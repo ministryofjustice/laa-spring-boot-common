@@ -1,6 +1,7 @@
 plugins {
     id 'net.researchgate.release'
     id 'checkstyle'
+    id 'com.adarshr.test-logger' version '4.0.0'
 }
 
 // Set Global Versions
@@ -34,6 +35,7 @@ subprojects {
     }
 
     apply plugin: 'maven-publish'
+    apply plugin: 'com.adarshr.test-logger'
 
     publishing.repositories {
         maven {

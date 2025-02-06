@@ -13,3 +13,11 @@ updates:
       gradle-updates:
         patterns:
           - "**" # Matches all Gradle dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      github-actions:
+        patterns:
+          - "**"
