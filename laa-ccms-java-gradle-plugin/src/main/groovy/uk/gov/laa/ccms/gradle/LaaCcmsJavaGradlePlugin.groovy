@@ -92,8 +92,6 @@ class LaaCcmsJavaGradlePlugin implements Plugin<Project> {
                     }
                 }
             }
-
-            dependsOn target.tasks['test']
         }
 
         target.checkstyle {
