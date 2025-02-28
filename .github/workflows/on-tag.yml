@@ -60,13 +60,13 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: upload jarfile
-        uses: actions/upload-artifact@v4.6.0
+        uses: actions/upload-artifact@v4
         with:
           name: laa-ccms-java-gradle-plugin-jar
           path: laa-ccms-java-gradle-plugin/build/libs/laa-ccms-java-gradle-plugin-jar-${{ steps.capture_version.outputs.app_version }}.jar
 
       - name: upload jarfile
-        uses: actions/upload-artifact@v4.6.0
+        uses: actions/upload-artifact@v4
         with:
           name: laa-ccms-spring-boot-gradle-plugin-jar
           path: laa-ccms-spring-boot-gradle-plugin/build/libs/laa-ccms-spring-boot-gradle-plugin-${{ steps.capture_version.outputs.app_version }}.jar
