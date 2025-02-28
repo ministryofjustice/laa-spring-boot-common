@@ -18,8 +18,9 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion"
     implementation "io.spring.gradle:dependency-management-plugin:$springBootDependencyManagementPluginVersion"
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testImplementation platform('org.junit:junit-bom:5.12.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 test {
