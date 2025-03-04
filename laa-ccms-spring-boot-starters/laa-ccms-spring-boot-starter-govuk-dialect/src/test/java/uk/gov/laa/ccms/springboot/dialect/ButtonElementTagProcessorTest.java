@@ -21,7 +21,7 @@ class ButtonElementTagProcessorTest {
         String renderedHtml = templateEngine.process("test-button", context);
         assertThat(renderedHtml)
                 .contains("<a href=\"/test\" role=\"button\" draggable=\"false\" class=\"govuk-button custom-class\" data-module=\"govuk-button\" id=\"button-id\">Click Me!</a>")
-                .contains("<button type=\"submit\"  disabled aria-disabled=\"true\" class=\"govuk-button\" data-module=\"govuk-button\" id=\"button-id\">Click Me!</button>");
+                .contains("<button type=\"submit\"  disabled aria-disabled=\"true\" value=\"find_address\" class=\"govuk-button\" data-module=\"govuk-button\" id=\"button-id\">Click Me!</button>");
 
     }
 
