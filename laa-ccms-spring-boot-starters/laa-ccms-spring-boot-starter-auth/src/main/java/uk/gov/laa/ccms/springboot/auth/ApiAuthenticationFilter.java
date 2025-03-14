@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -50,7 +51,9 @@ public class ApiAuthenticationFilter extends GenericFilterBean {
     try {
       Authentication authentication =
           authenticationService.getAuthentication((HttpServletRequest) request);
-      SecurityContextHolder.getContext().setAuthentication(authentication);
+      SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+      securityContext.setAuthentication(authentication);
+      SecurityContextHolder.setContext(securityContext);
       log.info(
           "Endpoint '{} {}' requested by {}.",
           ((HttpServletRequest) request).getMethod(),
