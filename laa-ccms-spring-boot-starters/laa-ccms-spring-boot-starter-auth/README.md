@@ -104,7 +104,7 @@ graph
             authorizationFilter["Authorization Filter"]
         end
         
-        authenticationService["API Authentication Service"]
+        authenticationProvider["API Authentication Provider"]
         
         authorizationM["Authorization Manager"]
         rmdAuthorizationM["RequestMatcherDelegatingAuthorizationManager"]
@@ -124,7 +124,7 @@ graph
     
     client -- <span style='color:black;font-weight:bold;font-size:25px' style=''>START</span><br>[1] Request (protected endpoint) --> authenticationFilter
 
-    authenticationFilter -- [2] Create authentication token --> authenticationService
+    authenticationFilter <-- [2] Create authentication token --> authenticationProvider
     
     authenticationFilter -- [3] check authentication --> authenticationCheck
 

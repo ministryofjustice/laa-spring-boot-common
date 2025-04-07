@@ -3,34 +3,39 @@ package uk.gov.laa.ccms.springboot.auth;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.Response;
 import java.io.IOException;
+import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-/** API access token authentication filter. */
+/**
+ * API access token authentication filter.
+ */
 @Slf4j
-public class ApiAuthenticationFilter extends GenericFilterBean {
+public class ApiAuthenticationFilter extends OncePerRequestFilter {
 
-  ApiAuthenticationService authenticationService;
+  private final AuthenticationManager authenticationManager;
 
-  ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
 
-  @Autowired
+  private final TokenDetailsManager tokenDetailsManager;
+
   protected ApiAuthenticationFilter(
-      ApiAuthenticationService authenticationService, ObjectMapper objectMapper) {
-    this.authenticationService = authenticationService;
+      AuthenticationManager authenticationManager, ObjectMapper objectMapper,
+      TokenDetailsManager tokenDetailsManager) {
+    this.authenticationManager = authenticationManager;
     this.objectMapper = objectMapper;
+    this.tokenDetailsManager = tokenDetailsManager;
   }
 
   /**
@@ -39,45 +44,48 @@ public class ApiAuthenticationFilter extends GenericFilterBean {
    * further processing, and continuation of the filter chain. Unsuccessful authentication results
    * in a 401 UNAUTHORIZED response.
    *
-   * @param request the http request object
-   * @param response the http response object
+   * @param request     the http request object
+   * @param response    the http response object
    * @param filterChain the current filter chain
-   * @throws IOException -
+   * @throws IOException      -
    * @throws ServletException -
    */
   @Override
-  public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
-      throws IOException, ServletException {
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                  FilterChain filterChain) throws ServletException, IOException {
+
     try {
-      Authentication authentication =
-          authenticationService.getAuthentication((HttpServletRequest) request);
+      String accessToken = request.getHeader(tokenDetailsManager.getAuthenticationHeader());
+      ApiAuthenticationToken authRequest = ApiAuthenticationToken.unauthenticated(accessToken);
+      Authentication authentication = authenticationManager.authenticate(authRequest);
       SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
       securityContext.setAuthentication(authentication);
       SecurityContextHolder.setContext(securityContext);
-      log.info(
-          "Endpoint '{} {}' requested by {}.",
-          ((HttpServletRequest) request).getMethod(),
-          ((HttpServletRequest) request).getRequestURI(),
+      log.info("Endpoint '{} {}' requested by {}.", request.getMethod(), request.getRequestURI(),
           authentication.getPrincipal().toString());
+
       filterChain.doFilter(request, response);
+
     } catch (AuthenticationException ex) {
       int code = HttpServletResponse.SC_UNAUTHORIZED;
-      HttpServletResponse httpResponse = (HttpServletResponse) response;
-      httpResponse.setStatus(code);
-      httpResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
+      response.setStatus(code);
+      response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
       String status = Response.Status.UNAUTHORIZED.getReasonPhrase();
       String message = ex.getMessage();
 
       ErrorResponse errorResponse = new ErrorResponse(code, status, message);
-
-      httpResponse.getWriter().write(objectMapper.writeValueAsString(errorResponse));
-
-      log.info(
-          "Request rejected for endpoint '{} {}': {}",
-          ((HttpServletRequest) request).getMethod(),
-          ((HttpServletRequest) request).getRequestURI(),
-          message);
+      response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+      log.info("Request rejected for endpoint '{} {}': {}", request.getMethod(),
+          request.getRequestURI(), message);
     }
+
+  }
+
+  @Override
+  protected boolean shouldNotFilter(HttpServletRequest request) {
+    // Skip if URI is in tokenDetailsManager.getUnprotectedUris()
+    return Arrays.stream(tokenDetailsManager.getUnprotectedUris())
+        .anyMatch(uri -> new AntPathRequestMatcher(uri).matches(request));
   }
 }

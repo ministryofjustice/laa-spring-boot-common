@@ -10,15 +10,12 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.InvalidPropertyException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * Holds the authentication context for the API.
  */
 @Slf4j
-@Component
-public class ApiAuthenticationContextHolder {
+public class TokenDetailsManager {
 
   private final AuthenticationProperties authenticationProperties;
 
@@ -34,8 +31,7 @@ public class ApiAuthenticationContextHolder {
   @Getter
   private Set<AuthorizedRole> authorizedRoles;
 
-  @Autowired
-  public ApiAuthenticationContextHolder(AuthenticationProperties authenticationProperties) {
+  public TokenDetailsManager(AuthenticationProperties authenticationProperties) {
     this.authenticationProperties = authenticationProperties;
   }
 
@@ -60,7 +56,8 @@ public class ApiAuthenticationContextHolder {
           new ObjectMapper()
               .readValue(
                   authenticationProperties.getAuthorizedClients(),
-                  new TypeReference<Set<ClientCredential>>() {});
+                  new TypeReference<>() {
+                  });
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
@@ -91,7 +88,8 @@ public class ApiAuthenticationContextHolder {
           new ObjectMapper()
               .readValue(
                   authenticationProperties.getAuthorizedRoles(),
-                  new TypeReference<Set<AuthorizedRole>>() {});
+                  new TypeReference<>() {
+                  });
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
