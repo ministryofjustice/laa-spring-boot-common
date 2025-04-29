@@ -1,0 +1,22 @@
+name: Publish tag
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  assemble-and-publish-tag:
+    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@v1
+    permissions:
+      contents: write
+      packages: write
+    with:
+      build_command: 'assemble'
+      publish_package: 'true'
+      junit_results: 'false'
+      junit_report: 'false'
+      checkstyle_report: 'false'
+      jacoco_coverage_report: 'false'
+    secrets:
+      gh_token: ${{ secrets.GITHUB_TOKEN }}
