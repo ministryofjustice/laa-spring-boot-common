@@ -1,12 +1,11 @@
 plugins {
     id 'spring-boot-starter-conventions'
     id 'checkstyle'
+    id 'io.freefair.lombok' version '8.13.1'
 }
 
 dependencies {
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
 
     implementation(project(':laa-ccms-java-gradle-plugin')) {
         transitive = false
@@ -16,17 +15,12 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
-    implementation 'jakarta.servlet:jakarta.servlet-api'
-
-    implementation 'jakarta.ws.rs:jakarta.ws.rs-api'
-
-    implementation 'com.fasterxml.jackson.jakarta.rs:jackson-jakarta-rs-json-provider'
-
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 checkstyle {

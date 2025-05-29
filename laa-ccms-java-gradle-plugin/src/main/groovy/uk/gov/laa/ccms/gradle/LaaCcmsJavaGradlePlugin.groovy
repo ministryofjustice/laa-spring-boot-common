@@ -15,7 +15,7 @@ import org.gradle.testing.jacoco.plugins.JacocoPlugin
 class LaaCcmsJavaGradlePlugin implements Plugin<Project> {
 
     private static final String JAVA_VERSION = "21"
-    private static final String CHECKSTYLE_VERSION = "10.18.1"
+    private static final String CHECKSTYLE_VERSION = "10.24.0"
 
     @Override
     void apply(Project target) {
@@ -118,8 +118,7 @@ class LaaCcmsJavaGradlePlugin implements Plugin<Project> {
         } else if (propertyUsername && propertyKey) {
             gitHubPackagesUsername = propertyUsername
             gitHubPackagesPassword = propertyKey
-        }
-        else {
+        } else {
             target.logger.info("Unable to find GitHub packages credentials. " +
                     "Please set 'project.ext.gitPackageUser' / 'project.ext.gitPackageKey' " +
                     "in your gradle.properties file " +

@@ -8,7 +8,7 @@ plugins {
 
 // org.springframework.boot:spring-boot-gradle-plugin
 // org.springframework.boot:spring-boot-dependencies
-ext.springBootVersion = "3.4.6"
+ext.springBootVersion = "3.5.0"
 
 // io.spring.gradle:dependency-management-plugin
 ext.springBootDependencyManagementPluginVersion = "1.1.7"
@@ -62,7 +62,7 @@ subprojects {
     }
 }
 
-task updateSnapshotVersion {
+tasks.register('updateSnapshotVersion') {
     doLast {
         def gitHash = "git rev-parse --short HEAD".execute().text.trim()
         def propertiesFile = file('gradle.properties')
