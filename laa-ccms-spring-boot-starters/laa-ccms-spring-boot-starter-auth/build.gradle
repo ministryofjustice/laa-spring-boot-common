@@ -1,7 +1,7 @@
 plugins {
     id 'spring-boot-starter-conventions'
     id 'checkstyle'
-    id 'io.freefair.lombok' version '8.13.1'
+    id 'io.freefair.lombok' version '8.14'
 }
 
 dependencies {
@@ -11,7 +11,7 @@ dependencies {
         transitive = false
     }
 
-    implementation 'io.swagger.core.v3:swagger-models:2.2.33'
+    implementation 'io.swagger.core.v3:swagger-models:2.2.34'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
