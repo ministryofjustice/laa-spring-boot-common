@@ -17,7 +17,7 @@ ext.springBootDependencyManagementPluginVersion = "1.1.7"
 ext.gradleVersionsPluginVersion = "0.52.0"
 
 // checkstyle
-ext.checkstyleVersion = "10.18.1"
+ext.checkstyleVersion = "10.26.0"
 
 // com.adarshr:gradle-test-logger-plugin
 ext.testLoggerPluginVersion = "4.0.0"
