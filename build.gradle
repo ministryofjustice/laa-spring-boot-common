@@ -8,7 +8,7 @@ plugins {
 
 // org.springframework.boot:spring-boot-gradle-plugin
 // org.springframework.boot:spring-boot-dependencies
-ext.springBootVersion = "3.5.3"
+ext.springBootVersion = "3.5.4"
 
 // io.spring.gradle:dependency-management-plugin
 ext.springBootDependencyManagementPluginVersion = "1.1.7"
