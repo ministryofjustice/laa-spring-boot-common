@@ -1,0 +1,2 @@
+uk.gov.laa.springboot.auth.SecurityFilterChainAutoConfiguration
+uk.gov.laa.springboot.auth.config.OpenApiConfiguration
