@@ -1,0 +1,45 @@
+laa.springboot.starter.auth:
+  authentication-header: "Authorization"
+  authorized-clients: '[
+      {
+          "name": "client1",
+          "roles": [
+              "GROUP1"
+          ],
+          "token": "b7bbdb3d-d0b9-4632-b752-b2e0f9486baf"
+      },
+      {
+          "name": "client2",
+          "roles": [
+              "GROUP2"
+          ],
+          "token": "1fd84ad9-760d-401f-8cf0-7a80aa42566c"
+      },
+      {
+          "name": "client3",
+          "roles": [
+              "GROUP1",
+              "GROUP2"
+          ],
+          "token": "5d925478-a8a2-4b76-863a-3fb87dcbcb95"
+      }
+  ]'
+  authorized-roles: '[
+      {
+          "name": "GROUP1",
+          "uris": [
+              "/resource1/requires-group1-role/**"
+          ]
+      },
+      {
+          "name": "GROUP2",
+          "uris": [
+              "/*/requires-group2-role/**"
+          ]
+      }
+  ]'
+  unprotected-uris: [ "/actuator/**", "/resource1/unrestricted/**" ]
+
+logging:
+  level:
+    root: INFO

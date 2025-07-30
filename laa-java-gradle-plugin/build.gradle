@@ -1,0 +1,20 @@
+plugins {
+    id 'gradle-plugin-conventions'
+    id 'maven-publish'
+}
+
+group = 'uk.gov.laa.java'
+
+dependencies {
+    implementation "com.github.ben-manes:gradle-versions-plugin:${gradleVersionsPluginVersion}"
+    implementation "com.adarshr:gradle-test-logger-plugin:${testLoggerPluginVersion}"
+}
+
+gradlePlugin {
+    plugins {
+        simplePlugin {
+            id = 'uk.gov.laa.java.laa-java-gradle-plugin'
+            implementationClass = 'uk.gov.laa.gradle.LaaJavaGradlePlugin'
+        }
+    }
+}
