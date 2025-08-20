@@ -5,20 +5,18 @@
 
 version: 2
 updates:
-  - package-ecosystem: "gradle"
-    directory: "/"
+  - package-ecosystem: "gradle" # See documentation for possible values
+    directory: "/" # Location of package manifests
     schedule:
-      interval: "cron"
-      cronjob: "0 * * * *"   # every hour
+      interval: "daily"
     groups:
       gradle-updates:
         patterns:
-          - "**"
+          - "**" # Matches all Gradle dependencies
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "cron"
-      cronjob: "0 * * * *"   # every hour
+      interval: "daily"
     groups:
       github-actions:
         patterns:
