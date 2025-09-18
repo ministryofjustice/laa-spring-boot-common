@@ -11,7 +11,7 @@ dependencies {
         transitive = false
     }
 
-    implementation 'io.swagger.core.v3:swagger-models:2.2.36'
+    implementation 'io.swagger.core.v3:swagger-models:2.2.37'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
