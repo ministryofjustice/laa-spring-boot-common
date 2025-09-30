@@ -14,7 +14,7 @@ ext.springBootVersion = "3.5.5"
 ext.springBootDependencyManagementPluginVersion = "1.1.7"
 
 // com.github.ben-manes:gradle-versions-plugin
-ext.gradleVersionsPluginVersion = "0.52.0"
+ext.gradleVersionsPluginVersion = "0.53.0"
 
 // checkstyle
 ext.checkstyleVersion = "10.26.0"
