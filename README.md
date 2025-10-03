@@ -105,5 +105,5 @@ apply plugin: 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin'
 - [Gov-uk custom thymeleaf dialect](laa-spring-boot-starters/laa-spring-boot-starter-govuk-dialect)
 
 - [Authentication](laa-spring-boot-starters/laa-spring-boot-starter-auth/README.md)
-- _**[TODO]**_ Exception Handling
+- [Application exception handling](laa-spring-boot-starters/laa-spring-boot-starter-application-exception/README.md)
 - _**[TODO]**_ Entity Converters
