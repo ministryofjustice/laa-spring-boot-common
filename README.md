@@ -106,4 +106,5 @@ apply plugin: 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin'
 
 - [Authentication](laa-spring-boot-starters/laa-spring-boot-starter-auth/README.md)
 - [Application exception handling](laa-spring-boot-starters/laa-spring-boot-starter-application-exception/README.md)
+- [Slack alerts](laa-spring-boot-starters/laa-spring-boot-starter-slack-alerts/README.md)
 - _**[TODO]**_ Entity Converters
