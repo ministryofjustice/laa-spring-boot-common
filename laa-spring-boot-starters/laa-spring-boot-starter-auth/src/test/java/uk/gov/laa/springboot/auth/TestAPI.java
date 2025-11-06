@@ -46,6 +46,17 @@ public class TestAPI {
 
     }
 
+    @RestController
+    @RequestMapping(value = "/resource3")
+    public class TestResource3Controller {
+
+        @GetMapping(path = "/specific")
+        public ResponseEntity<?> returnSpecificRoleRestricted() {
+            return noContent();
+        }
+
+    }
+
     private ResponseEntity<?> noContent() {
         return ResponseEntity.noContent().build();
     }

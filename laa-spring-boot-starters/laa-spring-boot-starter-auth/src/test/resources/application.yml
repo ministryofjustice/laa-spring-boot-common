@@ -22,6 +22,20 @@ laa.springboot.starter.auth:
               "GROUP2"
           ],
           "token": "5d925478-a8a2-4b76-863a-3fb87dcbcb95"
+      },
+      {
+          "name": "global-client",
+          "roles": [
+              "GLOBAL"
+          ],
+          "token": "f6c85ef8-2525-4e6c-9b45-5899f65d5b78"
+      },
+      {
+          "name": "specific-client",
+          "roles": [
+              "SPECIFIC"
+          ],
+          "token": "fa19fc1c-cb44-4bd2-aa83-17cf83df2fb5"
       }
   ]'
   authorized-roles: '[
@@ -29,12 +43,24 @@ laa.springboot.starter.auth:
           "name": "GROUP1",
           "uris": [
               "/resource1/requires-group1-role/**"
-          ]
+       ]
       },
       {
           "name": "GROUP2",
           "uris": [
               "/*/requires-group2-role/**"
+          ]
+      },
+      {
+          "name": "GLOBAL",
+          "uris": [
+              "/**"
+          ]
+      },
+      {
+          "name": "SPECIFIC",
+          "uris": [
+              "/resource3/specific/**"
           ]
       }
   ]'

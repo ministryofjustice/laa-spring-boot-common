@@ -7,10 +7,12 @@ import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
@@ -63,12 +65,14 @@ public class SecurityFilterChainAutoConfiguration {
           auth.requestMatchers(tokenDetailsManager.getUnprotectedUris()).permitAll();
 
           // Apply role-based access for protected URIs
-          tokenDetailsManager.getAuthorizedRoles().forEach(role ->
-              auth.requestMatchers(role.uris()).hasRole(role.name())
-          );
-
-          // Deny all other requests not matching the above rules
-          auth.anyRequest().denyAll();
+          auth.anyRequest()
+              .access((authentication, context) -> {
+                Authentication authenticated = authentication.get();
+                boolean authorized = authenticated != null
+                    && tokenDetailsManager.isRequestAuthorized(
+                    authenticated.getAuthorities(), context.getRequest());
+                return new AuthorizationDecision(authorized);
+              });
         })
         .with(new ApiTokenConfigurer(objectMapper, tokenDetailsManager), Customizer.withDefaults())
         .authenticationProvider(authenticationProvider)
