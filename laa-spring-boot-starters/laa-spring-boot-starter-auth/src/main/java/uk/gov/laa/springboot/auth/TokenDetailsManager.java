@@ -4,12 +4,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.InvalidPropertyException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 /**
  * Holds the authentication context for the API.
@@ -149,5 +155,32 @@ public class TokenDetailsManager {
    */
   public String getPrincipal(String accessToken) {
     return getMatchingClientCredential(accessToken).map(ClientCredential::name).orElse(null);
+  }
+
+  /**
+   * Determine whether the provided authorities permit access to the supplied request, based on the
+   * configured role to URI mappings.
+   *
+   * @param authorities the authorities granted to the authenticated principal
+   * @param request the request being evaluated
+   * @return {@code true} when any granted role grants access to the request path
+   */
+  public boolean isRequestAuthorized(Collection<? extends GrantedAuthority> authorities,
+                                     HttpServletRequest request) {
+
+    if (authorities == null || authorities.isEmpty()) {
+      return false;
+    }
+
+    Set<String> authorizedRoleNames = authorities.stream()
+        .map(GrantedAuthority::getAuthority)
+        .map(authority ->
+            authority.startsWith("ROLE_") ? authority.substring("ROLE_".length()) : authority)
+        .collect(Collectors.toSet());
+
+    return authorizedRoles.stream()
+        .filter(role -> authorizedRoleNames.contains(role.name()))
+        .flatMap(role -> Arrays.stream(role.uris()))
+        .anyMatch(uri -> PathPatternRequestMatcher.withDefaults().matcher(uri).matches(request));
   }
 }

@@ -107,4 +107,18 @@ class ApiEndpointAuthenticationTest {
         .andExpect(status().is(HttpStatus.NOT_FOUND.value()));
   }
 
+  @Test
+  void testSpecificEndpointValidTokenAuthorizedWithOverlappingGlobalRole() throws Exception {
+    mockMvc.perform(get("/resource3/specific").header(HttpHeaders.AUTHORIZATION,
+            "fa19fc1c-cb44-4bd2-aa83-17cf83df2fb5"))
+        .andExpect(status().is(HttpStatus.NO_CONTENT.value()));
+  }
+
+  @Test
+  void testSpecificEndpointGlobalRoleAuthorized() throws Exception {
+    mockMvc.perform(get("/resource3/specific").header(HttpHeaders.AUTHORIZATION,
+            "f6c85ef8-2525-4e6c-9b45-5899f65d5b78"))
+        .andExpect(status().is(HttpStatus.NO_CONTENT.value()));
+  }
+
 }
