@@ -28,4 +28,9 @@ public @interface HistogramMetric {
    * @return the metric hint text
    */
   String hintText() default "";
+
+  /**
+   * Static labels in the form "key=value".
+   */
+  String[] labels() default {};
 }

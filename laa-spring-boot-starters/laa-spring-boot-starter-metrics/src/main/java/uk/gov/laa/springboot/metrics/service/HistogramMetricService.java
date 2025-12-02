@@ -19,12 +19,15 @@ public class HistogramMetricService extends AbstractMetricService<Histogram> {
   }
 
   @Override
-  protected Histogram buildMetric(String metricName, String help) {
-    return Histogram.builder().name(metricName).help(metricName)
+  protected Histogram buildMetric(String metricName, String help, String... labels) {
+    return Histogram.builder()
+        .labelNames(labels)
+        .name(metricName).help(metricName)
         .register(prometheusRegistry);
   }
 
-  public Timer startTimer(String metricName) {
-    return metrics.get(metricName).startTimer();
+  public Timer startTimer(String metricName, String... labelValues) {
+    var metric = metrics.get(metricName);
+    return metric.labelValues(labelValues).startTimer();
   }
 }

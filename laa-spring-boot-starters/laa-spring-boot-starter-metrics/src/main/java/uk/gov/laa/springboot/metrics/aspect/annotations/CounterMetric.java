@@ -38,4 +38,9 @@ public @interface CounterMetric {
    * Increment value.
    */
   double amount() default 1.0;
+
+  /**
+   * Static labels in the form "key=value".
+   */
+  String[] labels() default {};
 }

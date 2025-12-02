@@ -18,14 +18,16 @@ public class CounterMetricService extends AbstractMetricService<Counter> {
   }
 
   @Override
-  protected Counter buildMetric(String metricName, String help) {
+  protected Counter buildMetric(String metricName, String help, String... labels) {
     return Counter.builder()
         .name(metricName)
+        .labelNames(labels)
         .help(help)
         .register(prometheusRegistry);
   }
 
-  public void increment(String metricName, double amount) {
-    this.metrics.get(metricName).inc(amount);
+  public void increment(String metricName, double amount, String... labelValues) {
+    this.metrics.get(metricName).labelValues(labelValues).inc(amount);
   }
+
 }

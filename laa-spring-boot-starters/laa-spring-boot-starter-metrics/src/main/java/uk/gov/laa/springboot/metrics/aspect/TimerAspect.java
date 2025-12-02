@@ -1,5 +1,7 @@
 package uk.gov.laa.springboot.metrics.aspect;
 
+import io.prometheus.metrics.core.datapoints.Timer;
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -20,7 +22,7 @@ import uk.gov.laa.springboot.metrics.service.SummaryMetricService;
 @Aspect
 @Component
 @RequiredArgsConstructor
-public class TimedAspect {
+public class TimerAspect {
 
   private final SummaryMetricService summaryMetricService;
   private final HistogramMetricService histogramMetricService;
@@ -28,7 +30,7 @@ public class TimedAspect {
   /**
    * Measures execution time of methods annotated with {@link SummaryMetric}.
    *
-   * @param pjp          the proceeding join point
+   * @param pjp           the proceeding join point
    * @param summaryMetric the annotation
    * @return Object
    * @throws Throwable the throwable
@@ -36,25 +38,30 @@ public class TimedAspect {
   @Around("@annotation(summaryMetric)")
   public Object measureSummaryExecutionTime(ProceedingJoinPoint pjp, SummaryMetric summaryMetric)
       throws Throwable {
-    var timer = summaryMetricService.startTimer(summaryMetric.metricName());
-    try {
-      return pjp.proceed();
-    } finally {
+    String[] labelValues =
+        getLabelValues(summaryMetric.labels());
+    String metricName = summaryMetric.metricName();
+    try (Timer timer = summaryMetricService.startTimer(metricName, labelValues)) {
+      try {
+        return pjp.proceed();
+      } finally {
 
-      double duration = timer.observeDuration();
+        double duration = timer.observeDuration();
 
-      String methodName = pjp.getSignature().toShortString();
-      String label =
-          summaryMetric.metricName().isEmpty() ? methodName : summaryMetric.metricName();
+        String methodName = pjp.getSignature().toShortString();
+        String label =
+            metricName.isEmpty() ? methodName : metricName;
 
-      log.warn("{} took {} seconds", label, duration);
+        log.warn("{} took {} seconds", label, duration);
+      }
     }
   }
+
 
   /**
    * Measures execution time of methods annotated with {@link HistogramMetric}.
    *
-   * @param pjp            the proceeding join point
+   * @param pjp             the proceeding join point
    * @param histogramMetric the annotation
    * @return Object
    * @throws Throwable the throwable
@@ -63,18 +70,28 @@ public class TimedAspect {
   public Object measureHistogramExecutionTime(ProceedingJoinPoint pjp,
       HistogramMetric histogramMetric)
       throws Throwable {
-    var timer = histogramMetricService.startTimer(histogramMetric.metricName());
-    try {
-      return pjp.proceed();
-    } finally {
+    String[] labelValues =
+        getLabelValues(histogramMetric.labels());
+    String metricName = histogramMetric.metricName();
+    try (Timer timer = histogramMetricService.startTimer(metricName, labelValues)) {
+      try {
+        return pjp.proceed();
+      } finally {
 
-      double duration = timer.observeDuration();
+        double duration = timer.observeDuration();
 
-      String methodName = pjp.getSignature().toShortString();
-      String label =
-          histogramMetric.metricName().isEmpty() ? methodName : histogramMetric.metricName();
+        String methodName = pjp.getSignature().toShortString();
+        String label =
+            metricName.isEmpty() ? methodName : metricName;
 
-      log.warn("{} took {} seconds", label, duration);
+        log.warn("{} took {} seconds", label, duration);
+      }
     }
   }
+
+  private static String[] getLabelValues(String[] metricLabels) {
+    return Arrays.stream(metricLabels).map(x -> x.split("=")[1]).toList()
+        .toArray(String[]::new);
+  }
+
 }

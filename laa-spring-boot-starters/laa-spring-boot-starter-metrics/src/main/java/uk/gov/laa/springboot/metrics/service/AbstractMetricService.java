@@ -2,6 +2,7 @@ package uk.gov.laa.springboot.metrics.service;
 
 import io.prometheus.metrics.core.metrics.Metric;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
+import java.util.Arrays;
 import java.util.HashMap;
 import org.springframework.stereotype.Component;
 
@@ -23,10 +24,20 @@ public abstract class AbstractMetricService<T extends Metric> {
     this.prometheusRegistry = prometheusRegistry;
   }
 
-  protected abstract T buildMetric(String metricName, String help);
+  protected abstract T buildMetric(String metricName, String help, String... labels);
 
-  public void register(String metricName, String help) {
-    T metric = buildMetric(metricName, help);
+  /**
+   * Registers a metric with the Prometheus registry.
+   *
+   * @param metricName the name of the metric to register
+   * @param help the help text for the metric
+   * @param labels the labels for the metric
+   */
+  public void register(String metricName, String help, String... labels) {
+    String[] labelNames =
+        Arrays.stream(labels).map(x -> x.split("=")[0]).toList()
+            .toArray(String[]::new);
+    T metric = buildMetric(metricName, help, labelNames);
     metrics.put(metricName, metric);
   }
 }

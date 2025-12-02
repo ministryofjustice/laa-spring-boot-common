@@ -19,8 +19,9 @@ public class SummaryMetricService extends AbstractMetricService<Summary> {
   }
 
   @Override
-  protected Summary buildMetric(String metricName, String help) {
+  protected Summary buildMetric(String metricName, String help, String... labels) {
     return Summary.builder().name(metricName).help(metricName)
+        .labelNames(labels)
         .quantile(0.5, 0.05) // P50 with 5% error tolerance
         .quantile(0.9, 0.02) // P90 with 2% error tolerance
         .quantile(0.95, 0.01) // P95 with 1% error tolerance
@@ -28,9 +29,9 @@ public class SummaryMetricService extends AbstractMetricService<Summary> {
         .register(prometheusRegistry);
   }
 
-  public Timer startTimer(String metricName) {
+  public Timer startTimer(String metricName, String... labelValues) {
     var metric = metrics.get(metricName);
-    return metric.startTimer();
+    return metric.labelValues(labelValues).startTimer();
   }
 
 }

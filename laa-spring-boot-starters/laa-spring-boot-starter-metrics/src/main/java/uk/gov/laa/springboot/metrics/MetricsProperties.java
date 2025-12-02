@@ -1,10 +1,11 @@
 package uk.gov.laa.springboot.metrics;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.util.StringUtils;
 
 /**
- * Configuration properties for Slack notifications.
+ * Configuration properties for prometheus metrics.
+ *
+ * @author Jamie Briggs
  */
 @ConfigurationProperties(prefix = "laa.springboot.starter.metrics")
 public class MetricsProperties {
