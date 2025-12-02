@@ -7,8 +7,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
+import uk.gov.laa.springboot.metrics.MetricsProperties;
 import uk.gov.laa.springboot.metrics.aspect.annotations.CounterMetric;
-import uk.gov.laa.springboot.metrics.aspect.annotations.SummaryMetric;
 import uk.gov.laa.springboot.metrics.service.CounterMetricService;
 
 /**
@@ -23,11 +23,13 @@ import uk.gov.laa.springboot.metrics.service.CounterMetricService;
 public class CounterAspect {
 
   private final CounterMetricService counterMetricService;
+  private final MetricsProperties metricsProperties;
+
 
   /**
    * Measures execution time of methods annotated with {@link CounterMetric}.
    *
-   * @param pjp          the proceeding join point
+   * @param pjp     the proceeding join point
    * @param counter the annotation
    * @return Object
    * @throws Throwable the throwable
@@ -43,10 +45,8 @@ public class CounterAspect {
       return result;
     } finally {
       if (!counter.recordSuccessOnly() || success) {
-        String methodName = pjp.getSignature().toShortString();
-        String metricName = counter.metricName().isEmpty()
-            ? methodName
-            : counter.metricName();
+        String metricName =
+            "%s_%s".formatted(metricsProperties.getMetricNamePrefix(), counter.metricName());
 
         String[] labelValues =
             Arrays.stream(counter.labels()).map(x -> x.split("=")[1]).toList()

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SummaryMetricService extends AbstractMetricService<Summary> {
 
-  protected SummaryMetricService(
+  public SummaryMetricService(
       PrometheusRegistry prometheusRegistry) {
     super(prometheusRegistry);
   }

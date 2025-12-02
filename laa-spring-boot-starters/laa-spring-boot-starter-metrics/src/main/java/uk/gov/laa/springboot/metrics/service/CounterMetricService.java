@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CounterMetricService extends AbstractMetricService<Counter> {
 
-  protected CounterMetricService(
+  public CounterMetricService(
       PrometheusRegistry prometheusRegistry) {
     super(prometheusRegistry);
   }

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class HistogramMetricService extends AbstractMetricService<Histogram> {
 
-  protected HistogramMetricService(
+  public HistogramMetricService(
       PrometheusRegistry prometheusRegistry) {
     super(prometheusRegistry);
   }

@@ -40,4 +40,8 @@ public abstract class AbstractMetricService<T extends Metric> {
     T metric = buildMetric(metricName, help, labelNames);
     metrics.put(metricName, metric);
   }
+
+  public T getMetric(String metricName) {
+    return metrics.get(metricName);
+  }
 }
