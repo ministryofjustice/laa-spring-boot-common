@@ -1,4 +1,4 @@
-package uk.gov.laa.springboot.metrics.aspect;
+package uk.gov.laa.springboot.metrics.aspect.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface SummaryTimer {
+public @interface SummaryMetric {
 
   /**
    * The name of the metric you wish to record. Will be appended to the base metric name.
@@ -21,4 +21,11 @@ public @interface SummaryTimer {
    * @return the metric name
    */
   String metricName();
+
+  /**
+   * Hint text to describe what the metric is recording.
+   *
+   * @return the metric hint text
+   */
+  String hintText() default "";
 }

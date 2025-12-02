@@ -12,7 +12,7 @@ import org.springframework.core.env.Environment;
  * Auto-configuration for Slack alerting.
  */
 @AutoConfiguration
-@ConditionalOnProperty(prefix = "laa.springboot.starter.slack-alerts", name = "enabled",
+@ConditionalOnProperty(prefix = "laa.springboot.starter.metrics", name = "enabled",
     havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(MetricsProperties.class)
 public class MetricsAutoConfiguration {

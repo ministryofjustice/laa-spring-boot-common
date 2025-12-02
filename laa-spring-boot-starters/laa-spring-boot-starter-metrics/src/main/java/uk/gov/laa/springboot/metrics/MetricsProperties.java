@@ -10,8 +10,8 @@ import org.springframework.util.StringUtils;
 public class MetricsProperties {
 
   private boolean enabled = true;
-  private String environmentName;
-  private final Pod pod = new Pod();
+
+  private String metricNamePrefix;
 
   public boolean isEnabled() {
     return enabled;
@@ -21,50 +21,11 @@ public class MetricsProperties {
     this.enabled = enabled;
   }
 
-  public String getEnvironmentName() {
-    return environmentName;
+  public String getMetricNamePrefix() {
+    return metricNamePrefix;
   }
 
-  public void setEnvironmentName(String environmentName) {
-    this.environmentName = environmentName;
+  public void setMetricNamePrefix(String metricNamePrefix) {
+    this.metricNamePrefix = metricNamePrefix;
   }
-
-  public Pod getPod() {
-    return pod;
-  }
-
-  /**
-   * Defines pod metadata that can be exported via the Kubernetes
-   * Downward API and injected as environment variables.
-   */
-  public static class Pod {
-    private String namespace;
-    private String name;
-    private String ip;
-
-    public String getNamespace() {
-      return namespace;
-    }
-
-    public void setNamespace(String namespace) {
-      this.namespace = namespace;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public String getIp() {
-      return ip;
-    }
-
-    public void setIp(String ip) {
-      this.ip = ip;
-    }
-  }
-
 }
