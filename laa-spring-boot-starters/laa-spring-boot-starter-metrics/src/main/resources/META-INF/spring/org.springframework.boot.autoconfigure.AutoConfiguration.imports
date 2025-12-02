@@ -1,1 +1,5 @@
 uk.gov.laa.springboot.metrics.MetricsAutoConfiguration
+uk.gov.laa.springboot.metrics.aspect.TimedAspect
+uk.gov.laa.springboot.metrics.service.MetricAnnotationScanner
+uk.gov.laa.springboot.metrics.service.HistogramMetricService
+uk.gov.laa.springboot.metrics.service.SummaryMetricService
