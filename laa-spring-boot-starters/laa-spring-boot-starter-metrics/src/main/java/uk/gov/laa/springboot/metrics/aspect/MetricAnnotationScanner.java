@@ -81,17 +81,17 @@ public class MetricAnnotationScanner implements ApplicationListener<ContextRefre
             SummaryMetric annotation = m.getAnnotation(SummaryMetric.class);
             summaryMetricService.register(
                 "%s_%s".formatted(metricPrefixName, annotation.metricName()),
-                annotation.hintText());
+                annotation.hintText(), annotation.labels());
           } else if (annotationClass.equals(HistogramMetric.class)) {
             HistogramMetric annotation = m.getAnnotation(HistogramMetric.class);
             histogramMetricService.register(
                 "%s_%s".formatted(metricPrefixName, annotation.metricName()),
-                annotation.hintText());
+                annotation.hintText(), annotation.labels());
           } else if (annotationClass.equals(CounterMetric.class)) {
             CounterMetric annotation = m.getAnnotation(CounterMetric.class);
             counterMetricService.register(
                 "%s_%s".formatted(metricPrefixName, annotation.metricName()),
-                annotation.hintText());
+                annotation.hintText(), annotation.labels());
           }
         });
   }

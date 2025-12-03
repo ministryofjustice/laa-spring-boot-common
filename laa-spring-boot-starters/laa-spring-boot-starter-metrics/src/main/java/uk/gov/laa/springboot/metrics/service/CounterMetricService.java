@@ -26,8 +26,23 @@ public class CounterMetricService extends AbstractMetricService<Counter> {
         .register(prometheusRegistry);
   }
 
+  /**
+   * Increments the counter by the specified amount.
+   *
+   * @param metricName  the name of the counter to increment
+   * @param amount      the amount to increment the counter by
+   * @param labelValues the label values to associate with the counter
+   */
   public void increment(String metricName, double amount, String... labelValues) {
     this.metrics.get(metricName).labelValues(labelValues).inc(amount);
   }
 
+  /**
+   * Resets all of the counters back to zero.
+   */
+  public void resetAll() {
+    for (Counter counter : metrics.values()) {
+      counter.clear();
+    }
+  }
 }

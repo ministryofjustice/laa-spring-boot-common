@@ -29,6 +29,13 @@ public class SummaryMetricService extends AbstractMetricService<Summary> {
         .register(prometheusRegistry);
   }
 
+  /**
+   * Starts a timer for the specified metric.
+   *
+   * @param metricName  the name of the metric to start a timer for.
+   * @param labelValues the label values to associate with the timer.
+   * @return the started timer.
+   */
   public Timer startTimer(String metricName, String... labelValues) {
     var metric = metrics.get(metricName);
     return metric.labelValues(labelValues).startTimer();

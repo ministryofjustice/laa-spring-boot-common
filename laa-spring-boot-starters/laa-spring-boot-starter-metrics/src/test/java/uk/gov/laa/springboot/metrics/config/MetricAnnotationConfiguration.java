@@ -1,6 +1,7 @@
 package uk.gov.laa.springboot.metrics.config;
 
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
+import lombok.SneakyThrows;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import uk.gov.laa.springboot.metrics.MetricsProperties;
@@ -52,23 +53,24 @@ public class MetricAnnotationConfiguration {
         "key=value"})
     @SummaryMetric(metricName = "method_summary", hintText = "hint-text", labels = {"key=value"})
     @CounterMetric(metricName = "method_counter", hintText = "hint-text", labels = {"key=value"})
-    public void someMethod() {
+    public void someMethod() throws InterruptedException {
       // Does nothing
+      Thread.sleep(200L);
     }
 
-    @HistogramMetric(metricName = "method_histogram", hintText = "hint-text")
-    @SummaryMetric(metricName = "method_summary", hintText = "hint-text")
-    @CounterMetric(metricName = "method_counter", hintText = "hint-text")
+    @HistogramMetric(metricName = "method_histogram", hintText = "hint-text", labels = {"key=valueTwo"})
+    @SummaryMetric(metricName = "method_summary", hintText = "hint-text", labels = {"key=valueTwo"})
+    @CounterMetric(metricName = "method_counter", hintText = "hint-text", labels = {"key=valueTwo"})
     public void someSecondMethod() {
       // Does nothing
     }
 
     @HistogramMetric(metricName = "method_histogram_two", hintText = "hint-text", labels = {
-        "key=value"})
+        "key=valueThree"})
     @SummaryMetric(metricName = "method_summary_two", hintText = "hint-text", labels = {
-        "key=value"})
+        "key=valueThree"})
     @CounterMetric(metricName = "method_counter_two", hintText = "hint-text", labels = {
-        "key=value"})
+        "key=valueThree"})
     public void someThirdMethod() {
       // Does nothing
     }

@@ -35,14 +35,15 @@ public class CounterAspect {
    * @throws Throwable the throwable
    */
   @Around("@annotation(counter)")
-  public Object measureSummaryExecutionTime(ProceedingJoinPoint pjp, CounterMetric counter)
-      throws Throwable {
+  public Object countUp(ProceedingJoinPoint pjp, CounterMetric counter) {
 
     boolean success = false;
     try {
       Object result = pjp.proceed();
       success = true;
       return result;
+    } catch (Throwable e) {
+      log.error("Error counting up counter {}", counter.metricName(), e);
     } finally {
       if (!counter.recordSuccessOnly() || success) {
         String metricName =
@@ -55,6 +56,8 @@ public class CounterAspect {
         log.debug("Incremented counter {} by {}", metricName, counter.amount());
       }
     }
+    return success;
+
   }
 
 }
