@@ -42,8 +42,7 @@ public class TimerAspect {
       throws Throwable {
     String[] labelValues =
         getLabelValues(summaryMetric.labels());
-    String metricName = "%s_%s".formatted(metricsProperties.getMetricNamePrefix(),
-        summaryMetric.metricName());
+    String metricName = summaryMetric.metricName();
     try (Timer timer = summaryMetricService.startTimer(metricName, labelValues)) {
       try {
         return pjp.proceed();
@@ -75,8 +74,8 @@ public class TimerAspect {
       throws Throwable {
     String[] labelValues =
         getLabelValues(histogramMetric.labels());
-    String metricName = "%s_%s".formatted(metricsProperties.getMetricNamePrefix(),
-        histogramMetric.metricName());
+    String metricName =
+        histogramMetric.metricName();
     try (Timer timer = histogramMetricService.startTimer(metricName, labelValues)) {
       try {
         return pjp.proceed();
