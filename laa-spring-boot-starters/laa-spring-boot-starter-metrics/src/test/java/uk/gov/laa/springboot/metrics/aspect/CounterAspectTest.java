@@ -44,11 +44,11 @@ class CounterAspectTest {
   void shouldNotCountWhenMethodsNotCalled() {
     // When
     double resultOne =
-        counterMetricService.getMetric("test_metric_method_counter").labelValues("value").get();
+        counterMetricService.getMetric("method_counter").labelValues("value").get();
     double resultTwo =
-        counterMetricService.getMetric("test_metric_method_counter").labelValues("valueTwo").get();
+        counterMetricService.getMetric("method_counter").labelValues("valueTwo").get();
     double resultThree =
-        counterMetricService.getMetric("test_metric_method_counter_two").labelValues("valueThree")
+        counterMetricService.getMetric("method_counter_two").labelValues("valueThree")
             .get();
     // Then
     assertThat(resultOne).isZero();
@@ -63,11 +63,11 @@ class CounterAspectTest {
     metricTestClass.someMethod();
     // Then
     double resultOne =
-        counterMetricService.getMetric("test_metric_method_counter").labelValues("value").get();
+        counterMetricService.getMetric("method_counter").labelValues("value").get();
     double resultTwo =
-        counterMetricService.getMetric("test_metric_method_counter").labelValues("valueTwo").get();
+        counterMetricService.getMetric("method_counter").labelValues("valueTwo").get();
     double resultThree =
-        counterMetricService.getMetric("test_metric_method_counter_two").labelValues("valueThree")
+        counterMetricService.getMetric("method_counter_two").labelValues("valueThree")
             .get();
     assertThat(resultOne).isEqualTo(1);
     assertThat(resultTwo).isZero();
@@ -81,11 +81,11 @@ class CounterAspectTest {
     metricTestClass.someSecondMethod();
     // Then
     double resultOne =
-        counterMetricService.getMetric("test_metric_method_counter").labelValues("value").get();
+        counterMetricService.getMetric("method_counter").labelValues("value").get();
     double resultTwo =
-        counterMetricService.getMetric("test_metric_method_counter").labelValues("valueTwo").get();
+        counterMetricService.getMetric("method_counter").labelValues("valueTwo").get();
     double resultThree =
-        counterMetricService.getMetric("test_metric_method_counter_two").labelValues("valueThree")
+        counterMetricService.getMetric("method_counter_two").labelValues("valueThree")
             .get();
     assertThat(resultOne).isZero();
     assertThat(resultTwo).isEqualTo(1);
@@ -99,11 +99,11 @@ class CounterAspectTest {
     metricTestClass.someThirdMethod();
     // Then
     double resultOne =
-        counterMetricService.getMetric("test_metric_method_counter").labelValues("value").get();
+        counterMetricService.getMetric("method_counter").labelValues("value").get();
     double resultTwo =
-        counterMetricService.getMetric("test_metric_method_counter").labelValues("valueTwo").get();
+        counterMetricService.getMetric("method_counter").labelValues("valueTwo").get();
     double resultThree =
-        counterMetricService.getMetric("test_metric_method_counter_two").labelValues("valueThree")
+        counterMetricService.getMetric("method_counter_two").labelValues("valueThree")
             .get();
     assertThat(resultOne).isZero();
     assertThat(resultTwo).isZero();
