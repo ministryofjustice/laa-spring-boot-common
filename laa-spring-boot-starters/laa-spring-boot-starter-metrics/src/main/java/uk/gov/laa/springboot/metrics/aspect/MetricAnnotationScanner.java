@@ -8,8 +8,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
-import uk.gov.laa.springboot.metrics.MetricsProperties;
 import uk.gov.laa.springboot.metrics.aspect.annotations.CounterMetric;
+import uk.gov.laa.springboot.metrics.aspect.annotations.CounterMetrics;
 import uk.gov.laa.springboot.metrics.aspect.annotations.HistogramMetric;
 import uk.gov.laa.springboot.metrics.aspect.annotations.SummaryMetric;
 import uk.gov.laa.springboot.metrics.service.CounterMetricService;
@@ -63,6 +63,7 @@ public class MetricAnnotationScanner implements ApplicationListener<ContextRefre
       scanMethods(targetClass, SummaryMetric.class);
       scanMethods(targetClass, HistogramMetric.class);
       scanMethods(targetClass, CounterMetric.class);
+      scanMethods(targetClass, CounterMetrics.class);
     }
   }
 
@@ -75,18 +76,28 @@ public class MetricAnnotationScanner implements ApplicationListener<ContextRefre
 
           if (annotationClass.equals(SummaryMetric.class)) {
             SummaryMetric annotation = m.getAnnotation(SummaryMetric.class);
-            summaryMetricService.register(annotation.metricName(),
+            summaryMetricService.register(
+                annotation.metricName(),
                 annotation.hintText(), annotation.labels());
           } else if (annotationClass.equals(HistogramMetric.class)) {
             HistogramMetric annotation = m.getAnnotation(HistogramMetric.class);
-            histogramMetricService.register(annotation.metricName(),
+            histogramMetricService.register(
+                annotation.metricName(),
                 annotation.hintText(), annotation.labels());
           } else if (annotationClass.equals(CounterMetric.class)) {
             CounterMetric annotation = m.getAnnotation(CounterMetric.class);
-            counterMetricService.register(annotation.metricName(),
+            counterMetricService.register(
+                annotation.metricName(),
                 annotation.hintText(), annotation.labels());
+          } else if (annotationClass.equals(CounterMetrics.class)) {
+            CounterMetrics metrics = m.getAnnotation(CounterMetrics.class);
+            for (CounterMetric metric : metrics.value()) {
+              counterMetricService.register(
+                  metric.metricName(), metric.hintText(), metric.labels());
+            }
           }
         });
   }
+
 
 }

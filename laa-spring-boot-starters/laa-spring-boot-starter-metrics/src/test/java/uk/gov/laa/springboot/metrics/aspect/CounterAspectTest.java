@@ -3,6 +3,7 @@ package uk.gov.laa.springboot.metrics.aspect;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -108,5 +109,122 @@ class CounterAspectTest {
     assertThat(resultOne).isZero();
     assertThat(resultTwo).isZero();
     assertThat(resultThree).isEqualTo(1);
+  }
+
+  @Test
+  @DisplayName("Should count multiple metrics when multiple matching annotations")
+  void shouldCountMultipleMetricsWhenMultipleMatchingAnnotations() {
+    // When
+    metricTestClass.someThirdMethod();
+    // Then
+    double resultOne =
+        counterMetricService.getMetric("method_counter_two").labelValues("valueThree")
+            .get();
+    double resultTwo =
+        counterMetricService.getMetric("method_counter_two").labelValues("valueFour")
+            .get();
+    assertThat(resultOne).isEqualTo(1);
+    assertThat(resultTwo).isEqualTo(1);
+  }
+
+  @Test
+  @DisplayName("Should count conditional String return A")
+  void shouldCountConditionalMethodStringA() {
+    // When
+    metricTestClass.conditional("Cats");
+    // Then
+    double resultOne =
+        counterMetricService.getMetric("conditional_counter").labelValues("A").get();
+    double resultTwo =
+        counterMetricService.getMetric("conditional_counter").labelValues("B").get();
+    assertThat(resultOne).isEqualTo(1);
+    assertThat(resultTwo).isZero();
+  }
+
+  @Test
+  @DisplayName("Should count conditional String return B")
+  void shouldCountConditionalMethodStringB() {
+    // When
+    metricTestClass.conditional("Dogs");
+    // Then
+    double resultOne =
+        counterMetricService.getMetric("conditional_counter").labelValues("A").get();
+    double resultTwo =
+        counterMetricService.getMetric("conditional_counter").labelValues("B").get();
+    assertThat(resultOne).isZero();
+    assertThat(resultTwo).isEqualTo(1);
+  }
+
+  @Test
+  @DisplayName("Should count conditional Int return 1")
+  void shouldCountConditionalIntMethodA() {
+    // When
+    metricTestClass.conditional(1);
+    // Then
+    double resultOne =
+        counterMetricService.getMetric("conditional_counter").labelValues("C").get();
+    double resultTwo =
+        counterMetricService.getMetric("conditional_counter").labelValues("D").get();
+    assertThat(resultOne).isEqualTo(1);
+    assertThat(resultTwo).isZero();
+  }
+
+  @Test
+  @DisplayName("Should count conditional Int return 2")
+  void shouldCountConditionalIntMethodB() {
+    // When
+    metricTestClass.conditional(2);
+    // Then
+    double resultOne =
+        counterMetricService.getMetric("conditional_counter").labelValues("C").get();
+    double resultTwo =
+        counterMetricService.getMetric("conditional_counter").labelValues("D").get();
+    assertThat(resultOne).isZero();
+    assertThat(resultTwo).isEqualTo(1);
+  }
+
+
+  @Test
+  @DisplayName("Should count conditional BigDecimal return 1.52")
+  void shouldCountConditionalBigDecimalReturn() {
+    // When
+    metricTestClass.conditional(BigDecimal.valueOf(1.52));
+    // Then
+    double resultOne =
+        counterMetricService.getMetric("conditional_counter").labelValues("E").get();
+    assertThat(resultOne).isEqualTo(1);
+  }
+
+  public enum TestEnum{
+    VALUE_ONE,
+    VALUE_TWO
+  }
+
+  @Test
+  @DisplayName("Should count conditional enum return VALUE_ONE")
+  void shouldCountConditionalEnumValueOne() {
+    // When
+    metricTestClass.conditional(TestEnum.VALUE_ONE);
+    // Then
+    double resultOne =
+        counterMetricService.getMetric("conditional_counter").labelValues("ONE").get();
+    double resultTwo =
+        counterMetricService.getMetric("conditional_counter").labelValues("TWO").get();
+    assertThat(resultOne).isEqualTo(1);
+    assertThat(resultTwo).isZero();
+  }
+
+  @Test
+  @DisplayName("Should count conditional enum return VALUE_TWO")
+  void shouldCountConditionalEnumValueTwo() {
+    // When
+    metricTestClass.conditional(TestEnum.VALUE_TWO);
+    // Then
+    double resultOne =
+        counterMetricService.getMetric("conditional_counter").labelValues("ONE").get();
+    double resultTwo =
+        counterMetricService.getMetric("conditional_counter").labelValues("TWO").get();
+    assertThat(resultOne).isZero();
+    assertThat(resultTwo).isEqualTo(1);
   }
 }
