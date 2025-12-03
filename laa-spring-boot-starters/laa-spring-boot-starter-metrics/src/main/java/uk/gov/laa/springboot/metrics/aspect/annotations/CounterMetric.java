@@ -1,6 +1,7 @@
 package uk.gov.laa.springboot.metrics.aspect.annotations;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -11,8 +12,10 @@ import java.lang.annotation.Target;
  *
  * @author Jamie Briggs
  */
+
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
+@Repeatable(CounterMetrics.class)
 public @interface CounterMetric {
 
   /**
@@ -30,11 +33,6 @@ public @interface CounterMetric {
   String hintText() default "";
 
   /**
-   * Increment only if method completes successfully.
-   */
-  boolean recordSuccessOnly() default true;
-
-  /**
    * Increment value.
    */
   double amount() default 1.0;
@@ -43,4 +41,13 @@ public @interface CounterMetric {
    * Static labels in the form "key=value".
    */
   String[] labels() default {};
+
+  /**
+   * Should only count if the string value of the return type matches.
+   *
+   * @return the string return value
+   */
+  String conditionalOnReturn() default "";
+
 }
+
