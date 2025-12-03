@@ -28,7 +28,6 @@ public class MetricAnnotationScanner implements ApplicationListener<ContextRefre
   private final SummaryMetricService summaryMetricService;
   private final HistogramMetricService histogramMetricService;
   private final CounterMetricService counterMetricService;
-  private final String metricNamePrefix;
 
   /**
    * Constructs the MetricAnnotationScanner.
@@ -36,15 +35,12 @@ public class MetricAnnotationScanner implements ApplicationListener<ContextRefre
    * @param summaryMetricService   the summary metric service to register metrics with
    * @param histogramMetricService the histogram metric service to register metrics with
    * @param counterMetricService   the counter metric service to register metrics with
-   * @param properties             the metrics properties
    */
   public MetricAnnotationScanner(SummaryMetricService summaryMetricService,
-      HistogramMetricService histogramMetricService, CounterMetricService counterMetricService,
-      MetricsProperties properties) {
+      HistogramMetricService histogramMetricService, CounterMetricService counterMetricService) {
     this.summaryMetricService = summaryMetricService;
     this.histogramMetricService = histogramMetricService;
     this.counterMetricService = counterMetricService;
-    this.metricNamePrefix = properties.getMetricNamePrefix();
   }
 
   @Override
@@ -64,13 +60,13 @@ public class MetricAnnotationScanner implements ApplicationListener<ContextRefre
         targetClass = beanType;
       }
 
-      scanMethods(metricNamePrefix, targetClass, SummaryMetric.class);
-      scanMethods(metricNamePrefix, targetClass, HistogramMetric.class);
-      scanMethods(metricNamePrefix, targetClass, CounterMetric.class);
+      scanMethods(targetClass, SummaryMetric.class);
+      scanMethods(targetClass, HistogramMetric.class);
+      scanMethods(targetClass, CounterMetric.class);
     }
   }
 
-  private void scanMethods(String metricPrefixName, Class<?> targetClass,
+  private void scanMethods(Class<?> targetClass,
       Class<? extends java.lang.annotation.Annotation> annotationClass) {
     Arrays.stream(targetClass.getDeclaredMethods())
         .filter(m -> m.isAnnotationPresent(annotationClass))
@@ -79,18 +75,15 @@ public class MetricAnnotationScanner implements ApplicationListener<ContextRefre
 
           if (annotationClass.equals(SummaryMetric.class)) {
             SummaryMetric annotation = m.getAnnotation(SummaryMetric.class);
-            summaryMetricService.register(
-                "%s_%s".formatted(metricPrefixName, annotation.metricName()),
+            summaryMetricService.register(annotation.metricName(),
                 annotation.hintText(), annotation.labels());
           } else if (annotationClass.equals(HistogramMetric.class)) {
             HistogramMetric annotation = m.getAnnotation(HistogramMetric.class);
-            histogramMetricService.register(
-                "%s_%s".formatted(metricPrefixName, annotation.metricName()),
+            histogramMetricService.register(annotation.metricName(),
                 annotation.hintText(), annotation.labels());
           } else if (annotationClass.equals(CounterMetric.class)) {
             CounterMetric annotation = m.getAnnotation(CounterMetric.class);
-            counterMetricService.register(
-                "%s_%s".formatted(metricPrefixName, annotation.metricName()),
+            counterMetricService.register(annotation.metricName(),
                 annotation.hintText(), annotation.labels());
           }
         });

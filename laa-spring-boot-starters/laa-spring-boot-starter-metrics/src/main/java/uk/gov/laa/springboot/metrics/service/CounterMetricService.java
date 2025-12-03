@@ -3,6 +3,7 @@ package uk.gov.laa.springboot.metrics.service;
 import io.prometheus.metrics.core.metrics.Counter;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import org.springframework.stereotype.Component;
+import uk.gov.laa.springboot.metrics.MetricsProperties;
 
 /**
  * Stores histogram metrics in the Prometheus registry.
@@ -13,8 +14,8 @@ import org.springframework.stereotype.Component;
 public class CounterMetricService extends AbstractMetricService<Counter> {
 
   public CounterMetricService(
-      PrometheusRegistry prometheusRegistry) {
-    super(prometheusRegistry);
+      PrometheusRegistry prometheusRegistry, MetricsProperties metricsProperties) {
+    super(prometheusRegistry, metricsProperties);
   }
 
   @Override
@@ -34,7 +35,7 @@ public class CounterMetricService extends AbstractMetricService<Counter> {
    * @param labelValues the label values to associate with the counter
    */
   public void increment(String metricName, double amount, String... labelValues) {
-    this.metrics.get(metricName).labelValues(labelValues).inc(amount);
+    this.getMetric(metricName).labelValues(labelValues).inc(amount);
   }
 
   /**

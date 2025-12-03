@@ -46,8 +46,7 @@ public class CounterAspect {
       log.error("Error counting up counter {}", counter.metricName(), e);
     } finally {
       if (!counter.recordSuccessOnly() || success) {
-        String metricName =
-            "%s_%s".formatted(metricsProperties.getMetricNamePrefix(), counter.metricName());
+        String metricName = counter.metricName();
 
         String[] labelValues =
             Arrays.stream(counter.labels()).map(x -> x.split("=")[1]).toList()

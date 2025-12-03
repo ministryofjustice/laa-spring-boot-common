@@ -39,8 +39,8 @@ class MetricAnnotationScannerTest {
   @DisplayName("Should register counter metric")
   void shouldRegisterCounterMetric() {
     // check counter exists
-    Counter counter = counterMetricService.getMetric("test_metric_method_counter");
-    Counter counterTwo = counterMetricService.getMetric("test_metric_method_counter_two");
+    Counter counter = counterMetricService.getMetric("method_counter");
+    Counter counterTwo = counterMetricService.getMetric("method_counter_two");
     assertThat(counter).isNotNull();
     assertThat(counterTwo).isNotNull();
   }
@@ -49,8 +49,8 @@ class MetricAnnotationScannerTest {
   @DisplayName("Should register summary metric")
   void shouldRegisterSummaryMetric() {
     // check summary exists
-    Summary summary = summaryMetricService.getMetric("test_metric_method_summary");
-    Summary summaryTwo = summaryMetricService.getMetric("test_metric_method_summary_two");
+    Summary summary = summaryMetricService.getMetric("method_summary");
+    Summary summaryTwo = summaryMetricService.getMetric("method_summary_two");
     assertThat(summary).isNotNull();
     assertThat(summaryTwo).isNotNull();
   }
@@ -59,8 +59,8 @@ class MetricAnnotationScannerTest {
   @DisplayName("Should register histogram metric")
   void shouldRegisterHistogramMetric() {
     // check summary exists
-    Histogram histogram = histogramMetricService.getMetric("test_metric_method_histogram");
-    Histogram histogramTwo = histogramMetricService.getMetric("test_metric_method_histogram_two");
+    Histogram histogram = histogramMetricService.getMetric("method_histogram");
+    Histogram histogramTwo = histogramMetricService.getMetric("method_histogram_two");
     assertThat(histogram).isNotNull();
     assertThat(histogramTwo).isNotNull();
   }
