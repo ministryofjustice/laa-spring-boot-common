@@ -1,7 +1,6 @@
 package uk.gov.laa.springboot.metrics.config;
 
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
-import lombok.SneakyThrows;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import uk.gov.laa.springboot.metrics.MetricsProperties;
@@ -21,17 +20,13 @@ public class MetricAnnotationConfiguration {
 
   @Bean
   public CounterAspect counterAspect(CounterMetricService counterMetricService) {
-    MetricsProperties properties = new MetricsProperties();
-    properties.setMetricNamePrefix("test_metric");
-    return new CounterAspect(counterMetricService, properties);
+    return new CounterAspect(counterMetricService);
   }
 
   @Bean
   public TimerAspect timerAspect(HistogramMetricService histogramMetricService,
       SummaryMetricService summaryMetricService) {
-    MetricsProperties properties = new MetricsProperties();
-    properties.setMetricNamePrefix("test_metric");
-    return new TimerAspect(summaryMetricService, histogramMetricService, properties);
+    return new TimerAspect(summaryMetricService, histogramMetricService);
   }
 
   @Bean
@@ -52,10 +47,10 @@ public class MetricAnnotationConfiguration {
     @CounterMetric(metricName = "method_counter", hintText = "hint-text", labels = {"key=value"})
     public void someMethod() throws InterruptedException {
       // Does nothing
-      Thread.sleep(200L);
     }
 
-    @HistogramMetric(metricName = "method_histogram", hintText = "hint-text", labels = {"key=valueTwo"})
+    @HistogramMetric(metricName = "method_histogram", hintText = "hint-text", labels = {
+        "key=valueTwo"})
     @SummaryMetric(metricName = "method_summary", hintText = "hint-text", labels = {"key=valueTwo"})
     @CounterMetric(metricName = "method_counter", hintText = "hint-text", labels = {"key=valueTwo"})
     public void someSecondMethod() {
@@ -68,8 +63,28 @@ public class MetricAnnotationConfiguration {
         "key=valueThree"})
     @CounterMetric(metricName = "method_counter_two", hintText = "hint-text", labels = {
         "key=valueThree"})
+    @CounterMetric(metricName = "method_counter_two", hintText = "hint-text", labels = {
+        "key=valueFour"})
     public void someThirdMethod() {
       // Does nothing
+    }
+
+    @CounterMetric(metricName = "conditional_counter", hintText = "hint-text", labels = {
+        "type=A"}, conditionalOnReturn = "Cats")
+    @CounterMetric(metricName = "conditional_counter", hintText = "hint-text", labels = {
+        "type=B"}, conditionalOnReturn = "Dogs")
+    @CounterMetric(metricName = "conditional_counter", hintText = "hint-text", labels = {
+        "type=C"}, conditionalOnReturn = "1")
+    @CounterMetric(metricName = "conditional_counter", hintText = "hint-text", labels = {
+        "type=D"}, conditionalOnReturn = "2")
+    @CounterMetric(metricName = "conditional_counter", hintText = "hint-text", labels = {
+        "type=E"}, conditionalOnReturn = "1.52")
+    @CounterMetric(metricName = "conditional_counter", hintText = "hint-text", labels = {
+        "type=ONE"}, conditionalOnReturn = "VALUE_ONE")
+    @CounterMetric(metricName = "conditional_counter", hintText = "hint-text", labels = {
+        "type=TWO"}, conditionalOnReturn = "VALUE_TWO")
+    public Object conditional(Object type) {
+      return type;
     }
   }
 
@@ -93,7 +108,7 @@ public class MetricAnnotationConfiguration {
     return new CounterMetricService(prometheusRegistry, metricsProperties());
   }
 
-  protected MetricsProperties metricsProperties(){
+  protected MetricsProperties metricsProperties() {
     MetricsProperties metricsProperties = new MetricsProperties();
     metricsProperties.setMetricNamePrefix("test_metrics");
     return metricsProperties;
