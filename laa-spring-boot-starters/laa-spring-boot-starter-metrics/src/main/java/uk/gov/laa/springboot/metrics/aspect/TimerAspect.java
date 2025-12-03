@@ -2,13 +2,13 @@ package uk.gov.laa.springboot.metrics.aspect;
 
 import io.prometheus.metrics.core.datapoints.Timer;
 import java.util.Arrays;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
-import uk.gov.laa.springboot.metrics.MetricsProperties;
 import uk.gov.laa.springboot.metrics.aspect.annotations.HistogramMetric;
 import uk.gov.laa.springboot.metrics.aspect.annotations.SummaryMetric;
 import uk.gov.laa.springboot.metrics.service.HistogramMetricService;
@@ -27,7 +27,6 @@ public class TimerAspect {
 
   private final SummaryMetricService summaryMetricService;
   private final HistogramMetricService histogramMetricService;
-  private final MetricsProperties metricsProperties;
 
   /**
    * Measures execution time of methods annotated with {@link SummaryMetric}.
@@ -47,14 +46,16 @@ public class TimerAspect {
       try {
         return pjp.proceed();
       } finally {
+        if (!Objects.isNull(timer)) {
+          double duration = timer.observeDuration();
 
-        double duration = timer.observeDuration();
+          String methodName = pjp.getSignature().toShortString();
+          String label =
+              metricName.isEmpty() ? methodName : metricName;
 
-        String methodName = pjp.getSignature().toShortString();
-        String label =
-            metricName.isEmpty() ? methodName : metricName;
+          log.warn("{} took {} seconds", label, duration);
 
-        log.warn("{} took {} seconds", label, duration);
+        }
       }
     }
   }
@@ -80,14 +81,16 @@ public class TimerAspect {
       try {
         return pjp.proceed();
       } finally {
+        if (!Objects.isNull(timer)) {
 
-        double duration = timer.observeDuration();
+          double duration = timer.observeDuration();
 
-        String methodName = pjp.getSignature().toShortString();
-        String label =
-            metricName.isEmpty() ? methodName : metricName;
+          String methodName = pjp.getSignature().toShortString();
+          String label =
+              metricName.isEmpty() ? methodName : metricName;
 
-        log.warn("{} took {} seconds", label, duration);
+          log.warn("{} took {} seconds", label, duration);
+        }
       }
     }
   }
