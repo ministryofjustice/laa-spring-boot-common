@@ -5,6 +5,7 @@ import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.util.Arrays;
 import java.util.HashMap;
 import org.springframework.stereotype.Component;
+import uk.gov.laa.springboot.metrics.MetricsProperties;
 import uk.gov.laa.springboot.metrics.exception.MetricsException;
 
 /**
@@ -21,9 +22,12 @@ public abstract class AbstractMetricService<T extends Metric> {
   protected final PrometheusRegistry prometheusRegistry;
   protected final HashMap<String, T> metrics = new HashMap<>();
   protected final HashMap<String, String[]> metricLabels = new HashMap<>();
+  protected final MetricsProperties metricsProperties;
 
-  protected AbstractMetricService(PrometheusRegistry prometheusRegistry) {
+  protected AbstractMetricService(PrometheusRegistry prometheusRegistry,
+      MetricsProperties metricsProperties) {
     this.prometheusRegistry = prometheusRegistry;
+    this.metricsProperties = metricsProperties;
   }
 
   protected abstract T buildMetric(String metricName, String help, String... labels);
@@ -39,21 +43,26 @@ public abstract class AbstractMetricService<T extends Metric> {
     String[] labelNamesFromAnnotation =
         Arrays.stream(labels).map(x -> x.split("=")[0]).toList()
             .toArray(String[]::new);
-    if (metrics.containsKey(metricName) && !Arrays.equals(
-        metricLabels.get(metricName), labelNamesFromAnnotation)) {
+    String fullMetricName = fullMetricName(metricName);
+    if (metrics.containsKey(fullMetricName) && !Arrays.equals(
+        metricLabels.get(fullMetricName), labelNamesFromAnnotation)) {
       throw new MetricsException(
           ("Labels must match for metric %s. Please ensure that all uses of this annotation and "
               + "metric name contain the same label names").formatted(
-              metricName));
+              fullMetricName));
     }
 
-    T metric = buildMetric(metricName, help, labelNamesFromAnnotation);
-    metrics.put(metricName, metric);
-    metricLabels.put(metricName, labelNamesFromAnnotation);
+    T metric = buildMetric(fullMetricName, help, labelNamesFromAnnotation);
+    metrics.put(fullMetricName, metric);
+    metricLabels.put(fullMetricName, labelNamesFromAnnotation);
+  }
+
+  public String fullMetricName(String metricName) {
+    return "%s_%s".formatted(metricsProperties.getMetricNamePrefix(), metricName);
   }
 
   public T getMetric(String metricName) {
-    return metrics.get(metricName);
+    return metrics.get(fullMetricName(metricName));
   }
 
 }

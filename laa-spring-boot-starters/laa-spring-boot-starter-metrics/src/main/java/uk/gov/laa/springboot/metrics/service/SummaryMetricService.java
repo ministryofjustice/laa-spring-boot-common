@@ -4,6 +4,7 @@ import io.prometheus.metrics.core.datapoints.Timer;
 import io.prometheus.metrics.core.metrics.Summary;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import org.springframework.stereotype.Component;
+import uk.gov.laa.springboot.metrics.MetricsProperties;
 
 /**
  * Stores histogram metrics in the Prometheus registry.
@@ -14,8 +15,8 @@ import org.springframework.stereotype.Component;
 public class SummaryMetricService extends AbstractMetricService<Summary> {
 
   public SummaryMetricService(
-      PrometheusRegistry prometheusRegistry) {
-    super(prometheusRegistry);
+      PrometheusRegistry prometheusRegistry, MetricsProperties metricsProperties) {
+    super(prometheusRegistry, metricsProperties);
   }
 
   @Override
@@ -37,7 +38,7 @@ public class SummaryMetricService extends AbstractMetricService<Summary> {
    * @return the started timer.
    */
   public Timer startTimer(String metricName, String... labelValues) {
-    var metric = metrics.get(metricName);
+    var metric = getMetric(metricName);
     return metric.labelValues(labelValues).startTimer();
   }
 
