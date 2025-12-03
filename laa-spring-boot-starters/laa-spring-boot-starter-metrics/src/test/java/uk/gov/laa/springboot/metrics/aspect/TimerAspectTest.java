@@ -54,14 +54,14 @@ class TimerAspectTest {
     void shouldCountWhenMethodOneCalled() throws InterruptedException {
       // Given
       Timer timer = Mockito.mock(Timer.class);
-      when(summaryMetricService.startTimer("test_metric_method_summary", "value")).thenReturn(
+      when(summaryMetricService.startTimer("method_summary", "value")).thenReturn(
           timer);
 
       // When
       metricTestClass.someMethod();
 
       // Then
-      verify(summaryMetricService, times(1)).startTimer("test_metric_method_summary", "value");
+      verify(summaryMetricService, times(1)).startTimer("method_summary", "value");
       verify(timer, times(1)).observeDuration();
     }
 
@@ -70,14 +70,14 @@ class TimerAspectTest {
     void shouldCountWhenMethodTwoCalled() {
       // Given
       Timer timer = Mockito.mock(Timer.class);
-      when(summaryMetricService.startTimer("test_metric_method_summary", "valueTwo")).thenReturn(
+      when(summaryMetricService.startTimer("method_summary", "valueTwo")).thenReturn(
           timer);
 
       // When
       metricTestClass.someSecondMethod();
 
       // Then
-      verify(summaryMetricService, times(1)).startTimer("test_metric_method_summary", "valueTwo");
+      verify(summaryMetricService, times(1)).startTimer("method_summary", "valueTwo");
       verify(timer, times(1)).observeDuration();
     }
 
@@ -87,7 +87,7 @@ class TimerAspectTest {
       // Given
       Timer timer = Mockito.mock(Timer.class);
       when(summaryMetricService.startTimer(
-          "test_metric_method_summary_two",
+          "method_summary_two",
           "valueThree")).thenReturn(timer);
 
       // When
@@ -95,7 +95,7 @@ class TimerAspectTest {
 
       // Then
       verify(summaryMetricService, times(1)).startTimer(
-          "test_metric_method_summary_two", "valueThree");
+          "method_summary_two", "valueThree");
       verify(timer, times(1)).observeDuration();
     }
 
@@ -110,14 +110,14 @@ class TimerAspectTest {
     void shouldCountWhenMethodOneCalled() throws InterruptedException {
       // Given
       Timer timer = Mockito.mock(Timer.class);
-      when(histogramMetricService.startTimer("test_metric_method_histogram", "value")).thenReturn(
+      when(histogramMetricService.startTimer("method_histogram", "value")).thenReturn(
           timer);
 
       // When
       metricTestClass.someMethod();
 
       // Then
-      verify(histogramMetricService, times(1)).startTimer("test_metric_method_histogram", "value");
+      verify(histogramMetricService, times(1)).startTimer("method_histogram", "value");
       verify(timer, times(1)).observeDuration();
     }
 
@@ -126,14 +126,14 @@ class TimerAspectTest {
     void shouldCountWhenMethodTwoCalled() {
       // Given
       Timer timer = Mockito.mock(Timer.class);
-      when(histogramMetricService.startTimer("test_metric_method_histogram", "valueTwo")).thenReturn(
+      when(histogramMetricService.startTimer("method_histogram", "valueTwo")).thenReturn(
           timer);
 
       // When
       metricTestClass.someSecondMethod();
 
       // Then
-      verify(histogramMetricService, times(1)).startTimer("test_metric_method_histogram", "valueTwo");
+      verify(histogramMetricService, times(1)).startTimer("method_histogram", "valueTwo");
       verify(timer, times(1)).observeDuration();
     }
 
@@ -143,7 +143,7 @@ class TimerAspectTest {
       // Given
       Timer timer = Mockito.mock(Timer.class);
       when(histogramMetricService.startTimer(
-          "test_metric_method_histogram_two",
+          "method_histogram_two",
           "valueThree")).thenReturn(timer);
 
       // When
@@ -151,7 +151,7 @@ class TimerAspectTest {
 
       // Then
       verify(histogramMetricService, times(1)).startTimer(
-          "test_metric_method_histogram_two", "valueThree");
+          "method_histogram_two", "valueThree");
       verify(timer, times(1)).observeDuration();
     }
 

@@ -39,12 +39,9 @@ public class MetricAnnotationConfiguration {
       SummaryMetricService summaryMetricService,
       HistogramMetricService histogramMetricService,
       CounterMetricService counterMetricService) {
-    MetricsProperties properties = new MetricsProperties();
-    properties.setMetricNamePrefix("test_metric");
     return new MetricAnnotationScanner(
         summaryMetricService, histogramMetricService,
-        counterMetricService,
-        properties);
+        counterMetricService);
   }
 
   public static class MetricTestClass {
@@ -83,17 +80,23 @@ public class MetricAnnotationConfiguration {
 
   @Bean
   public SummaryMetricService summaryMetricService(PrometheusRegistry prometheusRegistry) {
-    return new SummaryMetricService(prometheusRegistry);
+    return new SummaryMetricService(prometheusRegistry, metricsProperties());
   }
 
   @Bean
   public HistogramMetricService histogramMetricService(PrometheusRegistry prometheusRegistry) {
-    return new HistogramMetricService(prometheusRegistry);
+    return new HistogramMetricService(prometheusRegistry, metricsProperties());
   }
 
   @Bean
   public CounterMetricService counterMetricService(PrometheusRegistry prometheusRegistry) {
-    return new CounterMetricService(prometheusRegistry);
+    return new CounterMetricService(prometheusRegistry, metricsProperties());
+  }
+
+  protected MetricsProperties metricsProperties(){
+    MetricsProperties metricsProperties = new MetricsProperties();
+    metricsProperties.setMetricNamePrefix("test_metrics");
+    return metricsProperties;
   }
 
 }
