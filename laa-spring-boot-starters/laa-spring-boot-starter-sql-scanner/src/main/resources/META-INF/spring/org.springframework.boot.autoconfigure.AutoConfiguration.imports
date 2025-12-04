@@ -1,0 +1,2 @@
+uk.gov.laa.springboot.sqlscanner.SqlScanAutoConfiguration
+uk.gov.laa.springboot.sqlscanner.SqlScanMissingAopWarningAutoConfiguration
