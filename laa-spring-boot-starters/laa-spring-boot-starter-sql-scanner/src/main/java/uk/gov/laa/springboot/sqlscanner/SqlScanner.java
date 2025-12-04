@@ -9,8 +9,8 @@ import java.util.Optional;
 public class SqlScanner {
 
   private static final List<String> SUSPICIOUS_PATTERNS = List.of(
-      "select ", "insert ", "update ", "delete ", "drop ", "truncate ",
-      "union ", "--", ";", "/*", "*/", " or ", " and "
+      "select ", "insert ", "update ", "delete ", "drop ", "truncate ", "alter ",
+      "union ", "--", ";", "/*", "*/", " or ", " and ", " or 1=1"
   );
 
   /**

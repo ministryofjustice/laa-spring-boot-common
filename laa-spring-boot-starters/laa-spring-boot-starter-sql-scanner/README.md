@@ -8,6 +8,7 @@ found. Annotate classes or individual fields/record components with `@ScanForSql
 ```groovy
 dependencies {
     implementation "uk.gov.laa.springboot:laa-spring-boot-starter-sql-scanner"
+    implementation "org.springframework.boot:spring-boot-starter-aop" // required for aspects
 }
 ```
 
@@ -36,3 +37,6 @@ public record CreateCustomerRequest(
 
 The aspect logs at `WARN` with the field/component name and the matched pattern so that requests can
 be flagged or rejected upstream.
+
+If Spring AOP is absent, the starter logs a warning at startup and skips scanning until
+`spring-boot-starter-aop` is added to the classpath.

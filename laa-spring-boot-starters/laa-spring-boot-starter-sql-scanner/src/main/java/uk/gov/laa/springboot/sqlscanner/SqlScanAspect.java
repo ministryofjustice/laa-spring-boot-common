@@ -117,7 +117,18 @@ public class SqlScanAspect {
         continue;
       }
 
-      field.setAccessible(true);
+      try {
+        if (!field.canAccess(target) && !field.trySetAccessible()) {
+          log.debug("Skipping field '{}' for SQL scan because it is not accessible",
+              field.getName());
+          continue;
+        }
+      } catch (RuntimeException ex) {
+        log.debug("Skipping field '{}' for SQL scan due to inaccessible module boundaries",
+            field.getName(), ex);
+        continue;
+      }
+
       try {
         String value = (String) field.get(target);
         checkValue(value, field.getName());
