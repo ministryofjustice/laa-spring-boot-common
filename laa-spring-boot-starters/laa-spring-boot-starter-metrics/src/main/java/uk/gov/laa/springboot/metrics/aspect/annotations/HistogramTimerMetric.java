@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface SummaryMetric {
+public @interface HistogramTimerMetric {
 
   /**
    * The name of the metric you wish to record. Will be appended to the base metric name.
