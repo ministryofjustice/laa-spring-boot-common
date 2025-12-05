@@ -49,5 +49,13 @@ public @interface CounterMetric {
    */
   String conditionalOnReturn() default "";
 
+  /**
+   * When marked as true, a label named "return value" will be added to the metric with the return
+   * value.
+   *
+   * @return true if the return value should be saved
+   */
+  boolean saveReturnValue() default false;
+
 }
 

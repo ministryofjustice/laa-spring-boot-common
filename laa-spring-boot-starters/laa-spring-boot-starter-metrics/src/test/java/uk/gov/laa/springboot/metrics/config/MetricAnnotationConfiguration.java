@@ -83,6 +83,8 @@ public class MetricAnnotationConfiguration {
         "type=ONE"}, conditionalOnReturn = "VALUE_ONE")
     @CounterMetric(metricName = "conditional_counter", hintText = "hint-text", labels = {
         "type=TWO"}, conditionalOnReturn = "VALUE_TWO")
+    @CounterMetric(metricName = "store_value_counter", hintText = "hint-text",
+        saveReturnValue = true)
     public Object conditional(Object type) {
       return type;
     }
