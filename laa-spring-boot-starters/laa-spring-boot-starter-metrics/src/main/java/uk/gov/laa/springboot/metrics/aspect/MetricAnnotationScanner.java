@@ -10,6 +10,8 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import uk.gov.laa.springboot.metrics.aspect.annotations.CounterMetric;
 import uk.gov.laa.springboot.metrics.aspect.annotations.CounterMetrics;
+import uk.gov.laa.springboot.metrics.aspect.annotations.HistogramMetric;
+import uk.gov.laa.springboot.metrics.aspect.annotations.HistogramMetrics;
 import uk.gov.laa.springboot.metrics.aspect.annotations.HistogramTimerMetric;
 import uk.gov.laa.springboot.metrics.aspect.annotations.SummaryTimerMetric;
 import uk.gov.laa.springboot.metrics.service.CounterMetricService;
@@ -99,6 +101,18 @@ public class MetricAnnotationScanner implements ApplicationListener<ContextRefre
                 newLabels[labels.length] = "value=?";
                 labels = newLabels;
               }
+              counterMetricService.register(
+                  metric.metricName(), metric.hintText(), labels);
+            }
+          } else if (annotationClass.equals(HistogramMetric.class)) {
+            CounterMetric annotation = m.getAnnotation(CounterMetric.class);
+            counterMetricService.register(
+                annotation.metricName(),
+                annotation.hintText(), annotation.labels());
+          } else if (annotationClass.equals(HistogramMetrics.class)) {
+            HistogramMetrics metrics = m.getAnnotation(HistogramMetrics.class);
+            for (HistogramMetric metric : metrics.value()) {
+              String[] labels = metric.labels();
               counterMetricService.register(
                   metric.metricName(), metric.hintText(), labels);
             }

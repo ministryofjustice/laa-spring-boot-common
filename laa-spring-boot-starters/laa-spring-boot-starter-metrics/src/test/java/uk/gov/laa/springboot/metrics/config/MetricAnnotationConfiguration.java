@@ -8,6 +8,7 @@ import uk.gov.laa.springboot.metrics.aspect.CounterAspect;
 import uk.gov.laa.springboot.metrics.aspect.MetricAnnotationScanner;
 import uk.gov.laa.springboot.metrics.aspect.TimerAspect;
 import uk.gov.laa.springboot.metrics.aspect.annotations.CounterMetric;
+import uk.gov.laa.springboot.metrics.aspect.annotations.HistogramMetric;
 import uk.gov.laa.springboot.metrics.aspect.annotations.HistogramTimerMetric;
 import uk.gov.laa.springboot.metrics.aspect.annotations.SummaryTimerMetric;
 import uk.gov.laa.springboot.metrics.service.CounterMetricService;
@@ -19,8 +20,9 @@ public class MetricAnnotationConfiguration {
 
 
   @Bean
-  public CounterAspect counterAspect(CounterMetricService counterMetricService) {
-    return new CounterAspect(counterMetricService);
+  public CounterAspect counterAspect(CounterMetricService counterMetricService,
+      HistogramMetricService histogramMetricService) {
+    return new CounterAspect(counterMetricService, histogramMetricService);
   }
 
   @Bean
@@ -86,6 +88,12 @@ public class MetricAnnotationConfiguration {
     @CounterMetric(metricName = "store_value_counter", hintText = "hint-text",
         saveReturnValue = true)
     public Object conditional(Object type) {
+      return type;
+    }
+
+    @HistogramMetric(metricName = "histogram_return", hintText = "hint-text", labels = {
+        "type=key"})
+    public Object histogramReturn(Object type) {
       return type;
     }
   }
