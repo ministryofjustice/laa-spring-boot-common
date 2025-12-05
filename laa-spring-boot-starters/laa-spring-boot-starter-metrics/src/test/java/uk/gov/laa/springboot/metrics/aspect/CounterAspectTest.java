@@ -227,4 +227,15 @@ class CounterAspectTest {
     assertThat(resultOne).isZero();
     assertThat(resultTwo).isEqualTo(1);
   }
+
+  @Test
+  @DisplayName("Should save return value")
+  void shouldSaveReturnValue() {
+    // When
+    metricTestClass.conditional(TestEnum.VALUE_TWO);
+    // Then
+    double resultOne =
+        counterMetricService.getMetric("store_value_counter").labelValues("VALUE_TWO").get();
+    assertThat(resultOne).isEqualTo(1);
+  }
 }
