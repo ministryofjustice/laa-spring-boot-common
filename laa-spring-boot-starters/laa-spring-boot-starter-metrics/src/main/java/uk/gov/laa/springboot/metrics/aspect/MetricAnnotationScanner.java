@@ -92,8 +92,15 @@ public class MetricAnnotationScanner implements ApplicationListener<ContextRefre
           } else if (annotationClass.equals(CounterMetrics.class)) {
             CounterMetrics metrics = m.getAnnotation(CounterMetrics.class);
             for (CounterMetric metric : metrics.value()) {
+              String[] labels = metric.labels();
+              if (metric.saveReturnValue()) {
+                String[] newLabels = new String[labels.length + 1];
+                System.arraycopy(labels, 0, newLabels, 0, labels.length);
+                newLabels[labels.length] = "value=?";
+                labels = newLabels;
+              }
               counterMetricService.register(
-                  metric.metricName(), metric.hintText(), metric.labels());
+                  metric.metricName(), metric.hintText(), labels);
             }
           }
         });
