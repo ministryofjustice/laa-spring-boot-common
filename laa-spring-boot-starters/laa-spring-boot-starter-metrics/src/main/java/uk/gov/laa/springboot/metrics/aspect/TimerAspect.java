@@ -9,13 +9,13 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
-import uk.gov.laa.springboot.metrics.aspect.annotations.HistogramMetric;
-import uk.gov.laa.springboot.metrics.aspect.annotations.SummaryMetric;
+import uk.gov.laa.springboot.metrics.aspect.annotations.HistogramTimerMetric;
+import uk.gov.laa.springboot.metrics.aspect.annotations.SummaryTimerMetric;
 import uk.gov.laa.springboot.metrics.service.HistogramMetricService;
 import uk.gov.laa.springboot.metrics.service.SummaryMetricService;
 
 /**
- * Aspect to measure execution time of methods annotated with {@link SummaryMetric}.
+ * Aspect to measure execution time of methods annotated with {@link SummaryTimerMetric}.
  *
  * @author Jamie Briggs
  */
@@ -29,19 +29,19 @@ public class TimerAspect {
   private final HistogramMetricService histogramMetricService;
 
   /**
-   * Measures execution time of methods annotated with {@link SummaryMetric}.
+   * Measures execution time of methods annotated with {@link SummaryTimerMetric}.
    *
    * @param pjp           the proceeding join point
-   * @param summaryMetric the annotation
+   * @param summaryTimerMetric the annotation
    * @return Object
    * @throws Throwable the throwable
    */
-  @Around("@annotation(summaryMetric)")
-  public Object measureSummaryExecutionTime(ProceedingJoinPoint pjp, SummaryMetric summaryMetric)
+  @Around("@annotation(summaryTimerMetric)")
+  public Object measureSummaryExecutionTime(ProceedingJoinPoint pjp, SummaryTimerMetric summaryTimerMetric)
       throws Throwable {
     String[] labelValues =
-        getLabelValues(summaryMetric.labels());
-    String metricName = summaryMetric.metricName();
+        getLabelValues(summaryTimerMetric.labels());
+    String metricName = summaryTimerMetric.metricName();
     try (Timer timer = summaryMetricService.startTimer(metricName, labelValues)) {
       try {
         return pjp.proceed();
@@ -62,21 +62,21 @@ public class TimerAspect {
 
 
   /**
-   * Measures execution time of methods annotated with {@link HistogramMetric}.
+   * Measures execution time of methods annotated with {@link HistogramTimerMetric}.
    *
    * @param pjp             the proceeding join point
-   * @param histogramMetric the annotation
+   * @param histogramTimerMetric the annotation
    * @return Object
    * @throws Throwable the throwable
    */
-  @Around("@annotation(histogramMetric)")
+  @Around("@annotation(histogramTimerMetric)")
   public Object measureHistogramExecutionTime(ProceedingJoinPoint pjp,
-      HistogramMetric histogramMetric)
+      HistogramTimerMetric histogramTimerMetric)
       throws Throwable {
     String[] labelValues =
-        getLabelValues(histogramMetric.labels());
+        getLabelValues(histogramTimerMetric.labels());
     String metricName =
-        histogramMetric.metricName();
+        histogramTimerMetric.metricName();
     try (Timer timer = histogramMetricService.startTimer(metricName, labelValues)) {
       try {
         return pjp.proceed();
