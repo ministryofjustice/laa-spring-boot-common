@@ -17,6 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.laa.springboot.metrics.config.MetricAnnotationConfiguration;
 import uk.gov.laa.springboot.metrics.config.MetricAnnotationConfiguration.MetricTestClass;
 import uk.gov.laa.springboot.metrics.service.CounterMetricService;
+import uk.gov.laa.springboot.metrics.service.HistogramMetricService;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
@@ -24,10 +25,13 @@ import uk.gov.laa.springboot.metrics.service.CounterMetricService;
 })
 @EnableAspectJAutoProxy
 @ComponentScan("uk.gov.laa.springboot.metrics.aspect")
-class CounterAspectTest {
+class CounterMetricTests {
 
   @Autowired
   CounterMetricService counterMetricService;
+
+  @Autowired
+  HistogramMetricService histogramMetricService;
 
   @Autowired
   MetricTestClass metricTestClass;
@@ -39,6 +43,7 @@ class CounterAspectTest {
   void beforeEach() {
     counterMetricService.resetAll();
   }
+
 
   @Test
   @DisplayName("Should not count when methods not called")
@@ -195,7 +200,7 @@ class CounterAspectTest {
     assertThat(resultOne).isEqualTo(1);
   }
 
-  public enum TestEnum{
+  public enum TestEnum {
     VALUE_ONE,
     VALUE_TWO
   }
@@ -238,4 +243,5 @@ class CounterAspectTest {
         counterMetricService.getMetric("store_value_counter").labelValues("VALUE_TWO").get();
     assertThat(resultOne).isEqualTo(1);
   }
+
 }

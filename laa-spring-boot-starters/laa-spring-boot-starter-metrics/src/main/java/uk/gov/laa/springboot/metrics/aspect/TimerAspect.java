@@ -37,7 +37,8 @@ public class TimerAspect {
    * @throws Throwable the throwable
    */
   @Around("@annotation(summaryTimerMetric)")
-  public Object measureSummaryExecutionTime(ProceedingJoinPoint pjp, SummaryTimerMetric summaryTimerMetric)
+  public Object measureSummaryExecutionTime(ProceedingJoinPoint pjp,
+      SummaryTimerMetric summaryTimerMetric)
       throws Throwable {
     String[] labelValues =
         getLabelValues(summaryTimerMetric.labels());

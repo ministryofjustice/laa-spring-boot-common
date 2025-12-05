@@ -3,6 +3,7 @@ package uk.gov.laa.springboot.metrics.service;
 import io.prometheus.metrics.core.datapoints.Timer;
 import io.prometheus.metrics.core.metrics.Histogram;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
+import java.math.BigDecimal;
 import org.springframework.stereotype.Component;
 import uk.gov.laa.springboot.metrics.MetricsProperties;
 
@@ -31,4 +32,10 @@ public class HistogramMetricService extends AbstractMetricService<Histogram> {
     var metric = getMetric(metricName);
     return metric.labelValues(labelValues).startTimer();
   }
+
+  public void recordValue(String metricName, double value, String... labelValues) {
+    var metric = getMetric(metricName);
+    metric.labelValues(labelValues).observe(value);
+  }
+
 }
