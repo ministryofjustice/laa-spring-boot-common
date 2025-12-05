@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 
 import io.prometheus.metrics.core.datapoints.Timer;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -47,7 +46,7 @@ class TimerAspectTest {
 
   @Nested
   @DisplayName("Summary metric tests")
-  class SummaryMetricTests {
+  class SummaryTimerMetricTests {
 
     @Test
     @DisplayName("Should count when method one called")
@@ -103,7 +102,7 @@ class TimerAspectTest {
 
   @Nested
   @DisplayName("Histogram metric tests")
-  class HistogramMetricTests {
+  class HistogramTimerMetricTests {
 
     @Test
     @DisplayName("Should count when method one called")
