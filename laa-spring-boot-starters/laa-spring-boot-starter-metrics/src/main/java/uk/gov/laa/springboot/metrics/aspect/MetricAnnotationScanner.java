@@ -10,8 +10,8 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import uk.gov.laa.springboot.metrics.aspect.annotations.CounterMetric;
 import uk.gov.laa.springboot.metrics.aspect.annotations.CounterMetrics;
-import uk.gov.laa.springboot.metrics.aspect.annotations.HistogramMetric;
-import uk.gov.laa.springboot.metrics.aspect.annotations.SummaryMetric;
+import uk.gov.laa.springboot.metrics.aspect.annotations.HistogramTimerMetric;
+import uk.gov.laa.springboot.metrics.aspect.annotations.SummaryTimerMetric;
 import uk.gov.laa.springboot.metrics.service.CounterMetricService;
 import uk.gov.laa.springboot.metrics.service.HistogramMetricService;
 import uk.gov.laa.springboot.metrics.service.SummaryMetricService;
@@ -60,8 +60,8 @@ public class MetricAnnotationScanner implements ApplicationListener<ContextRefre
         targetClass = beanType;
       }
 
-      scanMethods(targetClass, SummaryMetric.class);
-      scanMethods(targetClass, HistogramMetric.class);
+      scanMethods(targetClass, SummaryTimerMetric.class);
+      scanMethods(targetClass, HistogramTimerMetric.class);
       scanMethods(targetClass, CounterMetric.class);
       scanMethods(targetClass, CounterMetrics.class);
     }
@@ -74,13 +74,13 @@ public class MetricAnnotationScanner implements ApplicationListener<ContextRefre
         .forEach(m -> {
           log.info("Found {} on method {}", annotationClass.getName(), m.getName());
 
-          if (annotationClass.equals(SummaryMetric.class)) {
-            SummaryMetric annotation = m.getAnnotation(SummaryMetric.class);
+          if (annotationClass.equals(SummaryTimerMetric.class)) {
+            SummaryTimerMetric annotation = m.getAnnotation(SummaryTimerMetric.class);
             summaryMetricService.register(
                 annotation.metricName(),
                 annotation.hintText(), annotation.labels());
-          } else if (annotationClass.equals(HistogramMetric.class)) {
-            HistogramMetric annotation = m.getAnnotation(HistogramMetric.class);
+          } else if (annotationClass.equals(HistogramTimerMetric.class)) {
+            HistogramTimerMetric annotation = m.getAnnotation(HistogramTimerMetric.class);
             histogramMetricService.register(
                 annotation.metricName(),
                 annotation.hintText(), annotation.labels());

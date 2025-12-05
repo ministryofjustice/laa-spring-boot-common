@@ -8,8 +8,8 @@ import uk.gov.laa.springboot.metrics.aspect.CounterAspect;
 import uk.gov.laa.springboot.metrics.aspect.MetricAnnotationScanner;
 import uk.gov.laa.springboot.metrics.aspect.TimerAspect;
 import uk.gov.laa.springboot.metrics.aspect.annotations.CounterMetric;
-import uk.gov.laa.springboot.metrics.aspect.annotations.HistogramMetric;
-import uk.gov.laa.springboot.metrics.aspect.annotations.SummaryMetric;
+import uk.gov.laa.springboot.metrics.aspect.annotations.HistogramTimerMetric;
+import uk.gov.laa.springboot.metrics.aspect.annotations.SummaryTimerMetric;
 import uk.gov.laa.springboot.metrics.service.CounterMetricService;
 import uk.gov.laa.springboot.metrics.service.HistogramMetricService;
 import uk.gov.laa.springboot.metrics.service.SummaryMetricService;
@@ -41,25 +41,25 @@ public class MetricAnnotationConfiguration {
 
   public static class MetricTestClass {
 
-    @HistogramMetric(metricName = "method_histogram", hintText = "hint-text", labels = {
+    @HistogramTimerMetric(metricName = "method_histogram", hintText = "hint-text", labels = {
         "key=value"})
-    @SummaryMetric(metricName = "method_summary", hintText = "hint-text", labels = {"key=value"})
+    @SummaryTimerMetric(metricName = "method_summary", hintText = "hint-text", labels = {"key=value"})
     @CounterMetric(metricName = "method_counter", hintText = "hint-text", labels = {"key=value"})
     public void someMethod() throws InterruptedException {
       // Does nothing
     }
 
-    @HistogramMetric(metricName = "method_histogram", hintText = "hint-text", labels = {
+    @HistogramTimerMetric(metricName = "method_histogram", hintText = "hint-text", labels = {
         "key=valueTwo"})
-    @SummaryMetric(metricName = "method_summary", hintText = "hint-text", labels = {"key=valueTwo"})
+    @SummaryTimerMetric(metricName = "method_summary", hintText = "hint-text", labels = {"key=valueTwo"})
     @CounterMetric(metricName = "method_counter", hintText = "hint-text", labels = {"key=valueTwo"})
     public void someSecondMethod() {
       // Does nothing
     }
 
-    @HistogramMetric(metricName = "method_histogram_two", hintText = "hint-text", labels = {
+    @HistogramTimerMetric(metricName = "method_histogram_two", hintText = "hint-text", labels = {
         "key=valueThree"})
-    @SummaryMetric(metricName = "method_summary_two", hintText = "hint-text", labels = {
+    @SummaryTimerMetric(metricName = "method_summary_two", hintText = "hint-text", labels = {
         "key=valueThree"})
     @CounterMetric(metricName = "method_counter_two", hintText = "hint-text", labels = {
         "key=valueThree"})
