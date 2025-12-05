@@ -2,6 +2,7 @@ package uk.gov.laa.springboot.metrics.aspect;
 
 import io.micrometer.common.util.StringUtils;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,13 +34,18 @@ public class CounterAspect {
    */
   @AfterReturning(value = "@annotation(counter)", returning = "result")
   public void countUp(CounterMetric counter, Object result) {
-    if (StringUtils.isBlank(counter.metricName()) || Objects.isNull(result) || Objects.equals(
-        counter.conditionalOnReturn(), result.toString())) {
+    if (StringUtils.isNotBlank(counter.metricName())
+        && (StringUtils.isBlank(counter.conditionalOnReturn())
+        || Objects.equals(counter.conditionalOnReturn(), result.toString()))) {
       String metricName = counter.metricName();
-      String[] labelValues =
-          Arrays.stream(counter.labels()).map(x -> x.split("=")[1]).toList()
-              .toArray(String[]::new);
-      counterMetricService.increment(metricName, counter.amount(), labelValues);
+      List<String> labelsList = new java.util.ArrayList<>(
+          Arrays.stream(counter.labels()).map(x -> x.split("=")[1]).toList());
+      if (counter.saveReturnValue()) {
+        labelsList.add(String.valueOf(result.toString()));
+      }
+      counterMetricService.increment(
+          metricName, counter.amount(), labelsList
+              .toArray(String[]::new));
       log.debug("Incremented counter {} by {}", metricName, counter.amount());
     }
   }
