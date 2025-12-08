@@ -11,6 +11,7 @@ import uk.gov.laa.springboot.metrics.aspect.annotations.CounterMetric;
 import uk.gov.laa.springboot.metrics.aspect.annotations.HistogramMetric;
 import uk.gov.laa.springboot.metrics.aspect.annotations.HistogramTimerMetric;
 import uk.gov.laa.springboot.metrics.aspect.annotations.SummaryTimerMetric;
+import uk.gov.laa.springboot.metrics.aspect.annotations.ValueCaptureStrategy;
 import uk.gov.laa.springboot.metrics.service.CounterMetricService;
 import uk.gov.laa.springboot.metrics.service.HistogramMetricService;
 import uk.gov.laa.springboot.metrics.service.SummaryMetricService;
@@ -92,9 +93,19 @@ public class MetricAnnotationConfiguration {
     }
 
     @HistogramMetric(metricName = "histogram_return", hintText = "hint-text", labels = {
-        "type=key"})
-    public Object histogramReturn(Object type) {
+        "type=key"}, valueStrategy = ValueCaptureStrategy.RETURN_VALUE)
+    public Object histogramReturnValue(Object type) {
       return type;
+    }
+
+    @HistogramMetric(metricName = "histogram_param", hintText = "hint-text", labels = {
+        "type=key"}, valueStrategy = ValueCaptureStrategy.PARAM_0)
+    @HistogramMetric(metricName = "histogram_param", hintText = "hint-text", labels = {
+        "type=key"}, valueStrategy = ValueCaptureStrategy.PARAM_1)
+    @HistogramMetric(metricName = "histogram_param_diff", hintText = "hint-text", labels = {
+        "type=key"}, valueStrategy = ValueCaptureStrategy.PARAM_2)
+    public Object histogramParamValues(Object valueOne, Object valueTwo, Object valueThree) {
+      return 123;
     }
   }
 
