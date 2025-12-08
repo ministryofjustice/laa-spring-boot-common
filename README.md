@@ -103,8 +103,8 @@ apply plugin: 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin'
 ## Available Starters
 
 - [Gov-uk custom thymeleaf dialect](laa-spring-boot-starters/laa-spring-boot-starter-govuk-dialect)
-
 - [Authentication](laa-spring-boot-starters/laa-spring-boot-starter-auth/README.md)
 - [Application exception handling](laa-spring-boot-starters/laa-spring-boot-starter-application-exception/README.md)
 - [Slack alerts](laa-spring-boot-starters/laa-spring-boot-starter-slack-alerts/README.md)
+- [Metrics](laa-spring-boot-starters/laa-spring-boot-starter-metrics/README.md)
 - _**[TODO]**_ Entity Converters

@@ -1,6 +1,14 @@
-# LAA Spring Boot Starter – Slack Alerts
+# LAA Spring Boot Starter – Metrics
 
-Simplifies sending rich Slack notifications from Spring Boot applications via an incoming webhook. The starter auto-configures an `AlertService` backed by a `SlackNotifier` that formats messages with pod metadata for observability.
+Simplifies setting up custom Prometheus metrics within your Spring Boot application. The starter
+auto-cofigures multiple services to expose Prometheus metrics for your application such as:
+
+- `MetricAnnotationScanner`
+- `CounterAspect`
+- `TimerAspect`
+- `CounterMetricService`
+- `HistogramMetricService`
+- `SummaryMetricService`
 
 ## Usage
 
@@ -8,7 +16,7 @@ Simplifies sending rich Slack notifications from Spring Boot applications via an
 
 ```groovy
 dependencies {
-    implementation "uk.gov.laa.springboot:laa-spring-boot-starter-slack-alerts"
+    implementation "uk.gov.laa.springboot:laa-spring-boot-starter-metrics"
 }
 ```
 
@@ -18,58 +26,79 @@ dependencies {
 laa:
   springboot:
     starter:
-      slack-alerts:
-        webhook: ${SLACK_WEBHOOK_URL}
-        # optional overrides
-        # enabled: true
-        # environment-name: PROD
-        # pod:
-        #   namespace: ${POD_NAMESPACE}
-        #   name: ${POD_NAME}
-        #   ip: ${POD_IP}
-```
-
-The starter reads pod metadata from either the `laa.springboot.starter.slack-alerts.pod.*` properties or the standard Kubernetes
-Downward API environment variables (`POD_NAMESPACE`, `POD_NAME`, `POD_IP`). If none are available the
-values default to `UNKNOWN`.
-
-To populate those environment variables in Kubernetes add the following to your deployment manifest:
-
-```yaml
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: POD_IP
-          valueFrom:
-            fieldRef:
-              fieldPath: status.podIP
+      metrics:
+        metric-name-prefix: ${METRIC_NAME_PREFIX}
 ```
 
 ### 3. Send alerts
 
-Inject `AlertService` anywhere in your application and call one of its helper methods:
+The starter provides various annotations to simplify recording any metrics within your application.
+These include:
+
+- `@CounterMetric`
+- `@HistogramMetric`
+- `@SummaryTimerMetric`
+- `@HistogramTimerMetric`
+
+Metrics are then record upon successful completion of the annotated method.
 
 ```java
-alertService.sendAlertNotification("Message processed", SlackIcon.PARTY);
-alertService.sendAlertNotification("Processing failed", details, SlackIcon.ERROR);
+// Would count the 'my_counter' metric once myMethod() has finished executing
+@CounterMetric(metricName = "my_counter", labels = {"label1", "label2"})
+void myMethod() {
+  ...
+}
 ```
 
-If Slack notifications are disabled (no webhook configured or `laa.springboot.starter.slack-alerts.enabled=false`) the service
-skips sending messages while logging at debug level.
+#### CounterMetric
 
-## Behaviour
+The `@CounterMetric` annotation is used to record a single value for a metric using Prometheus'
+`counter` type. Each invocation of the annotated method will increment the counter.
 
-- Uses the final segment of the namespace (e.g. `prod` from `my-app-prod`) as the environment name unless
-  `laa.springboot.starter.slack-alerts.environment-name` is provided.
-- Formats messages using Slack "blocks" with optional pre-formatted additional information.
-- Sends requests using Java's `HttpURLConnection` to avoid extra dependencies.
+| Parameter             | Type     | Description                                                                                    | Default Value |
+|-----------------------|----------|------------------------------------------------------------------------------------------------|---------------|
+| `metricName`          | String   | The name of the metric you wish to record. Will be appended to the base metric name.           |               |
+| `labels`              | String[] | Static labels in the form "key=value". Must be the same for each usage of the same metricName. |               |
+| `hintText`            | String   | Hint text to describe what the metric is recording.                                            |               |
+| `amount`              | double   | Increment value.                                                                               | 1.0           |
+| `conditionalOnReturn` | String   | Only increments the counter if the return value matches.                                       |               |
+| `saveReturnValue`     | String   | Stores the returned value within a label named `value`.                                        | false         |
+
+#### HistogramMetric
+
+The `@HistogramMetric` annotation is used to record a single value for a metric using Prometheus'
+`histogram` type. Each invocation of the annotated method will record the value in the histogram.
+
+| Parameter              | Type                 | Description                                                                                    | Default Value |
+|------------------------|----------------------|------------------------------------------------------------------------------------------------|---------------|
+| `metricName`           | String               | The name of the metric you wish to record. Will be appended to the base metric name.           |               |
+| `labels`               | String[]             | Static labels in the form "key=value". Must be the same for each usage of the same metricName. |               |
+| `hintText`             | String               | Hint text to describe what the metric is recording.                                            |               |
+| `valueCaptureStrategy` | ValueCaptureStrategy | Defines what value should be recorded (return value, param0, param2 etc).                      | 1.0           |
+
+#### SummaryTimerMetric
+
+The `@SummaryTimerMetric` annotation is used to record the execution time of a method using Prometheus'
+`summary` type. Each invocation of the annotated method will record the execution time in the summary.
+
+| Parameter             | Type     | Description                                                                                    | Default Value |
+|-----------------------|----------|------------------------------------------------------------------------------------------------|---------------|
+| `metricName`          | String   | The name of the metric you wish to record. Will be appended to the base metric name.           |               |
+| `labels`              | String[] | Static labels in the form "key=value". Must be the same for each usage of the same metricName. |               |
+| `hintText`            | String   | Hint text to describe what the metric is recording.                                            |               |
+
+#### HistogramTimerMetric
+
+The `@HistogramTimerMetric` annotation is used to record the execution time of a method using Prometheus'
+`histogram` type. Each invocation of the annotated method will record the execution time in the histogram.
+
+| Parameter             | Type     | Description                                                                                    | Default Value |
+|-----------------------|----------|------------------------------------------------------------------------------------------------|---------------|
+| `metricName`          | String   | The name of the metric you wish to record. Will be appended to the base metric name.           |               |
+| `labels`              | String[] | Static labels in the form "key=value". Must be the same for each usage of the same metricName. |               |
+| `hintText`            | String   | Hint text to describe what the metric is recording.                                            |               |
 
 ## Testing
 
-The starter ships with unit tests covering the auto-configuration and payload formatting. No additional
+The starter ships with unit tests covering the metrics functionality. No additional test
 setup is required when consuming the starter.
