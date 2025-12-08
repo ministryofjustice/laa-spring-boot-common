@@ -26,6 +26,13 @@ public @interface HistogramMetric {
   String metricName();
 
   /**
+   * The value strategy which should be used when recording a value from the annotated method.
+   *
+   * @return the value strategy
+   */
+  ValueCaptureStrategy valueStrategy();
+
+  /**
    * Hint text to describe what the metric is recording.
    *
    * @return the metric hint text

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ import uk.gov.laa.springboot.metrics.aspect.annotations.CounterMetric;
 import uk.gov.laa.springboot.metrics.aspect.annotations.CounterMetrics;
 import uk.gov.laa.springboot.metrics.aspect.annotations.HistogramMetric;
 import uk.gov.laa.springboot.metrics.aspect.annotations.HistogramMetrics;
+import uk.gov.laa.springboot.metrics.aspect.annotations.ValueCaptureStrategy;
 import uk.gov.laa.springboot.metrics.service.CounterMetricService;
 import uk.gov.laa.springboot.metrics.service.HistogramMetricService;
 
@@ -77,7 +79,8 @@ public class CounterAspect {
    * @param result          the method return value
    */
   @AfterReturning(value = "@annotation(histogramMetric)", returning = "result")
-  public void countUpHistogram(HistogramMetric histogramMetric, Object result) {
+  public void countUpHistogram(JoinPoint joinPoint, HistogramMetric histogramMetric,
+      Object result) {
     if (result == null) {
       return;
     }
@@ -85,10 +88,11 @@ public class CounterAspect {
     List<String> labelsList = new java.util.ArrayList<>(
         Arrays.stream(histogramMetric.labels()).map(x -> x.split("=")[1]).toList());
 
-    BigDecimal value = new BigDecimal(result.toString());
+    double value = getValueToStore(histogramMetric.valueStrategy(), joinPoint, result);
+
     histogramMetricService.recordValue(
-        metricName, value.doubleValue(), labelsList.toArray(String[]::new));
-    log.debug("Incremented histogramMetric {} by {}", metricName, value.doubleValue());
+        metricName, value, labelsList.toArray(String[]::new));
+    log.debug("Incremented histogramMetric {} by {}", metricName, value);
   }
 
   /**
@@ -96,13 +100,27 @@ public class CounterAspect {
    * annotations.
    *
    * @param histograms the histograms collection annotation
-   * @param result   the method return value
+   * @param result     the method return value
    */
   @AfterReturning(value = "@annotation(histograms)", returning = "result")
-  public void countUpMultipleHistograms(HistogramMetrics histograms, Object result) {
+  public void countUpMultipleHistograms(JoinPoint joinPoint, HistogramMetrics histograms,
+      Object result) {
     for (HistogramMetric metric : histograms.value()) {
-      countUpHistogram(metric, result);
+      countUpHistogram(joinPoint, metric, result);
     }
+  }
+
+
+  double getValueToStore(ValueCaptureStrategy valueCaptureStrategy, JoinPoint joinPoint,
+      Object result) {
+    Object toReturn = result;
+
+    if (valueCaptureStrategy != ValueCaptureStrategy.RETURN_VALUE) {
+      int paramIndex = valueCaptureStrategy.getParamIndex();
+      toReturn = joinPoint.getArgs().length > paramIndex ? joinPoint.getArgs()[paramIndex] : null;
+    }
+    BigDecimal value = new BigDecimal(String.valueOf(toReturn));
+    return value.doubleValue();
   }
 
 }
