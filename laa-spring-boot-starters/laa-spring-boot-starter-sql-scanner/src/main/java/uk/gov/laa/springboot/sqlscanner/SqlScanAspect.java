@@ -67,7 +67,7 @@ public class SqlScanAspect {
       for (Annotation a : annotations[i]) {
         if (a.annotationType() == ScanForSql.class) {
           log.info("@ScanForSql found on parameter index {}", i);
-          scanObject(args[i], false, new IdentityHashMap<>());
+          scanObject(args[i], "arg[" + i + "]", false, new IdentityHashMap<>());
         }
       }
     }
@@ -80,19 +80,21 @@ public class SqlScanAspect {
       return;
     }
 
-    for (Object arg : args) {
+    for (int i = 0; i < args.length; i++) {
+      Object arg = args[i];
       if (arg == null) {
         continue;
       }
 
       boolean annotatedClass = arg.getClass().isAnnotationPresent(ScanForSql.class);
-      scanObject(arg, !annotatedClass, new IdentityHashMap<>());
+      scanObject(arg, "arg[" + i + "]", !annotatedClass, new IdentityHashMap<>());
     }
   }
 
   // --- Core recursive method -------------------------------------------------------
 
-  private void scanObject(Object obj, boolean annotatedOnly, Map<Object, Boolean> visited) {
+  private void scanObject(Object obj, String fieldName, boolean annotatedOnly,
+                          Map<Object, Boolean> visited) {
     if (obj == null || visited.containsKey(obj)) {
       return;
     }
@@ -100,7 +102,7 @@ public class SqlScanAspect {
 
     // --- String ---
     if (obj instanceof String s) {
-      checkValue(s, null);
+      checkValue(s, fieldName);
       return;
     }
 
@@ -113,20 +115,27 @@ public class SqlScanAspect {
 
     // --- Collections ---
     if (obj instanceof Collection<?> col) {
-      col.forEach(e -> scanObject(e, annotatedOnly, visited));
+      int idx = 0;
+      for (Object e : col) {
+        scanObject(e, fieldName + "[" + idx++ + "]", annotatedOnly, visited);
+      }
       return;
     }
 
     // --- Maps ---
     if (obj instanceof Map<?, ?> map) {
-      map.values().forEach(v -> scanObject(v, annotatedOnly, visited));
+      for (Map.Entry<?, ?> entry : map.entrySet()) {
+        scanObject(entry.getValue(), fieldName + "[" + entry.getKey() + "]",
+            annotatedOnly, visited);
+      }
       return;
     }
 
     // --- Arrays ---
     if (type.isArray()) {
-      for (Object element : (Object[]) obj) {
-        scanObject(element, annotatedOnly, visited);
+      int idx = 0;
+      for (Object e : (Object[]) obj) {
+        scanObject(e, fieldName + "[" + idx++ + "]", annotatedOnly, visited);
       }
       return;
     }
@@ -140,7 +149,7 @@ public class SqlScanAspect {
 
         try {
           Object value = rc.getAccessor().invoke(obj);
-          scanValueOrRecurse(value, rc.getName(), annotatedOnly, visited);
+          scanValueOrRecurse(value, fieldName + "." + rc.getName(), annotatedOnly, visited);
         } catch (Exception e) {
           log.debug("Cannot read record component {}", rc.getName());
         }
@@ -163,7 +172,7 @@ public class SqlScanAspect {
           f.setAccessible(true);
         }
         Object value = f.get(obj);
-        scanValueOrRecurse(value, f.getName(), annotatedOnly, visited);
+        scanValueOrRecurse(value, fieldName + "." + f.getName(), annotatedOnly, visited);
 
       } catch (Exception e) {
         log.debug("Cannot read field {}", f.getName());
@@ -174,12 +183,12 @@ public class SqlScanAspect {
   // --- Scan a value or recurse -----------------------------------------------------
 
   private void scanValueOrRecurse(
-      Object value, String name, boolean annotatedOnly, Map<Object, Boolean> visited) {
+      Object value, String fieldName, boolean annotatedOnly, Map<Object, Boolean> visited) {
 
     if (value instanceof String s) {
-      checkValue(s, name);
+      checkValue(s, fieldName);
     } else {
-      scanObject(value, annotatedOnly, visited);
+      scanObject(value, fieldName, annotatedOnly, visited);
     }
   }
 
