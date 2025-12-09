@@ -5,6 +5,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.RecordComponent;
+import java.util.Collection;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -27,169 +30,181 @@ public class SqlScanAspect {
     this.scanner = scanner;
   }
 
+  // --- Pointcuts -------------------------------------------------------------------
+
   @Pointcut(
       "within(@org.springframework.web.bind.annotation.RestController *)"
           + " || within(@org.springframework.stereotype.Controller *)")
-  private void controllerMethods() {
-    // Pointcut for controller classes.
-  }
+  private void controllerMethods() {}
 
   @Pointcut(
       "( within(@org.springframework.stereotype.Repository *)"
-          + "   || within(org.springframework.data.repository.Repository+) )"
-          + " && ( execution(* save*(..))"
-          + "   || execution(* update*(..)) )")
-  private void repositorySaveOrUpdate() {
-    // Pointcut for repository save or update methods.
-  }
+          + " || within(org.springframework.data.repository.Repository+) )"
+          + " && ( execution(* save*(..)) || execution(* update*(..)) )")
+  private void repositorySaveOrUpdate() {}
 
-  /**
-   * Scans any controller arguments annotated with {@link ScanForSql} for SQL-like content.
-   *
-   * @param joinPoint the intercepted controller invocation.
-   */
+  // --- Advice ----------------------------------------------------------------------
+
   @Before("controllerMethods()")
-  public void scanForSqlController(JoinPoint joinPoint) {
-    scanArguments(joinPoint.getArgs());
-    scanParameterAnnotations(joinPoint);
+  public void scanForSqlController(JoinPoint jp) {
+    scanArguments(jp.getArgs());
+    scanParamsAnnotated(jp);
   }
 
-  /**
-   * Scans any db entity arguments annotated with {@link ScanForSql} for SQL-like content.
-   *
-   * @param joinPoint the intercepted db save/update operation.
-   */
   @Before("repositorySaveOrUpdate()")
-  public void scanForSqlDb(JoinPoint joinPoint) {
-    scanArguments(joinPoint.getArgs());
+  public void scanForSqlDb(JoinPoint jp) {
+    scanArguments(jp.getArgs());
   }
 
-  private void scanParameterAnnotations(JoinPoint jp) {
-    MethodSignature signature = (MethodSignature) jp.getSignature();
-    Method method = signature.getMethod();
+  // --- Scan parameter-level @ScanForSql --------------------------------------------
 
-    Annotation[][] paramAnnotations = method.getParameterAnnotations();
+  private void scanParamsAnnotated(JoinPoint jp) {
+    Method method = ((MethodSignature) jp.getSignature()).getMethod();
+    Annotation[][] annotations = method.getParameterAnnotations();
     Object[] args = jp.getArgs();
 
-    for (int i = 0; i < paramAnnotations.length; i++) {
-      for (Annotation annotation : paramAnnotations[i]) {
-
-        if (annotation.annotationType().equals(ScanForSql.class)) {
-          Object annotatedArg = args[i];
-          log.info("@ScanForSql found on argument: {}", annotatedArg);
-          scanFields(annotatedArg, false);
+    for (int i = 0; i < annotations.length; i++) {
+      for (Annotation a : annotations[i]) {
+        if (a.annotationType() == ScanForSql.class) {
+          log.info("@ScanForSql found on parameter index {}", i);
+          scanObject(args[i], false, new IdentityHashMap<>());
         }
       }
     }
   }
 
-  void scanArguments(Object[] arguments) {
-    if (arguments == null) {
+  // --- Entry point -----------------------------------------------------------------
+
+  void scanArguments(Object[] args) {
+    if (args == null) {
       return;
     }
 
-    for (Object argument : arguments) {
-      if (argument == null) {
+    for (Object arg : args) {
+      if (arg == null) {
         continue;
       }
-      scanTarget(argument);
+
+      boolean annotatedClass = arg.getClass().isAnnotationPresent(ScanForSql.class);
+      scanObject(arg, !annotatedClass, new IdentityHashMap<>());
     }
   }
 
-  private void scanTarget(Object argument) {
-    Class<?> type = argument.getClass();
-    if (type.isAnnotationPresent(ScanForSql.class)) {
-      scanAllStringMembers(argument);
+  // --- Core recursive method -------------------------------------------------------
+
+  private void scanObject(Object obj, boolean annotatedOnly, Map<Object, Boolean> visited) {
+    if (obj == null || visited.containsKey(obj)) {
+      return;
+    }
+    visited.put(obj, Boolean.TRUE);
+
+    // --- String ---
+    if (obj instanceof String s) {
+      checkValue(s, null);
       return;
     }
 
-    scanAnnotatedMembers(argument);
-  }
+    Class<?> type = obj.getClass();
 
-  private void scanAnnotatedMembers(Object target) {
-    if (target.getClass().isRecord()) {
-      scanRecordComponents(target, true);
-    } else {
-      scanFields(target, true);
-    }
-  }
-
-  private void scanAllStringMembers(Object target) {
-    if (target.getClass().isRecord()) {
-      scanRecordComponents(target, false);
-    } else {
-      scanFields(target, false);
-    }
-  }
-
-  private void scanRecordComponents(Object target, boolean annotatedOnly) {
-    RecordComponent[] components = target.getClass().getRecordComponents();
-    if (components == null) {
+    // --- Simple types ---
+    if (type.isPrimitive() || type.isEnum() || isWrapper(type)) {
       return;
     }
 
-    for (RecordComponent component : components) {
-      if (component.getType() != String.class) {
-        continue;
-      }
-
-      if (annotatedOnly && !component.isAnnotationPresent(ScanForSql.class)) {
-        continue;
-      }
-
-      try {
-        String value = (String) component.getAccessor().invoke(target);
-        checkValue(value, component.getName());
-      } catch (ReflectiveOperationException ex) {
-        log.debug("Unable to read record component '{}' for SQL scan", component.getName(), ex);
-      }
-    }
-  }
-
-  private void scanFields(Object target, boolean annotatedOnly) {
-    if (target == null) {
+    // --- Collections ---
+    if (obj instanceof Collection<?> col) {
+      col.forEach(e -> scanObject(e, annotatedOnly, visited));
       return;
     }
-    for (Field field : target.getClass().getDeclaredFields()) {
-      if (Modifier.isStatic(field.getModifiers())) {
-        continue;
-      }
 
-      if (annotatedOnly && !field.isAnnotationPresent(ScanForSql.class)) {
-        continue;
-      }
+    // --- Maps ---
+    if (obj instanceof Map<?, ?> map) {
+      map.values().forEach(v -> scanObject(v, annotatedOnly, visited));
+      return;
+    }
 
-      try {
-        if (!field.canAccess(target) && !field.trySetAccessible()) {
-          log.debug("Skipping field '{}' for SQL scan because it is not accessible",
-              field.getName());
+    // --- Arrays ---
+    if (type.isArray()) {
+      for (Object element : (Object[]) obj) {
+        scanObject(element, annotatedOnly, visited);
+      }
+      return;
+    }
+
+    // --- Records ---
+    if (type.isRecord()) {
+      for (RecordComponent rc : type.getRecordComponents()) {
+        if (annotatedOnly && !rc.isAnnotationPresent(ScanForSql.class)) {
           continue;
         }
-      } catch (RuntimeException ex) {
-        log.debug("Skipping field '{}' for SQL scan due to inaccessible module boundaries",
-            field.getName(), ex);
+
+        try {
+          Object value = rc.getAccessor().invoke(obj);
+          scanValueOrRecurse(value, rc.getName(), annotatedOnly, visited);
+        } catch (Exception e) {
+          log.debug("Cannot read record component {}", rc.getName());
+        }
+      }
+      return;
+    }
+
+    // --- POJO fields ---
+    for (Field f : type.getDeclaredFields()) {
+
+      if (Modifier.isStatic(f.getModifiers())) {
+        continue;
+      }
+      if (annotatedOnly && !f.isAnnotationPresent(ScanForSql.class)) {
         continue;
       }
 
       try {
-        Object value = field.get(target);
-        if (value instanceof String s) {
-          // It's a String → scan directly
-          checkValue(s, field.getName());
-        } else {
-          // It's some other object → recurse into it
-          scanFields(value, annotatedOnly);
+        if (!f.canAccess(obj)) {
+          f.setAccessible(true);
         }
-      } catch (IllegalAccessException ex) {
-        log.debug("Unable to read field '{}' for SQL scan", field.getName(), ex);
+        Object value = f.get(obj);
+        scanValueOrRecurse(value, f.getName(), annotatedOnly, visited);
+
+      } catch (Exception e) {
+        log.debug("Cannot read field {}", f.getName());
       }
     }
   }
 
+  // --- Scan a value or recurse -----------------------------------------------------
+
+  private void scanValueOrRecurse(
+      Object value, String name, boolean annotatedOnly, Map<Object, Boolean> visited) {
+
+    if (value instanceof String s) {
+      checkValue(s, name);
+    } else {
+      scanObject(value, annotatedOnly, visited);
+    }
+  }
+
+  // --- SQL detection ---------------------------------------------------------------
+
   private void checkValue(String value, String fieldName) {
-    scanner.scan(value).ifPresent(pattern ->
-        log.warn("Suspicious SQL-like pattern '{}' detected in field '{}': value='{}'",
-            pattern, fieldName, value)
-    );
+    scanner
+        .scan(value)
+        .ifPresent(
+            pattern ->
+                log.warn(
+                    "Suspicious SQL-like pattern '{}' in field '{}': '{}'",
+                    pattern,
+                    fieldName,
+                    value));
+  }
+
+  private boolean isWrapper(Class<?> t) {
+    return t == Integer.class
+        || t == Long.class
+        || t == Double.class
+        || t == Float.class
+        || t == Boolean.class
+        || t == Byte.class
+        || t == Short.class
+        || t == Character.class;
   }
 }
