@@ -5,6 +5,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.RecordComponent;
+import java.util.Collection;
+import java.util.Map;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -27,10 +29,20 @@ public class SqlScanAspect {
     this.scanner = scanner;
   }
 
-  @Pointcut("within(@org.springframework.web.bind.annotation.RestController *)"
-      + " || within(@org.springframework.stereotype.Controller *)")
+  @Pointcut(
+      "within(@org.springframework.web.bind.annotation.RestController *)"
+          + " || within(@org.springframework.stereotype.Controller *)")
   private void controllerMethods() {
     // Pointcut for controller classes.
+  }
+
+  @Pointcut(
+      "( within(@org.springframework.stereotype.Repository *)"
+          + "   || within(org.springframework.data.repository.Repository+) )"
+          + " && ( execution(* save*(..))"
+          + "   || execution(* update*(..)) )")
+  private void repositorySaveOrUpdate() {
+    // Pointcut for repository save or update methods.
   }
 
   /**
@@ -39,9 +51,19 @@ public class SqlScanAspect {
    * @param joinPoint the intercepted controller invocation.
    */
   @Before("controllerMethods()")
-  public void scanForSql(JoinPoint joinPoint) {
+  public void scanForSqlController(JoinPoint joinPoint) {
     scanArguments(joinPoint.getArgs());
     scanParameterAnnotations(joinPoint);
+  }
+
+  /**
+   * Scans any db entity arguments annotated with {@link ScanForSql} for SQL-like content.
+   *
+   * @param joinPoint the intercepted db save/update operation.
+   */
+  @Before("repositorySaveOrUpdate()")
+  public void scanForSqlDb(JoinPoint joinPoint) {
+    scanArguments(joinPoint.getArgs());
   }
 
   private void scanParameterAnnotations(JoinPoint jp) {
@@ -132,10 +154,6 @@ public class SqlScanAspect {
         continue;
       }
 
-      if (field.getType() != String.class) {
-        continue;
-      }
-
       if (annotatedOnly && !field.isAnnotationPresent(ScanForSql.class)) {
         continue;
       }
@@ -153,8 +171,14 @@ public class SqlScanAspect {
       }
 
       try {
-        String value = (String) field.get(target);
-        checkValue(value, field.getName());
+        Object value = field.get(target);
+        if (value instanceof String s) {
+          // It's a String → scan directly
+          checkValue(s, field.getName());
+        } else {
+          // It's some other object → recurse into it
+          scanFields(value, annotatedOnly);
+        }
       } catch (IllegalAccessException ex) {
         log.debug("Unable to read field '{}' for SQL scan", field.getName(), ex);
       }
