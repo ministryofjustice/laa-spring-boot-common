@@ -57,7 +57,7 @@ public class SqlScanAspect {
         if (annotation.annotationType().equals(ScanForSql.class)) {
           Object annotatedArg = args[i];
           log.info("@ScanForSql found on argument: {}", annotatedArg);
-          // Do your processing here
+          scanFields(annotatedArg, false);
         }
       }
     }
