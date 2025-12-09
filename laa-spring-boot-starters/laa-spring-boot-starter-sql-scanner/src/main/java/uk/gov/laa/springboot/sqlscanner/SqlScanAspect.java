@@ -5,8 +5,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.RecordComponent;
-import java.util.Collection;
-import java.util.Map;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -149,6 +147,9 @@ public class SqlScanAspect {
   }
 
   private void scanFields(Object target, boolean annotatedOnly) {
+    if (target == null) {
+      return;
+    }
     for (Field field : target.getClass().getDeclaredFields()) {
       if (Modifier.isStatic(field.getModifiers())) {
         continue;
