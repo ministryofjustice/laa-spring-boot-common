@@ -1,12 +1,15 @@
 package uk.gov.laa.springboot.sqlscanner;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.RecordComponent;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +41,26 @@ public class SqlScanAspect {
   @Before("controllerMethods()")
   public void scanForSql(JoinPoint joinPoint) {
     scanArguments(joinPoint.getArgs());
+    scanParameterAnnotations(joinPoint);
+  }
+
+  private void scanParameterAnnotations(JoinPoint jp) {
+    MethodSignature signature = (MethodSignature) jp.getSignature();
+    Method method = signature.getMethod();
+
+    Annotation[][] paramAnnotations = method.getParameterAnnotations();
+    Object[] args = jp.getArgs();
+
+    for (int i = 0; i < paramAnnotations.length; i++) {
+      for (Annotation annotation : paramAnnotations[i]) {
+
+        if (annotation.annotationType().equals(ScanForSql.class)) {
+          Object annotatedArg = args[i];
+          log.info("@ScanForSql found on argument: {}", annotatedArg);
+          // Do your processing here
+        }
+      }
+    }
   }
 
   void scanArguments(Object[] arguments) {
