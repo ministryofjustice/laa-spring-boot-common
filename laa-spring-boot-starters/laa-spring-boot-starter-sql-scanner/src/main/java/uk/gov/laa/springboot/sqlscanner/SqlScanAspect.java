@@ -1,8 +1,8 @@
 package uk.gov.laa.springboot.sqlscanner;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.RecordComponent;
 import java.util.Collection;
@@ -17,7 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Aspect that inspects controller arguments for SQL-like patterns on annotated types and members.
+ * Aspect that inspects controller arguments for SQL-like patterns
+ * on annotated types and members.
  */
 @Aspect
 public class SqlScanAspect {
@@ -30,20 +31,18 @@ public class SqlScanAspect {
     this.scanner = scanner;
   }
 
-  // --- Pointcuts -------------------------------------------------------------------
-
   @Pointcut(
       "within(@org.springframework.web.bind.annotation.RestController *)"
-          + " || within(@org.springframework.stereotype.Controller *)")
+          + " || within(@org.springframework.stereotype.Controller *)"
+  )
   private void controllerMethods() {}
 
   @Pointcut(
-      "( within(@org.springframework.stereotype.Repository *)"
-          + " || within(org.springframework.data.repository.Repository+) )"
-          + " && ( execution(* save*(..)) || execution(* update*(..)) )")
+      "(within(@org.springframework.stereotype.Repository *)"
+          + " || within(org.springframework.data.repository.Repository+))"
+          + " && (execution(* save*(..)) || execution(* update*(..)))"
+  )
   private void repositorySaveOrUpdate() {}
-
-  // --- Advice ----------------------------------------------------------------------
 
   @Before("controllerMethods()")
   public void scanForSqlController(JoinPoint jp) {
@@ -56,15 +55,13 @@ public class SqlScanAspect {
     scanArguments(jp.getArgs());
   }
 
-  // --- Scan parameter-level @ScanForSql --------------------------------------------
-
   private void scanParamsAnnotated(JoinPoint jp) {
-    Method method = ((MethodSignature) jp.getSignature()).getMethod();
-    Annotation[][] annotations = method.getParameterAnnotations();
+    MethodSignature sig = (MethodSignature) jp.getSignature();
+    Annotation[][] paramAnnotations = sig.getMethod().getParameterAnnotations();
     Object[] args = jp.getArgs();
 
-    for (int i = 0; i < annotations.length; i++) {
-      for (Annotation a : annotations[i]) {
+    for (int i = 0; i < paramAnnotations.length; i++) {
+      for (Annotation a : paramAnnotations[i]) {
         if (a.annotationType() == ScanForSql.class) {
           scanObject(args[i], "arg[" + i + "]", true, new IdentityHashMap<>());
         }
@@ -72,7 +69,6 @@ public class SqlScanAspect {
     }
   }
 
-  // --- Entry point -----------------------------------------------------------------
   void scanArguments(Object[] args) {
     if (args == null) {
       return;
@@ -84,85 +80,132 @@ public class SqlScanAspect {
         continue;
       }
 
-      boolean shouldScan = arg.getClass().isAnnotationPresent(ScanForSql.class);
-      scanObject(arg, "arg[" + i + "]", shouldScan, new IdentityHashMap<>());
+      boolean classAnnotated = arg.getClass().isAnnotationPresent(ScanForSql.class);
+      scanObject(arg, "arg[" + i + "]", classAnnotated, new IdentityHashMap<>());
     }
   }
 
-  // --- Core recursive method -------------------------------------------------------
-  private void scanObject(Object obj, String fieldName, boolean shouldScan,
-                          Map<Object, Boolean> visited) {
+  private void scanObject(
+      Object obj, String fieldName, boolean shouldScan, Map<Object, Boolean> visited
+  ) {
     if (obj == null || visited.containsKey(obj)) {
       return;
     }
     visited.put(obj, Boolean.TRUE);
 
-    // --- String ---
-    if (obj instanceof String s) {
-      if (shouldScan) {
-        checkValue(s, fieldName);
-      }
+    if (scanString(obj, fieldName, shouldScan)) {
       return;
     }
 
     Class<?> type = obj.getClass();
 
-    // --- Simple types ---
-    if (type.isPrimitive() || type.isEnum() || isWrapper(type)) {
+    if (isPrimitiveOrWrapper(type) || type.isEnum()) {
       return;
     }
 
-    // --- Collections ---
-    if (obj instanceof Collection<?> col) {
-      int idx = 0;
-      for (Object e : col) {
-        scanObject(e, fieldName + "[" + idx++ + "]", shouldScan, visited);
-      }
-      return;
-    }
-
-    // --- Maps ---
-    if (obj instanceof Map<?, ?> map) {
-      for (Map.Entry<?, ?> entry : map.entrySet()) {
-        scanObject(entry.getValue(), fieldName + "[" + entry.getKey() + "]",
-            shouldScan, visited);
-      }
-      return;
-    }
-
-    // --- Arrays ---
     if (type.isArray()) {
-      int idx = 0;
-      for (Object e : (Object[]) obj) {
-        scanObject(e, fieldName + "[" + idx++ + "]", shouldScan, visited);
-      }
+      scanArray(obj, fieldName, shouldScan, visited);
       return;
     }
 
-    // --- Records ---
+    if (obj instanceof Collection<?> col) {
+      scanCollection(col, fieldName, shouldScan, visited);
+      return;
+    }
+
+    if (obj instanceof Map<?, ?> map) {
+      scanMap(map, fieldName, shouldScan, visited);
+      return;
+    }
+
     if (type.isRecord()) {
-      for (RecordComponent rc : type.getRecordComponents()) {
-        if (!shouldScan && !rc.isAnnotationPresent(ScanForSql.class)) {
-          continue;
-        }
-
-        try {
-          Object value = rc.getAccessor().invoke(obj);
-          scanValueOrRecurse(value, fieldName + "." + rc.getName(), visited);
-        } catch (Exception e) {
-          log.debug("Cannot read record component {}", rc.getName());
-        }
-      }
+      scanRecord(obj, fieldName, shouldScan, visited);
       return;
     }
 
-    // --- POJO fields ---
-    for (Field f : type.getDeclaredFields()) {
+    scanPojoFields(obj, fieldName, shouldScan, visited);
+  }
 
+  private boolean scanString(Object obj, String fieldName, boolean shouldScan) {
+    if (obj instanceof String s) {
+      if (shouldScan) {
+        checkValue(s, fieldName);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  private void scanArray(
+      Object array, String fieldName, boolean shouldScan, Map<Object, Boolean> visited
+  ) {
+    int len = Array.getLength(array);
+    for (int i = 0; i < len; i++) {
+      Object element = Array.get(array, i);
+      scanObject(
+          element, nestedFieldName(fieldName, "[" + i + "]"), shouldScan, visited
+      );
+    }
+  }
+
+  private void scanCollection(
+      Collection<?> col, String fieldName, boolean shouldScan, Map<Object, Boolean> visited
+  ) {
+    int i = 0;
+    for (Object e : col) {
+      scanObject(
+          e, nestedFieldName(fieldName, "[" + i + "]"), shouldScan, visited
+      );
+      i++;
+    }
+  }
+
+  private void scanMap(
+      Map<?, ?> map, String fieldName, boolean shouldScan, Map<Object, Boolean> visited
+  ) {
+    for (Map.Entry<?, ?> entry : map.entrySet()) {
+      scanObject(
+          entry.getValue(),
+          nestedFieldName(fieldName, "[" + entry.getKey() + "]"),
+          shouldScan,
+          visited
+      );
+    }
+  }
+
+  private void scanRecord(
+      Object record, String fieldName, boolean shouldScan, Map<Object, Boolean> visited
+  ) {
+    for (RecordComponent rc : record.getClass().getRecordComponents()) {
+      boolean process = shouldScan || rc.isAnnotationPresent(ScanForSql.class);
+      if (!process) {
+        continue;
+      }
+
+      try {
+        Object value = rc.getAccessor().invoke(record);
+        scanObject(
+            value,
+            nestedFieldName(fieldName, rc.getName()),
+            process,
+            visited
+        );
+      } catch (Exception ex) {
+        log.debug("Cannot read record component {}", rc.getName());
+      }
+    }
+  }
+
+  private void scanPojoFields(
+      Object obj, String fieldName, boolean shouldScan, Map<Object, Boolean> visited
+  ) {
+    for (Field f : obj.getClass().getDeclaredFields()) {
       if (Modifier.isStatic(f.getModifiers())) {
         continue;
       }
-      if (!shouldScan && !f.isAnnotationPresent(ScanForSql.class)) {
+
+      boolean process = shouldScan || f.isAnnotationPresent(ScanForSql.class);
+      if (!process) {
         continue;
       }
 
@@ -171,42 +214,32 @@ public class SqlScanAspect {
           f.setAccessible(true);
         }
         Object value = f.get(obj);
-        scanValueOrRecurse(value, fieldName + "." + f.getName(), visited);
-
-      } catch (Exception e) {
+        scanObject(
+            value,
+            nestedFieldName(fieldName, f.getName()),
+            process,
+            visited
+        );
+      } catch (Exception ex) {
         log.debug("Cannot read field {}", f.getName());
       }
     }
   }
 
-  // --- Scan a value or recurse -----------------------------------------------------
-
-  private void scanValueOrRecurse(
-      Object value, String fieldName, Map<Object, Boolean> visited) {
-
-    if (value instanceof String s) {
-      checkValue(s, fieldName);
-    } else {
-      scanObject(value, fieldName, true, visited);
-    }
-  }
-
-  // --- SQL detection ---------------------------------------------------------------
-
   private void checkValue(String value, String fieldName) {
-    scanner
-        .scan(value)
-        .ifPresent(
-            pattern ->
-                log.warn(
-                    "Suspicious SQL-like pattern '{}' in field '{}': '{}'",
-                    pattern,
-                    fieldName,
-                    value));
+    scanner.scan(value).ifPresent(pattern -> {
+      log.warn(
+          "Suspicious SQL-like pattern '{}' in field '{}': '{}'",
+          pattern,
+          fieldName,
+          value
+      );
+    });
   }
 
-  private boolean isWrapper(Class<?> t) {
-    return t == Integer.class
+  private boolean isPrimitiveOrWrapper(Class<?> t) {
+    return t.isPrimitive()
+        || t == Integer.class
         || t == Long.class
         || t == Double.class
         || t == Float.class
@@ -214,5 +247,16 @@ public class SqlScanAspect {
         || t == Byte.class
         || t == Short.class
         || t == Character.class;
+  }
+
+  /**
+   * Returns a nested field name like "parent.child" or just "child" if parent is empty.
+   */
+  private String nestedFieldName(String parent, String child) {
+    if (parent == null || parent.isEmpty()) {
+      return child;
+    } else {
+      return parent + "." + child;
+    }
   }
 }
