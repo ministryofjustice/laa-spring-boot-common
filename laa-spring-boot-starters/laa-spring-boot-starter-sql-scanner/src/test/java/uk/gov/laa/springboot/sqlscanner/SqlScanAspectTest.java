@@ -138,6 +138,34 @@ class SqlScanAspectTest {
     assertThat(appender.list).isEmpty();
   }
 
+  @Test
+  void doesNotScanJdkClassesLikeUUID() {
+    var uuid = java.util.UUID.randomUUID();
+
+    aspect.scanArguments(new Object[]{uuid});
+
+    // No scanning should occur
+    assertThat(appender.list).isEmpty();
+  }
+
+  @Test
+  void domainObjectWithJdkFieldsStillScansAnnotatedFieldsButSkipsJdkFields() {
+    var holder = new DomainWithUuid("drop table x", java.util.UUID.randomUUID());
+
+    aspect.scanArguments(new Object[]{holder});
+
+    // Should log SQL pattern from annotated field
+    assertThat(appender.list)
+        .singleElement()
+        .extracting(ILoggingEvent::getFormattedMessage)
+        .satisfies(msg -> assertThat(msg).contains("drop").contains("danger"));
+
+    // Ensure nothing references UUID internals
+    assertThat(appender.list.get(0).getFormattedMessage())
+        .doesNotContain("leastSigBits")
+        .doesNotContain("mostSigBits");
+  }
+
   private JoinPoint mockRepositoryJoinPoint(String methodName, Class<?>[] paramTypes, Object[] args) throws Exception {
     Method method = FakeRepository.class.getDeclaredMethod(methodName, paramTypes);
     JoinPoint jp = Mockito.mock(JoinPoint.class);
@@ -213,4 +241,16 @@ class SqlScanAspectTest {
   static class PrimitiveHolder { int i; boolean b; double d; @ScanForSql String val; PrimitiveHolder(int i, boolean b, double d, String val) { this.i = i; this.b = b; this.d = d; this.val = val; } }
 
   static class TestMethods { public void methodWithParamAnnotation(@ScanForSql String x) {} }
+
+  static class DomainWithUuid {
+    @ScanForSql
+    String danger;
+
+    java.util.UUID id;
+
+    DomainWithUuid(String danger, java.util.UUID id) {
+      this.danger = danger;
+      this.id = id;
+    }
+  }
 }

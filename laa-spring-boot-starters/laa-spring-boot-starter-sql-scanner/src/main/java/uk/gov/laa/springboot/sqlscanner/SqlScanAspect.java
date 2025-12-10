@@ -7,6 +7,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.RecordComponent;
 import java.util.Collection;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -24,6 +25,8 @@ import org.slf4j.LoggerFactory;
 public class SqlScanAspect {
 
   private static final Logger log = LoggerFactory.getLogger(SqlScanAspect.class);
+  private static final List<String> ALLOWED_PACKAGES =
+      List.of("uk.gov.justice", "uk.gov.laa");
 
   private final SqlScanner scanner;
 
@@ -199,8 +202,21 @@ public class SqlScanAspect {
   private void scanPojoFields(
       Object obj, String fieldName, boolean shouldScan, Map<Object, Boolean> visited
   ) {
+    // Only scan classes from your application
+    Package pkg = obj.getClass().getPackage();
+    if (pkg == null || !isAllowedPackage(pkg.getName())) {
+      return; // skip all non-domain types (JDK, libraries, etc.)
+    }
+
     for (Field f : obj.getClass().getDeclaredFields()) {
+
       if (Modifier.isStatic(f.getModifiers())) {
+        continue;
+      }
+
+      // Restrict by declaring class package too
+      String fieldPackage = f.getDeclaringClass().getPackageName();
+      if (!isAllowedPackage(fieldPackage)) {
         continue;
       }
 
@@ -224,6 +240,10 @@ public class SqlScanAspect {
         log.debug("Cannot read field {}", f.getName());
       }
     }
+  }
+
+  private boolean isAllowedPackage(String pkg) {
+    return ALLOWED_PACKAGES.stream().anyMatch(pkg::startsWith);
   }
 
   private void checkValue(String value, String fieldName) {
