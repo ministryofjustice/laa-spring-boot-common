@@ -66,15 +66,13 @@ public class SqlScanAspect {
     for (int i = 0; i < annotations.length; i++) {
       for (Annotation a : annotations[i]) {
         if (a.annotationType() == ScanForSql.class) {
-          log.info("@ScanForSql found on parameter index {}", i);
-          scanObject(args[i], "arg[" + i + "]", false, new IdentityHashMap<>());
+          scanObject(args[i], "arg[" + i + "]", true, new IdentityHashMap<>());
         }
       }
     }
   }
 
   // --- Entry point -----------------------------------------------------------------
-
   void scanArguments(Object[] args) {
     if (args == null) {
       return;
@@ -86,14 +84,13 @@ public class SqlScanAspect {
         continue;
       }
 
-      boolean annotatedClass = arg.getClass().isAnnotationPresent(ScanForSql.class);
-      scanObject(arg, "arg[" + i + "]", !annotatedClass, new IdentityHashMap<>());
+      boolean shouldScan = arg.getClass().isAnnotationPresent(ScanForSql.class);
+      scanObject(arg, "arg[" + i + "]", shouldScan, new IdentityHashMap<>());
     }
   }
 
   // --- Core recursive method -------------------------------------------------------
-
-  private void scanObject(Object obj, String fieldName, boolean annotatedOnly,
+  private void scanObject(Object obj, String fieldName, boolean shouldScan,
                           Map<Object, Boolean> visited) {
     if (obj == null || visited.containsKey(obj)) {
       return;
@@ -102,7 +99,9 @@ public class SqlScanAspect {
 
     // --- String ---
     if (obj instanceof String s) {
-      checkValue(s, fieldName);
+      if (shouldScan) {
+        checkValue(s, fieldName);
+      }
       return;
     }
 
@@ -117,7 +116,7 @@ public class SqlScanAspect {
     if (obj instanceof Collection<?> col) {
       int idx = 0;
       for (Object e : col) {
-        scanObject(e, fieldName + "[" + idx++ + "]", annotatedOnly, visited);
+        scanObject(e, fieldName + "[" + idx++ + "]", shouldScan, visited);
       }
       return;
     }
@@ -126,7 +125,7 @@ public class SqlScanAspect {
     if (obj instanceof Map<?, ?> map) {
       for (Map.Entry<?, ?> entry : map.entrySet()) {
         scanObject(entry.getValue(), fieldName + "[" + entry.getKey() + "]",
-            annotatedOnly, visited);
+            shouldScan, visited);
       }
       return;
     }
@@ -135,7 +134,7 @@ public class SqlScanAspect {
     if (type.isArray()) {
       int idx = 0;
       for (Object e : (Object[]) obj) {
-        scanObject(e, fieldName + "[" + idx++ + "]", annotatedOnly, visited);
+        scanObject(e, fieldName + "[" + idx++ + "]", shouldScan, visited);
       }
       return;
     }
@@ -143,13 +142,13 @@ public class SqlScanAspect {
     // --- Records ---
     if (type.isRecord()) {
       for (RecordComponent rc : type.getRecordComponents()) {
-        if (annotatedOnly && !rc.isAnnotationPresent(ScanForSql.class)) {
+        if (!shouldScan && !rc.isAnnotationPresent(ScanForSql.class)) {
           continue;
         }
 
         try {
           Object value = rc.getAccessor().invoke(obj);
-          scanValueOrRecurse(value, fieldName + "." + rc.getName(), annotatedOnly, visited);
+          scanValueOrRecurse(value, fieldName + "." + rc.getName(), visited);
         } catch (Exception e) {
           log.debug("Cannot read record component {}", rc.getName());
         }
@@ -163,7 +162,7 @@ public class SqlScanAspect {
       if (Modifier.isStatic(f.getModifiers())) {
         continue;
       }
-      if (annotatedOnly && !f.isAnnotationPresent(ScanForSql.class)) {
+      if (!shouldScan && !f.isAnnotationPresent(ScanForSql.class)) {
         continue;
       }
 
@@ -172,7 +171,7 @@ public class SqlScanAspect {
           f.setAccessible(true);
         }
         Object value = f.get(obj);
-        scanValueOrRecurse(value, fieldName + "." + f.getName(), annotatedOnly, visited);
+        scanValueOrRecurse(value, fieldName + "." + f.getName(), visited);
 
       } catch (Exception e) {
         log.debug("Cannot read field {}", f.getName());
@@ -183,12 +182,12 @@ public class SqlScanAspect {
   // --- Scan a value or recurse -----------------------------------------------------
 
   private void scanValueOrRecurse(
-      Object value, String fieldName, boolean annotatedOnly, Map<Object, Boolean> visited) {
+      Object value, String fieldName, Map<Object, Boolean> visited) {
 
     if (value instanceof String s) {
       checkValue(s, fieldName);
     } else {
-      scanObject(value, fieldName, annotatedOnly, visited);
+      scanObject(value, fieldName, true, visited);
     }
   }
 
