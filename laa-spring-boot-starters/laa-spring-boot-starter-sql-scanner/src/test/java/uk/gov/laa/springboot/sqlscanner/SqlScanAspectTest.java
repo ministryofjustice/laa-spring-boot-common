@@ -63,6 +63,12 @@ class SqlScanAspectTest {
   }
 
   @Test
+  void ignoresUnannotatedPojo() {
+    aspect.scanArguments(new Object[]{new UnannotatedPojo("safe", "select * from dual")});
+    assertThat(appender.list).isEmpty();
+  }
+
+  @Test
   void handlesCyclicObjectGraphsWithoutStackOverflow() {
     CyclicA a = new CyclicA();
     CyclicB b = new CyclicB();
@@ -237,6 +243,8 @@ class SqlScanAspectTest {
   static class AnnotatedPojo { String text; AnnotatedPojo(String t) { text = t; } }
 
   static class FieldAnnotatedPojo { String safe; @ScanForSql String danger; FieldAnnotatedPojo(String safe, String danger) { this.safe = safe; this.danger = danger; } }
+
+  static class UnannotatedPojo { String safe; String danger; UnannotatedPojo(String safe, String danger) { this.safe = safe; this.danger = danger; } }
 
   static class PrimitiveHolder { int i; boolean b; double d; @ScanForSql String val; PrimitiveHolder(int i, boolean b, double d, String val) { this.i = i; this.b = b; this.d = d; this.val = val; } }
 
