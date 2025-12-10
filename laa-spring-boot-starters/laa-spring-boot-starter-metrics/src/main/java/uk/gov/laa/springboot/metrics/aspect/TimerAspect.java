@@ -54,8 +54,7 @@ public class TimerAspect {
           String label =
               metricName.isEmpty() ? methodName : metricName;
 
-          log.warn("{} took {} seconds", label, duration);
-
+          log.debug("{} took {} seconds", label, duration);
         }
       }
     }
@@ -90,7 +89,7 @@ public class TimerAspect {
           String label =
               metricName.isEmpty() ? methodName : metricName;
 
-          log.warn("{} took {} seconds", label, duration);
+          log.debug("{} took {} seconds", label, duration);
         }
       }
     }
