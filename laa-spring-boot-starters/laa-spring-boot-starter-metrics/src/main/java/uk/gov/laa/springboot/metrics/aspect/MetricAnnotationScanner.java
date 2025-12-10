@@ -64,6 +64,8 @@ public class MetricAnnotationScanner implements ApplicationListener<ContextRefre
 
       scanMethods(targetClass, SummaryTimerMetric.class);
       scanMethods(targetClass, HistogramTimerMetric.class);
+      scanMethods(targetClass, HistogramMetric.class);
+      scanMethods(targetClass, HistogramMetrics.class);
       scanMethods(targetClass, CounterMetric.class);
       scanMethods(targetClass, CounterMetrics.class);
     }
@@ -105,15 +107,15 @@ public class MetricAnnotationScanner implements ApplicationListener<ContextRefre
                   metric.metricName(), metric.hintText(), labels);
             }
           } else if (annotationClass.equals(HistogramMetric.class)) {
-            CounterMetric annotation = m.getAnnotation(CounterMetric.class);
-            counterMetricService.register(
+            HistogramMetric annotation = m.getAnnotation(HistogramMetric.class);
+            histogramMetricService.register(
                 annotation.metricName(),
                 annotation.hintText(), annotation.labels());
           } else if (annotationClass.equals(HistogramMetrics.class)) {
             HistogramMetrics metrics = m.getAnnotation(HistogramMetrics.class);
             for (HistogramMetric metric : metrics.value()) {
               String[] labels = metric.labels();
-              counterMetricService.register(
+              histogramMetricService.register(
                   metric.metricName(), metric.hintText(), labels);
             }
           }
