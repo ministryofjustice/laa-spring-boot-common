@@ -28,6 +28,8 @@ dependencies {
 * If an argument **type** is annotated with `@ScanForSql`, the entire object graph is scanned.
 * If only specific fields/record components are annotated, only those values are scanned.
 * Method parameters annotated directly with `@ScanForSql` are also scanned.
+* Patterns checked by default: `select`, `insert`, `update`, `delete`, `drop`, `truncate`, `union`,
+  SQL comment markers, and `or/and` comparisons.
 * JDK/platform types are skipped automatically.
 
 ---
@@ -47,7 +49,16 @@ This gives fine-grained, opt-in scanning while still allowing selective field-le
 
 ### Examples
 
-#### 1. Full entity scanning (class-level annotation)
+#### 1. Full entity scanning (record/class-level annotation)
+
+```java
+@ScanForSql
+public record CreateCustomerRequest(
+    String name,
+    String email,
+    String comments
+) {}
+```
 
 ```java
 @ScanForSql
@@ -63,6 +74,13 @@ repository.save(new CustomerEntity());
 ```
 
 #### 2. Selective scanning (field-level annotation)
+
+```java
+public record FeedbackRequest(
+    String name,
+    @ScanForSql String message // only this field is scanned
+) {}
+```
 
 ```java
 public class PaymentEntity {
@@ -94,6 +112,8 @@ repository.save(reportEntity); // ignored completely
 ## Logging behaviour
 
 On detection:
+The aspect logs at `WARN` with the field/component name and the matched pattern so that requests can
+be flagged or rejected upstream.
 
 ```
 WARN Suspicious SQL-like pattern 'drop' in field 'payment.comment': 'drop table x'
@@ -109,6 +129,7 @@ The message includes:
 
 ## Missing AOP
 
-If `spring-boot-starter-aop` is missing, the starter logs a warning and disables scanning.
+If Spring AOP is absent, the starter logs a warning at startup and skips scanning until
+`spring-boot-starter-aop` is added to the classpath.
 
 ---
