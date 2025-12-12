@@ -1,8 +1,5 @@
 package uk.gov.laa.springboot.auth;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
@@ -16,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.InvalidPropertyException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Holds the authentication context for the API.
@@ -64,7 +64,7 @@ public class TokenDetailsManager {
                   authenticationProperties.getAuthorizedClients(),
                   new TypeReference<>() {
                   });
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       throw new RuntimeException(e);
     }
 
@@ -96,7 +96,7 @@ public class TokenDetailsManager {
                   authenticationProperties.getAuthorizedRoles(),
                   new TypeReference<>() {
                   });
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       throw new RuntimeException(e);
     }
 
