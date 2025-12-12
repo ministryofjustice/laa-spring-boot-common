@@ -66,7 +66,7 @@ public class SqlScanAspect {
     for (int i = 0; i < paramAnnotations.length; i++) {
       for (Annotation a : paramAnnotations[i]) {
         if (a.annotationType() == ScanForSql.class) {
-          scanObject(args[i], "arg[" + i + "]", true, new IdentityHashMap<>());
+          scanObject(args[i], args[i].getClass().getSimpleName(), true, new IdentityHashMap<>());
         }
       }
     }
@@ -84,7 +84,7 @@ public class SqlScanAspect {
       }
 
       boolean classAnnotated = arg.getClass().isAnnotationPresent(ScanForSql.class);
-      scanObject(arg, "arg[" + i + "]", classAnnotated, new IdentityHashMap<>());
+      scanObject(arg, arg.getClass().getSimpleName(), classAnnotated, new IdentityHashMap<>());
     }
   }
 

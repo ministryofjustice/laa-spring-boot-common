@@ -107,7 +107,7 @@ class SqlScanAspectTest {
     Mockito.when(jp.getArgs()).thenReturn(new Object[]{"delete from data"});
 
     aspect.scanForSqlController(jp);
-    assertLogContains("delete", "arg[0]");
+    assertLogContains("delete", "String");
   }
 
   // -----------------------------
