@@ -131,7 +131,7 @@ class LaaJavaGradlePlugin implements Plugin<Project> {
         target.repositories {
             mavenCentral()
             maven {
-                url 'https://maven.pkg.github.com/ministryofjustice/laa-spring-boot-common'
+                url = target.uri('https://maven.pkg.github.com/ministryofjustice/laa-spring-boot-common')
                 credentials {
                     username = target.gitHubPackagesUsername
                     password = target.gitHubPackagesPassword
@@ -147,7 +147,7 @@ class LaaJavaGradlePlugin implements Plugin<Project> {
         target.publishing {
             repositories {
                 maven {
-                    url "https://maven.pkg.github.com/ministryofjustice/${repositoryName}"
+                    url = target.uri("https://maven.pkg.github.com/ministryofjustice/${repositoryName}")
                     credentials {
                         username = target.gitHubPackagesUsername
                         password = target.gitHubPackagesPassword

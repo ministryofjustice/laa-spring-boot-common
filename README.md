@@ -52,13 +52,13 @@ pluginManagement {
     repositories {
         maven {
             name = "gitHubPackages"
-            url uri('https://maven.pkg.github.com/ministryofjustice/laa-spring-boot-common')
+            url = uri('https://maven.pkg.github.com/ministryofjustice/laa-spring-boot-common')
             credentials {
                 username = System.getenv("GITHUB_ACTOR")?.trim() ?: settings.ext.find('project.ext.gitPackageUser')
                 password = System.getenv("GITHUB_TOKEN")?.trim() ?: settings.ext.find('project.ext.gitPackageKey')
             }
         }
-        maven { url "https://plugins.gradle.org/m2/" }
+        maven { url = uri("https://plugins.gradle.org/m2/") }
         gradlePluginPortal()
     }
 }
