@@ -66,7 +66,9 @@ public class SqlScanAspect {
     for (int i = 0; i < paramAnnotations.length; i++) {
       for (Annotation a : paramAnnotations[i]) {
         if (a.annotationType() == ScanForSql.class) {
-          scanObject(args[i], args[i].getClass().getSimpleName(), true, new IdentityHashMap<>());
+          Class<?>[] ignored = resolveIgnoredClasses(args[i], true);
+          scanObject(args[i], args[i].getClass().getSimpleName(), true, new IdentityHashMap<>(),
+              ignored);
         }
       }
     }
@@ -84,17 +86,29 @@ public class SqlScanAspect {
       }
 
       boolean classAnnotated = arg.getClass().isAnnotationPresent(ScanForSql.class);
-      scanObject(arg, arg.getClass().getSimpleName(), classAnnotated, new IdentityHashMap<>());
+      Class<?>[] ignored = resolveIgnoredClasses(arg, classAnnotated);
+      scanObject(arg, arg.getClass().getSimpleName(), classAnnotated, new IdentityHashMap<>(),
+          ignored);
     }
   }
 
   private void scanObject(
-      Object obj, String fieldName, boolean shouldScan, Map<Object, Boolean> visited
+      Object obj, String fieldName, boolean shouldScan, Map<Object, Boolean> visited,
+      Class<?>[] ignored
   ) {
     if (obj == null || visited.containsKey(obj)) {
       return;
     }
     visited.put(obj, Boolean.TRUE);
+
+    // 🔥 NEW — skip ignored classes
+    if (shouldScan) {
+      for (Class<?> ignoredClass : ignored) {
+        if (ignoredClass.isAssignableFrom(obj.getClass())) {
+          return; // skip scanning this object entirely
+        }
+      }
+    }
 
     if (scanString(obj, fieldName, shouldScan)) {
       return;
@@ -107,26 +121,26 @@ public class SqlScanAspect {
     }
 
     if (type.isArray()) {
-      scanArray(obj, fieldName, shouldScan, visited);
+      scanArray(obj, fieldName, shouldScan, visited, ignored);
       return;
     }
 
     if (obj instanceof Collection<?> col) {
-      scanCollection(col, fieldName, shouldScan, visited);
+      scanCollection(col, fieldName, shouldScan, visited, ignored);
       return;
     }
 
     if (obj instanceof Map<?, ?> map) {
-      scanMap(map, fieldName, shouldScan, visited);
+      scanMap(map, fieldName, shouldScan, visited, ignored);
       return;
     }
 
     if (type.isRecord()) {
-      scanRecord(obj, fieldName, shouldScan, visited);
+      scanRecord(obj, fieldName, shouldScan, visited, ignored);
       return;
     }
 
-    scanPojoFields(obj, fieldName, shouldScan, visited);
+    scanPojoFields(obj, fieldName, shouldScan, visited, ignored);
   }
 
   private boolean scanString(Object obj, String fieldName, boolean shouldScan) {
@@ -140,44 +154,50 @@ public class SqlScanAspect {
   }
 
   private void scanArray(
-      Object array, String fieldName, boolean shouldScan, Map<Object, Boolean> visited
+      Object array, String fieldName, boolean shouldScan, Map<Object, Boolean> visited,
+      Class<?>[] ignored
   ) {
     int len = Array.getLength(array);
     for (int i = 0; i < len; i++) {
       Object element = Array.get(array, i);
       scanObject(
-          element, nestedFieldName(fieldName, "[" + i + "]"), shouldScan, visited
+          element, nestedFieldName(fieldName, "[" + i + "]"), shouldScan, visited,
+          ignored
       );
     }
   }
 
   private void scanCollection(
-      Collection<?> col, String fieldName, boolean shouldScan, Map<Object, Boolean> visited
+      Collection<?> col, String fieldName, boolean shouldScan, Map<Object, Boolean> visited,
+      Class<?>[] ignored
   ) {
     int i = 0;
     for (Object e : col) {
       scanObject(
-          e, nestedFieldName(fieldName, "[" + i + "]"), shouldScan, visited
+          e, nestedFieldName(fieldName, "[" + i + "]"), shouldScan, visited, ignored
       );
       i++;
     }
   }
 
   private void scanMap(
-      Map<?, ?> map, String fieldName, boolean shouldScan, Map<Object, Boolean> visited
+      Map<?, ?> map, String fieldName, boolean shouldScan, Map<Object, Boolean> visited,
+      Class<?>[] ignored
   ) {
     for (Map.Entry<?, ?> entry : map.entrySet()) {
       scanObject(
           entry.getValue(),
           nestedFieldName(fieldName, "[" + entry.getKey() + "]"),
           shouldScan,
-          visited
+          visited,
+          ignored
       );
     }
   }
 
   private void scanRecord(
-      Object record, String fieldName, boolean shouldScan, Map<Object, Boolean> visited
+      Object record, String fieldName, boolean shouldScan, Map<Object, Boolean> visited,
+      Class<?>[] ignored
   ) {
     for (RecordComponent rc : record.getClass().getRecordComponents()) {
       boolean process = shouldScan || rc.isAnnotationPresent(ScanForSql.class);
@@ -191,7 +211,8 @@ public class SqlScanAspect {
             value,
             nestedFieldName(fieldName, rc.getName()),
             process,
-            visited
+            visited,
+            ignored
         );
       } catch (Exception ex) {
         log.debug("Cannot read record component {}", rc.getName());
@@ -200,7 +221,8 @@ public class SqlScanAspect {
   }
 
   private void scanPojoFields(
-      Object obj, String fieldName, boolean shouldScan, Map<Object, Boolean> visited
+      Object obj, String fieldName, boolean shouldScan, Map<Object, Boolean> visited,
+      Class<?>[] ignored
   ) {
     // Only scan classes from your application
     Package pkg = obj.getClass().getPackage();
@@ -234,7 +256,8 @@ public class SqlScanAspect {
             value,
             nestedFieldName(fieldName, f.getName()),
             process,
-            visited
+            visited,
+            ignored
         );
       } catch (Exception ex) {
         log.debug("Cannot read field {}", f.getName());
@@ -278,5 +301,14 @@ public class SqlScanAspect {
     } else {
       return parent + "." + child;
     }
+  }
+
+  private Class<?>[] resolveIgnoredClasses(Object obj, boolean shouldScan) {
+    if (!shouldScan) {
+      return new Class<?>[0];
+    }
+
+    ScanForSql ann = obj.getClass().getAnnotation(ScanForSql.class);
+    return ann != null ? ann.ignoreClasses() : new Class<?>[0];
   }
 }

@@ -69,6 +69,24 @@ class SqlScanAspectTest {
   }
 
   @Test
+  void typeLevelIgnoreClassesSkipsSpecifiedClasses() {
+    var obj = new TypeIgnored();
+    aspect.scanArguments(new Object[]{obj});
+
+    // Should detect SQL pattern from 'danger'
+    assertThat(appender.list)
+        .singleElement()
+        .extracting(ILoggingEvent::getFormattedMessage)
+        .satisfies(msg -> assertThat(msg)
+            .contains("drop")
+            .contains("danger")
+        );
+
+    // Ensure nothing from IgnoredClass.bad appears
+    String log = appender.list.get(0).getFormattedMessage();
+    assertThat(log).doesNotContain("ignored_table");
+  }
+  @Test
   void handlesCyclicObjectGraphsWithoutStackOverflow() {
     CyclicA a = new CyclicA();
     CyclicB b = new CyclicB();
@@ -260,5 +278,17 @@ class SqlScanAspectTest {
       this.danger = danger;
       this.id = id;
     }
+  }
+
+  // User-defined class that should be ignored
+  static class IgnoredClass {
+    String bad = "delete from ignored_table";
+  }
+
+  // Class under test — ignore IgnoredClass entirely
+  @ScanForSql(ignoreClasses = {IgnoredClass.class})
+  static class TypeIgnored {
+    String danger = "drop table x";
+    IgnoredClass ignored = new IgnoredClass();
   }
 }
