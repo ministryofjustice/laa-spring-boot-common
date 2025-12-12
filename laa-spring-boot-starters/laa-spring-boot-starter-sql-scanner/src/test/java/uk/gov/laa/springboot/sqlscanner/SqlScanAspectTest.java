@@ -190,6 +190,42 @@ class SqlScanAspectTest {
         .doesNotContain("mostSigBits");
   }
 
+  @Test
+  void scanParamsAnnotatedRespectsIgnoredClasses() throws NoSuchMethodException {
+    // 1. Define a method with a parameter annotated with ScanForSql(ignoreClasses = ...)
+    class TestMethodsWithIgnoredParam {
+      public void methodWithIgnoredParam(
+          @ScanForSql(ignoreClasses = {IgnoredClass.class}) TypeIgnored param) {}
+    }
+
+    Method method = TestMethodsWithIgnoredParam.class
+        .getMethod("methodWithIgnoredParam", TypeIgnored.class);
+
+    // 2. Create mock JoinPoint and MethodSignature
+    JoinPoint jp = Mockito.mock(JoinPoint.class);
+    MethodSignature sig = Mockito.mock(MethodSignature.class);
+    Mockito.when(jp.getSignature()).thenReturn(sig);
+    Mockito.when(sig.getMethod()).thenReturn(method);
+
+    TypeIgnored obj = new TypeIgnored();
+    Mockito.when(jp.getArgs()).thenReturn(new Object[]{obj});
+
+    // 3. Call the scanParamsAnnotated method
+    aspect.scanParamsAnnotated(jp);
+
+    // 4. Assertions
+    assertThat(appender.list)
+        .singleElement()
+        .extracting(ILoggingEvent::getFormattedMessage)
+        .satisfies(msg -> {
+          // 'danger' field should be scanned
+          assertThat(msg).contains("drop").contains("danger");
+          // 'ignored.bad' field should be skipped
+          assertThat(msg).doesNotContain("ignored_table");
+        });
+  }
+
+
   private JoinPoint mockRepositoryJoinPoint(String methodName, Class<?>[] paramTypes, Object[] args) throws Exception {
     Method method = FakeRepository.class.getDeclaredMethod(methodName, paramTypes);
     JoinPoint jp = Mockito.mock(JoinPoint.class);

@@ -34,12 +34,18 @@ public class SqlScanAspect {
     this.scanner = scanner;
   }
 
+  /**
+   * Pointcut for all controller methods.
+   */
   @Pointcut(
       "within(@org.springframework.web.bind.annotation.RestController *)"
           + " || within(@org.springframework.stereotype.Controller *)"
   )
   private void controllerMethods() {}
 
+  /**
+   * Pointcut for repository save or update methods.
+   */
   @Pointcut(
       "(within(@org.springframework.stereotype.Repository *)"
           + " || within(org.springframework.data.repository.Repository+))"
@@ -47,32 +53,57 @@ public class SqlScanAspect {
   )
   private void repositorySaveOrUpdate() {}
 
+  /**
+   * Scans controller method arguments for SQL patterns
+   * if their types are annotated with @ScanForSql.
+   *
+   * @param jp the join point
+   */
   @Before("controllerMethods()")
   public void scanForSqlController(JoinPoint jp) {
     scanArguments(jp.getArgs());
     scanParamsAnnotated(jp);
   }
 
+  /**
+   * Scans repository save/update method arguments for SQL patterns
+   * if their types are annotated with @ScanForSql.
+   *
+   * @param jp the join point
+   */
   @Before("repositorySaveOrUpdate()")
   public void scanForSqlDb(JoinPoint jp) {
     scanArguments(jp.getArgs());
   }
 
-  private void scanParamsAnnotated(JoinPoint jp) {
+  /**
+   * Scans method parameters annotated with @ScanForSql.
+   *
+   * @param jp the join point
+   */
+  public void scanParamsAnnotated(JoinPoint jp) {
     MethodSignature sig = (MethodSignature) jp.getSignature();
     Annotation[][] paramAnnotations = sig.getMethod().getParameterAnnotations();
     Object[] args = jp.getArgs();
 
     for (int i = 0; i < paramAnnotations.length; i++) {
       for (Annotation a : paramAnnotations[i]) {
-        if (a.annotationType() == ScanForSql.class) {
-          Class<?>[] ignored = resolveIgnoredClasses(args[i], true);
-          scanObject(args[i], args[i].getClass().getSimpleName(), true, new IdentityHashMap<>(),
-              ignored);
+        if (a instanceof ScanForSql scanAnn) {
+          // Extract ignored classes directly from annotation
+          Class<?>[] ignored = scanAnn.ignoreClasses();
+
+          scanObject(
+              args[i],
+              args[i].getClass().getSimpleName(),
+              true,                     // force scanning
+              new IdentityHashMap<>(),            // cycle detection
+              ignored                             // pass extracted ignored types
+          );
         }
       }
     }
   }
+
 
   void scanArguments(Object[] args) {
     if (args == null) {
