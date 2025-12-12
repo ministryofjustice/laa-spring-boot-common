@@ -24,7 +24,7 @@ dependencies {
 
     constraints {
         project.project(':laa-spring-boot-starters').subprojects.each {
-            api group: it.group, name: it.name, version: it.version
+            api "${it.group}:${it.name}:${it.version}"
         }
     }
 }
