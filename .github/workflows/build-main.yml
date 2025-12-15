@@ -1,8 +1,8 @@
-name: Build main
+name: Build main and spring3
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ main, spring3 ]
     types: [ closed ]
 
 jobs:
