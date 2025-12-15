@@ -3,6 +3,12 @@
 Provides 2 plugins that configure plugins and apply common build logic,
 and a set of starters that provide individual pieces of common functionality.
 
+## Branch compatibility
+
+- `main`: Spring Boot 4.x / Jackson 3 line; use releases from this branch if your service is on Boot 4.
+- `spring3`: Spring Boot 3.x / Jackson 2 line; pin plugin and starter versions from releases built off this branch if you have not upgraded yet.
+- Avoid mixing artifacts across the two lines; pick the branch that matches your Spring Boot major version when selecting versions from GitHub Packages.
+
 ## Available Plugins
 
 ### `laa-java-gradle-plugin` for Java Projects
