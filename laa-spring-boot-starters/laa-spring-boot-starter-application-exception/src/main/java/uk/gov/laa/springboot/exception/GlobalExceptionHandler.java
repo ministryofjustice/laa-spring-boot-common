@@ -9,9 +9,14 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 /**
  * Controller advice class responsible for handling exceptions globally and providing appropriate
  * error responses.
+ *
+ * @deprecated Prefer using Spring's {@link org.springframework.http.ProblemDetail} or
+ *     {@link org.springframework.web.ErrorResponse} responses directly from
+ *     {@code @ExceptionHandler} or {@code @RequestMapping} methods.
  */
 @RestControllerAdvice
 @Slf4j
+@Deprecated
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
   /**

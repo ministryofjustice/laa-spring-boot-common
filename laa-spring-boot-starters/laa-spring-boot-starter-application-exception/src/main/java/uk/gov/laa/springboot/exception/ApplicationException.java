@@ -7,7 +7,12 @@ import org.springframework.http.HttpStatusCode;
 
 /**
  * Exception thrown in the api for application exceptions.
+ *
+ * @deprecated Use Spring's {@link org.springframework.http.ProblemDetail} or
+ *     {@link org.springframework.web.ErrorResponse} support to return RFC 9457 compliant responses
+ *     directly from {@code @ExceptionHandler} or {@code @RequestMapping} methods.
  */
+@Deprecated
 public class ApplicationException extends RuntimeException {
 
   @Getter
