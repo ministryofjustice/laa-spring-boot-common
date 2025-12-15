@@ -11,4 +11,9 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.FIELD, ElementType.RECORD_COMPONENT, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ScanForSql {
+
+  /**
+   * Classes to be completely ignored during scanning under this annotated scope.
+   */
+  Class<?>[] ignoreClasses() default {};
 }
