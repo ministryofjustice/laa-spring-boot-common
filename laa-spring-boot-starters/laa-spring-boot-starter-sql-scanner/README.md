@@ -106,6 +106,30 @@ public class ReportEntity {
 ```java
 repository.save(reportEntity); // ignored completely
 ```
+---
+
+## Ignoring classes during scanning
+
+`@ScanForSql` supports an `ignoreClasses` attribute to completely exclude specific types from scanning within the annotated scope.
+
+### Behaviour
+
+* Ignored classes are **not scanned or traversed**
+* Their fields, record components, and nested objects are skipped entirely
+* Applies to controller arguments and repository save/update scanning
+* Useful for large, safe, or third-party types
+
+### Example
+
+```java
+@ScanForSql(ignoreClasses = AuditMetadata.class)
+public record CreateOrderRequest(
+    String description,
+    AuditMetadata auditMetadata
+) {}
+```
+
+`AuditMetadata` and anything inside it will be skipped during scanning.
 
 ---
 
