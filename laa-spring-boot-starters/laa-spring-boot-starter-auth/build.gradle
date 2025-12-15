@@ -11,15 +11,18 @@ dependencies {
         transitive = false
     }
 
-    implementation 'io.swagger.core.v3:swagger-models:2.2.40'
+    implementation 'io.swagger.core.v3:swagger-models:2.2.41'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-json'
+    implementation 'org.springframework.boot:spring-boot-starter-jackson'
 
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
