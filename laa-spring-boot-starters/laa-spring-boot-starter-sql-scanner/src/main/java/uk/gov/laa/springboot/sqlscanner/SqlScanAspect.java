@@ -132,7 +132,7 @@ public class SqlScanAspect {
     }
     visited.put(obj, Boolean.TRUE);
 
-    // 🔥 NEW — skip ignored classes
+    // skip ignored classes
     if (shouldScan) {
       for (Class<?> ignoredClass : ignored) {
         if (ignoredClass.isAssignableFrom(obj.getClass())) {
