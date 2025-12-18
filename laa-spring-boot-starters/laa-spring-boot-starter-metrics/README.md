@@ -10,6 +10,17 @@ auto-cofigures multiple services to expose Prometheus metrics for your applicati
 - `HistogramMetricService`
 - `SummaryMetricService`
 
+## Why use this over official Prometheus/Micrometer annotations?
+
+Standard Prometheus annotations (like `@Timed` from Micrometer) often rely on **Spring Proxying**. This means that if you call an annotated method from *within* the same class (a self-invocation), the annotation is ignored because the call doesn't pass through the Spring proxy.
+
+This starter's aspects are designed to:
+
+1.  **Eliminate the Proxy Limitation**: By using AspectJ-style pointcuts within our aspects, we ensure that metrics are captured even during internal method calls where standard Spring-proxied annotations would fail.
+2.  **Zero-Configuration Setup**: Unlike official implementations that require you to manually register `TimedAspect` beans or configure `MeterRegistry` customizations, this starter auto-configures everything.
+3.  **Domain-Driven Metrics**: Instead of technical implementation details, your code uses business-centric annotations (`@CounterMetric`) that handle the logic of value extraction and label mapping automatically.
+
+
 ## Usage
 
 ### 1. Declare the dependency
@@ -91,6 +102,7 @@ The `@SummaryTimerMetric` annotation is used to record the execution time of a m
 
 The `@HistogramTimerMetric` annotation is used to record the execution time of a method using Prometheus'
 `histogram` type. Each invocation of the annotated method will record the execution time in the histogram.
+
 
 | Parameter             | Type     | Description                                                                                    | Default Value |
 |-----------------------|----------|------------------------------------------------------------------------------------------------|---------------|
