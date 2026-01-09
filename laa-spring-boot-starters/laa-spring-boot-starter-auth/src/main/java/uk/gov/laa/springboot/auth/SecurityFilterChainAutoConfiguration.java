@@ -1,5 +1,6 @@
 package uk.gov.laa.springboot.auth;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
@@ -13,8 +14,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.SecurityFilterChain;
-import tools.jackson.databind.ObjectMapper;
-
 
 /**
  * Configuration of security filter chains to determine authentication behavior per endpoint

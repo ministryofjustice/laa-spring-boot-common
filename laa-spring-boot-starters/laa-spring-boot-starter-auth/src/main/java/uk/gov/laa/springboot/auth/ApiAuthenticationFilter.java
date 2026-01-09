@@ -1,5 +1,6 @@
 package uk.gov.laa.springboot.auth;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,7 +18,6 @@ import org.springframework.security.web.context.RequestAttributeSecurityContextR
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
-import tools.jackson.databind.ObjectMapper;
 
 /**
  * API access token authentication filter.

@@ -1,10 +1,10 @@
 package uk.gov.laa.springboot.auth;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
-import tools.jackson.databind.ObjectMapper;
 
 /**
  * Custom Api token configurer.
