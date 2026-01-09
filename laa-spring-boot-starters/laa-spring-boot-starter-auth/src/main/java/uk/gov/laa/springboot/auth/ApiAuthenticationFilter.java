@@ -14,6 +14,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -28,6 +30,9 @@ public class ApiAuthenticationFilter extends OncePerRequestFilter {
   private final ObjectMapper objectMapper;
 
   private final TokenDetailsManager tokenDetailsManager;
+
+  private final SecurityContextRepository securityContextRepository =
+      new RequestAttributeSecurityContextRepository();
 
   protected ApiAuthenticationFilter(
       AuthenticationManager authenticationManager, ObjectMapper objectMapper,
@@ -60,6 +65,7 @@ public class ApiAuthenticationFilter extends OncePerRequestFilter {
       SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
       securityContext.setAuthentication(authentication);
       SecurityContextHolder.setContext(securityContext);
+      securityContextRepository.saveContext(securityContext, request, response);
       log.info("Endpoint '{} {}' requested by {}.", request.getMethod(), request.getRequestURI(),
           authentication.getPrincipal().toString());
 

@@ -2,6 +2,7 @@ package uk.gov.laa.springboot.auth;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,6 +13,12 @@ public class TestAPI {
     @RestController
     @RequestMapping(value = "/resource1")
     public class TestResource1Controller {
+
+        @GetMapping(path = "/streaming-group1")
+        public ResponseEntity<StreamingResponseBody> returnStreamingGroup1() {
+            StreamingResponseBody body = out -> out.write("ok".getBytes());
+            return ResponseEntity.ok(body);
+        }
 
         @GetMapping(path = "/unrestricted")
         public ResponseEntity<?> returnUnrestricted() {
