@@ -50,6 +50,12 @@ subprojects {
 
     release {
         tagTemplate = '$name-$version'
+        failOnUnversionedFiles = false
+        failOnUpdateNeeded = false
+        failOnCommitNeeded = false
+        git {
+            requireBranch = 'bugfix/spring3-auth-streaming|main'
+        }
     }
 
     tasks.withType(AbstractPublishToMaven).tap {
