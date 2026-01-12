@@ -19,6 +19,7 @@ jobs:
       checkstyle_report: 'false'
       jacoco_coverage_report: 'false'
       github_bot_username: 'laa-ccms-caab-service'
+      override_tagged_branch: ${{ github.event.pull_request.base.ref }}
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}
       github_app_id: ${{ vars.LAA_CCMS_CAAB_SERVICE_APP_ID }}
