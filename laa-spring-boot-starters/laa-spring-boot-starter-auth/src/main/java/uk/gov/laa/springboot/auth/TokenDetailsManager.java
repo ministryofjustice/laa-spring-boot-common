@@ -181,6 +181,16 @@ public class TokenDetailsManager {
     return authorizedRoles.stream()
         .filter(role -> authorizedRoleNames.contains(role.name()))
         .flatMap(role -> Arrays.stream(role.uris()))
-        .anyMatch(uri -> PathPatternRequestMatcher.withDefaults().matcher(uri).matches(request));
+        .anyMatch(roleUri -> isRequestAuthorized(roleUri, request));
+  }
+
+  private boolean isRequestAuthorized(AuthorizedRoleUri roleUri, HttpServletRequest request) {
+    if (roleUri == null || roleUri.uri() == null) {
+      return false;
+    }
+    if (!PathPatternRequestMatcher.withDefaults().matcher(roleUri.uri()).matches(request)) {
+      return false;
+    }
+    return roleUri.matchesMethod(request.getMethod());
   }
 }

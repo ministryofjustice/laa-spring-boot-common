@@ -22,7 +22,7 @@ Here you will need to define several properties to ensure authentication behaves
 
 - `authentication-header` - The name of the HTTP header used to send and receive the API access token.
 - `authorized-clients` - The list of clients who are authorized to access the API, and their roles. This is a JSON formatted string, with the top level being a list and each contained item representing a client's credentials, containing the name of the client, the roles it has access to and the access token associated with it.
-- `authorized-roles` - The list of roles that can be used to access the API, and the URIs they enable access to. This is a JSON formatted string, with the top level being a list and each contained item representing an authorized role, containing the name of the role and the URIs that it enables access to.
+- `authorized-roles` - The list of roles that can be used to access the API, and the URIs they enable access to. This is a JSON formatted string, with the top level being a list and each contained item representing an authorized role, containing the name of the role and the URIs that it enables access to. Each URI entry can be a simple string (all HTTP methods) or an object with `uri` and `method`/`methods`. Allowed method values are: `GET`, `HEAD`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`, `TRACE` (case-insensitive). If omitted, all methods are permitted.
 - `unprotected-uris` - The list of URIs which do not require any authentication. These may be relating to API documentation, static resources or any other content which is not sensitive.
 
 Access tokens should be generated as a `UUID4` string.
@@ -58,7 +58,14 @@ laa.springboot.starter.auth:
       {
           "name": "GROUP1",
           "URIs": [
-              "/resource1/requires-group1-role/**"
+              "/resource1/requires-group1-role/**",
+              {
+                  "method": [
+                      "GET",
+                      "POST"
+                  ],
+                  "uri": "/resource1/method-specific/**"
+              }
           ]
       },
       {

@@ -3,6 +3,7 @@ package uk.gov.laa.springboot.auth;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,8 +29,23 @@ public class TestAPI {
             return noContent();
         }
 
+        @PostMapping(path = "/requires-group1-role")
+        public ResponseEntity<?> returnGroup1RoleRestrictedPost() {
+            return noContent();
+        }
+
         @GetMapping(path = "/requires-group2-role")
         public ResponseEntity<?> returnGroup2RoleRestricted() {
+            return noContent();
+        }
+
+        @GetMapping(path = "/method-specific")
+        public ResponseEntity<?> returnMethodSpecificGet() {
+            return noContent();
+        }
+
+        @PostMapping(path = "/method-specific")
+        public ResponseEntity<?> returnMethodSpecificPost() {
             return noContent();
         }
 

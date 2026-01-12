@@ -1,6 +1,7 @@
 package uk.gov.laa.springboot.auth;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * Holds a list of uris available for a given role.
@@ -9,4 +10,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
  * @param uris the uris that are accessible to clients that have this role
  */
 @JsonFormat(with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
-public record AuthorizedRole(String name, String[] uris) {}
+public record AuthorizedRole(
+    String name,
+    @JsonDeserialize(contentUsing = AuthorizedRoleUriDeserializer.class)
+    AuthorizedRoleUri[] uris) {}
