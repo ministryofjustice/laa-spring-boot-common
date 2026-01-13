@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -140,6 +141,27 @@ class ApiEndpointAuthenticationTest {
   void testMethodSpecificEndpointPostForbidden() throws Exception {
     mockMvc.perform(post("/resource1/method-specific").header(HttpHeaders.AUTHORIZATION,
             "7a4f0b33-68ad-4fd0-9b19-3d45b1d06f60"))
+        .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+  }
+
+  @Test
+  void testMethodArrayEndpointGetAuthorized() throws Exception {
+    mockMvc.perform(get("/resource1/method-array").header(HttpHeaders.AUTHORIZATION,
+            "b1a0a16b-8e2e-4865-8d49-45ddb6d350a8"))
+        .andExpect(status().is(HttpStatus.NO_CONTENT.value()));
+  }
+
+  @Test
+  void testMethodArrayEndpointPostAuthorized() throws Exception {
+    mockMvc.perform(post("/resource1/method-array").header(HttpHeaders.AUTHORIZATION,
+            "b1a0a16b-8e2e-4865-8d49-45ddb6d350a8"))
+        .andExpect(status().is(HttpStatus.NO_CONTENT.value()));
+  }
+
+  @Test
+  void testMethodArrayEndpointPatchForbidden() throws Exception {
+    mockMvc.perform(patch("/resource1/method-array").header(HttpHeaders.AUTHORIZATION,
+            "b1a0a16b-8e2e-4865-8d49-45ddb6d350a8"))
         .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
   }
 

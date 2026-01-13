@@ -3,6 +3,7 @@ package uk.gov.laa.springboot.auth;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,6 +47,21 @@ public class TestAPI {
 
         @PostMapping(path = "/method-specific")
         public ResponseEntity<?> returnMethodSpecificPost() {
+            return noContent();
+        }
+
+        @GetMapping(path = "/method-array")
+        public ResponseEntity<?> returnMethodArrayGet() {
+            return noContent();
+        }
+
+        @PostMapping(path = "/method-array")
+        public ResponseEntity<?> returnMethodArrayPost() {
+            return noContent();
+        }
+
+        @PatchMapping(path = "/method-array")
+        public ResponseEntity<?> returnMethodArrayPatch() {
             return noContent();
         }
 
