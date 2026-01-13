@@ -36,8 +36,21 @@ laa.springboot.starter.auth:
               "SPECIFIC"
           ],
           "token": "fa19fc1c-cb44-4bd2-aa83-17cf83df2fb5"
-      }
-  ]'
+      },
+      {
+          "name": "method-client",
+          "roles": [
+              "METHOD_GET_ONLY"
+          ],
+          "token": "7a4f0b33-68ad-4fd0-9b19-3d45b1d06f60"
+      },
+      {
+          "name": "method-array-client",
+          "roles": [
+              "METHOD_GET_POST_ONLY"
+          ],
+          "token": "b1a0a16b-8e2e-4865-8d49-45ddb6d350a8"
+      }]'
   authorized-roles: '[
       {
           "name": "GROUP1",
@@ -62,8 +75,30 @@ laa.springboot.starter.auth:
           "uris": [
               "/resource3/specific/**"
           ]
-      }
-  ]'
+      },
+      {
+          "name": "METHOD_GET_ONLY",
+          "uris": [
+              {
+                  "method": [
+                      "GET"
+                  ],
+                  "uri": "/resource1/method-specific/**"
+              }
+          ]
+      },
+      {
+          "name": "METHOD_GET_POST_ONLY",
+          "uris": [
+              {
+                  "method": [
+                      "GET",
+                      "POST"
+                  ],
+                  "uri": "/resource1/method-array/**"
+              }
+          ]
+      }]'
   unprotected-uris: [ "/actuator/**", "/resource1/unrestricted/**" ]
 
 logging:
