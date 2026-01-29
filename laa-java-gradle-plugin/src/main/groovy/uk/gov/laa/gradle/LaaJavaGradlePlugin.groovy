@@ -14,7 +14,7 @@ import org.gradle.testing.jacoco.plugins.JacocoPlugin
 
 class LaaJavaGradlePlugin implements Plugin<Project> {
 
-    private static final String JAVA_VERSION = "21"
+    private static final String JAVA_VERSION = "25"
     private static final String CHECKSTYLE_VERSION = "10.26.0"
 
     @Override
