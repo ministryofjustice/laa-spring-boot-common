@@ -1,3 +1,5 @@
+[![Ministry of Justice Repository Compliance Badge](https://github-community.service.justice.gov.uk/repository-standards/api/laa-spring-boot-common/badge)](https://github-community.service.justice.gov.uk/repository-standards/laa-spring-boot-common)
+
 # LAA Spring Boot Common
 
 Provides 2 plugins that configure plugins and apply common build logic,
@@ -116,3 +118,6 @@ apply plugin: 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin'
 - [Slack alerts](laa-spring-boot-starters/laa-spring-boot-starter-slack-alerts/README.md)
 - [SQL input scanning](laa-spring-boot-starters/laa-spring-boot-starter-sql-scanner/README.md)
 - _**[TODO]**_ Entity Converters
+
+## Contributing
+Follow the [contribution guide](./CONTRIBUTING.md) to make code changes.
