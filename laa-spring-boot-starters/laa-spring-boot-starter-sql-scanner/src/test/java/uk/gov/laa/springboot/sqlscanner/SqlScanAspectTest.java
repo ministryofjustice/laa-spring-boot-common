@@ -100,13 +100,13 @@ class SqlScanAspectTest {
 
   @Test
   void scansFieldsOnTypesAnnotatedWithScanForSql() {
-    aspect.scanArguments(new Object[]{new AnnotatedPojo("drop view")});
+    aspect.scanArguments(new Object[]{new AnnotatedPojo("drop view users")});
     assertThat(appender.list).hasSize(1);
   }
 
   @Test
   void respectsFieldAnnotationWhenClassNotAnnotated() {
-    aspect.scanArguments(new Object[]{new FieldAnnotatedPojo("ok", "drop trigger")});
+    aspect.scanArguments(new Object[]{new FieldAnnotatedPojo("ok", "drop trigger users")});
     assertLogContains("drop", "danger");
   }
 
@@ -257,9 +257,9 @@ class SqlScanAspectTest {
     return Stream.of(
         new Object[]{new ListHolder(List.of("safe", "DROP TABLE users")), "DROP", "[1]"},
         new Object[]{new MapHolder(Map.of("k1", "safe", "k2", "DELETE FROM accounts")), "DELETE", "[k2]"},
-        new Object[]{new ArrayHolder(new String[]{"ok", "DROP DATABASE"}), "DROP", "[1]"},
+        new Object[]{new ArrayHolder(new String[]{"ok", "DROP DATABASE claims"}), "DROP", "[1]"},
         new Object[]{new ListHolder(List.of("", "DROP VIEW x")), "DROP", "[1]"},
-        new Object[]{new MapHolder(Map.of("key", "", "key2", "DROP SCHEMA")), "DROP", "[key2]"},
+        new Object[]{new MapHolder(Map.of("key", "", "key2", "DROP SCHEMA claims")), "DROP", "[key2]"},
         new Object[]{new NestedRoot(new NestedLevel1(new NestedLevel2("DROP TABLE nested"))), "DROP", "level2Field"}
     );
   }
