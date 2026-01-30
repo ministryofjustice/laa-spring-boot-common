@@ -96,26 +96,142 @@ public class SqlScanner {
    */
   private static final List<SqlPattern> SUSPICIOUS_PATTERNS = List.of(
 
-      new SqlPattern("select",
-          Pattern.compile("\\bselect\\b", Pattern.CASE_INSENSITIVE)),
+      // -------------------------------------------------
+      // DML (Data Manipulation Language)
+      // -------------------------------------------------
 
-      new SqlPattern("insert",
-          Pattern.compile("\\binsert\\b", Pattern.CASE_INSENSITIVE)),
+      new SqlPattern(
+          "select statement",
+          Pattern.compile(
+              "\\bselect\\b\\s+[\\w\\s,.*()]+?\\s+\\bfrom\\b\\s+[\\w\\.]+",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
 
-      new SqlPattern("update",
-          Pattern.compile("\\bupdate\\b", Pattern.CASE_INSENSITIVE)),
+      new SqlPattern(
+          "select expression",
+          Pattern.compile(
+              "\\bselect\\b\\s+(\\d+|current_user|version\\(|@@)",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
 
-      new SqlPattern("delete",
-          Pattern.compile("\\bdelete\\b", Pattern.CASE_INSENSITIVE)),
+      new SqlPattern(
+          "insert into",
+          Pattern.compile(
+              "\\binsert\\b\\s+\\binto\\b\\s+[\\w\\.]+",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
 
-      new SqlPattern("drop",
-          Pattern.compile("\\bdrop\\b", Pattern.CASE_INSENSITIVE)),
+      new SqlPattern(
+          "update table",
+          Pattern.compile(
+              "\\bupdate\\b\\s+[\\w\\.]+\\s+\\bset\\b",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
 
-      new SqlPattern("truncate",
-          Pattern.compile("\\btruncate\\b", Pattern.CASE_INSENSITIVE)),
+      new SqlPattern(
+          "merge into",
+          Pattern.compile(
+              "\\bmerge\\b\\s+\\binto\\b\\s+[\\w\\.]+",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
 
-      new SqlPattern("alter",
-          Pattern.compile("\\balter\\b", Pattern.CASE_INSENSITIVE)),
+      new SqlPattern(
+          "delete from",
+          Pattern.compile(
+              "\\bdelete\\b\\s+\\bfrom\\b\\s+[\\w\\.]+",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
+
+      // -------------------------------------------------
+      // DDL (Data Definition Language)
+      // -------------------------------------------------
+
+      new SqlPattern(
+          "create object",
+          Pattern.compile(
+              "\\bcreate\\b\\s+"
+                  + "\\b(table|view|database|schema|index|sequence|function"
+                  + "|procedure|trigger|type|extension)\\b\\s+"
+                  + "[\\w\\.]+",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
+
+      new SqlPattern(
+          "drop object",
+          Pattern.compile(
+              "\\bdrop\\b\\s+"
+                  + "\\b(table|view|database|schema|index|sequence|function"
+                  + "|procedure|trigger|role|user|type|extension)\\b\\s+"
+                  + "[\\w\\.]+",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
+
+      new SqlPattern(
+          "truncate table",
+          Pattern.compile(
+              "\\btruncate\\b\\s+\\btable\\b\\s+[\\w\\.]+",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
+
+      new SqlPattern(
+          "alter object",
+          Pattern.compile(
+              "\\balter\\b\\s+"
+                  + "\\b(table|view|schema|database|index|sequence|function"
+                  + "|procedure|trigger)\\b\\s+"
+                  + "[\\w\\.]+",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
+
+      // -------------------------------------------------
+      // Privilege manipulation
+      // -------------------------------------------------
+
+      new SqlPattern(
+          "grant privileges",
+          Pattern.compile(
+              "\\bgrant\\b\\s+[\\w\\s,]+\\s+\\bto\\b\\s+[\\w\\.]+",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
+
+      new SqlPattern(
+          "revoke privileges",
+          Pattern.compile(
+              "\\brevoke\\b\\s+[\\w\\s,]+\\s+\\bfrom\\b\\s+[\\w\\.]+",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
+
+      // -------------------------------------------------
+      // Execution / stored procedures / RCE
+      // -------------------------------------------------
+
+      new SqlPattern(
+          "exec procedure",
+          Pattern.compile(
+              "\\bexec(ute)?\\b\\s+[\\w\\.]+",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
+
+      new SqlPattern(
+          "call procedure",
+          Pattern.compile(
+              "\\bcall\\b\\s+[\\w\\.]+",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
 
       new SqlPattern(
           "UNION-based injection",
