@@ -69,14 +69,30 @@ public class SqlScanner {
       );
 
   /**
-   * List of SQL patterns to scan for, consisting of:
-   * - Basic SQL commands (SELECT, INSERT, UPDATE, DELETE, etc)
-   * - Schema modification commands (DROP, TRUNCATE, ALTER)
-   * - SQL injection patterns (UNION, AND/OR operators, always true conditions)
-   * - SQL comments (line and block)
-   * - Statement terminators
-   * Each pattern is defined with a descriptive label and a regex Pattern
-   * that matches the suspicious content while minimizing false positives.
+   * List of SQL injection patterns and malicious SQL constructs to detect.
+   *
+   * <p>Pattern categories include:
+   * <ul>
+   *   <li>Basic SQL commands (SELECT, INSERT, UPDATE, DELETE)
+   *   <li>Schema modification commands (DROP, TRUNCATE, ALTER)
+   *   <li>UNION-based SQL injection attempts
+   *   <li>Stacked SQL statements using semicolon chaining
+   *   <li>Logical operator abuse (AND/OR in suspicious contexts)
+   *   <li>LIKE operator injection patterns
+   *   <li>Boolean-based bypasses and always-true conditions
+   *   <li>Comment injection using -- and block comment styles
+   *   <li>Time-based injection using SLEEP/WAITFOR
+   *   <li>Command execution via stored procedures
+   *   <li>Information schema enumeration attempts
+   * </ul>
+   *
+   * <p>Each pattern is defined as a {@link SqlPattern} record containing:
+   * <ul>
+   *   <li>A descriptive label identifying the type of attack
+   *   <li>A compiled regex Pattern that matches the suspicious syntax
+   *   <li>Word boundary markers and case-insensitive matching
+   *   <li>Context-aware detection to minimize false positives
+   * </ul>
    */
   private static final List<SqlPattern> SUSPICIOUS_PATTERNS = List.of(
 
