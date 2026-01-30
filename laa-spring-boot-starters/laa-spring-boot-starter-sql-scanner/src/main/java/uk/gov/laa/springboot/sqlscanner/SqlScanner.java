@@ -1,5 +1,7 @@
 package uk.gov.laa.springboot.sqlscanner;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -48,6 +50,15 @@ public class SqlScanner {
           Pattern.CASE_INSENSITIVE
       );
 
+  private static final Pattern LIKE_INJECTION_PATTERN =
+      Pattern.compile(
+          "\\b(or|and)\\b\\s+"
+              + IDENTIFIER + "\\s+"
+              + "like\\s+"
+              + "'%?[^']*'?$",
+          Pattern.CASE_INSENSITIVE
+      );
+
   /**
    * List of SQL patterns to scan for, consisting of:
    * - Basic SQL commands (SELECT, INSERT, UPDATE, DELETE, etc)
@@ -81,25 +92,86 @@ public class SqlScanner {
       new SqlPattern("alter",
           Pattern.compile("\\balter\\b", Pattern.CASE_INSENSITIVE)),
 
-      new SqlPattern("union",
-          Pattern.compile("\\bunion\\b", Pattern.CASE_INSENSITIVE)),
+      new SqlPattern(
+          "UNION-based injection",
+          Pattern.compile("\\bunion\\b\\s+\\bselect\\b", Pattern.CASE_INSENSITIVE)
+      ),
+
+      new SqlPattern(
+          "stacked SQL statements",
+          Pattern.compile(
+              ";\\s*(select|insert|update|delete|drop|alter|truncate|exec|call"
+                  + "|shutdown|grant|revoke)",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
 
       new SqlPattern(
           "logical operator (AND/OR)", LOGICAL_OPERATOR_PATTERN
       ),
 
-      new SqlPattern("Always true conditions (OR 1=1)",
-          Pattern.compile("\\bor\\s+1\\s*=\\s*1\\b", Pattern.CASE_INSENSITIVE)),
+      new SqlPattern(
+          "SQL injection fragment (LIKE)", LIKE_INJECTION_PATTERN
+      ),
 
-      new SqlPattern("SQL line comment",
-          Pattern.compile("(^|\\s)--\\s+[A-Za-z]", Pattern.CASE_INSENSITIVE)),
+      new SqlPattern(
+          "boolean bypass / always-true condition",
+          Pattern.compile(
+              "\\b(or|and)\\b\\s*(1\\s*=\\s*1|['\"%27]\\s*['\"\\d])",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
+
+      new SqlPattern(
+          "SQL comment injection",
+          Pattern.compile(
+              "("
+                  + "['\"\\)]"
+                  + "|"                                           // string / expression termination
+                  + "\\b\\d+\\s*(=|!=|<>|<|>|<=|>=)\\s*\\d+"
+                  + "|"                                           // numeric comparison (1=1)
+                  + IDENTIFIER + "\\s*(=|!=|<>|<|>|<=|>=)"
+                  + ")"                                           // column comparison
+                  + "\\s*(?<!\\d)--(?!\\d)",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
 
       new SqlPattern("SQL block comment",
           Pattern.compile("/\\*.*?\\*/",
               Pattern.CASE_INSENSITIVE | Pattern.DOTALL)),
 
-      new SqlPattern("statement terminator (;)",
-          Pattern.compile(";"))
+      new SqlPattern(
+          "SQL block comment injection",
+          Pattern.compile(
+              "(['\"\\)])\\s*/\\*",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
+
+      new SqlPattern(
+          "time-based SQL injection",
+          Pattern.compile(
+              "\\b(sleep|pg_sleep|waitfor\\s+delay)\\b",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
+
+      new SqlPattern(
+          "command execution / stored procedure abuse",
+          Pattern.compile(
+              "\\b(xp_cmdshell|execute\\s+immediate|copy\\s*\\(|system\\s*\\()",
+              Pattern.CASE_INSENSITIVE
+          )
+      ),
+
+      new SqlPattern(
+          "schema enumeration",
+          Pattern.compile(
+              "information_schema\\.",
+              Pattern.CASE_INSENSITIVE
+          )
+      )
   );
 
   /**
@@ -113,12 +185,24 @@ public class SqlScanner {
       return Optional.empty();
     }
 
+    String normalized = decode(value);
+
     for (SqlPattern sqlPattern : SUSPICIOUS_PATTERNS) {
-      if (sqlPattern.pattern().matcher(value).find()) {
+      if (sqlPattern.pattern().matcher(normalized).find()) {
         return Optional.of(sqlPattern.label());
       }
     }
 
     return Optional.empty();
   }
+
+  private String decode(String input) {
+    try {
+      return URLDecoder.decode(input, StandardCharsets.UTF_8);
+    } catch (IllegalArgumentException ex) {
+      // malformed encoding – return original safely
+      return input;
+    }
+  }
+
 }
