@@ -7,23 +7,32 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
- * Performs a lightweight scan of {@link String} values to highlight SQL-like patterns
- * while avoiding common English false positives.
+ * Performs a lightweight scan of {@link String} values to detect potential SQL injection attempts
+ * and malicious SQL patterns while minimizing false positives in regular text.
  *
  * <p>
- * Uses regex patterns with word boundaries to identify potentially malicious SQL patterns
- * including
- * - SQL commands (SELECT, INSERT, UPDATE, DELETE)
+ * The scanner checks for multiple categories of suspicious patterns:
+ * - Basic SQL commands (SELECT, INSERT, UPDATE, DELETE)
  * - Schema modification commands (DROP, TRUNCATE, ALTER)
- * - SQL injection patterns (UNION, AND/OR operators, always true conditions)
- * - SQL comments (line and block)
- * - Statement terminators
+ * - SQL injection techniques (UNION-based, time-based, comments)
+ * - Logical operator abuse (AND/OR in SQL context)
+ * - Command execution attempts (stored procedures, system commands)
+ * - Information schema access
+ * - SQL comment injection (line and block comments)
+ * - Always-true conditions and statement chaining
  *
  * <p>
- * Designed to reduce false positives by:
- * - Using word boundaries to avoid matching within words
- * - Only flagging AND/OR when used in SQL expression context
- * - Careful handling of comment syntax and punctuation
+ * Implements several strategies to reduce false positives:
+ * - Uses word boundaries to avoid matching within regular words
+ * - Considers operator context for AND/OR detection
+ * - Pattern matching respects proper SQL syntax and structure
+ * - Careful handling of string literals, comments and statement terminators
+ *
+ * <p>
+ * Additional features:
+ * - URL decodes input strings before scanning to catch encoded attacks
+ * - Case-insensitive pattern matching
+ * - Handles malformed URL encodings gracefully
  */
 public class SqlScanner {
 
