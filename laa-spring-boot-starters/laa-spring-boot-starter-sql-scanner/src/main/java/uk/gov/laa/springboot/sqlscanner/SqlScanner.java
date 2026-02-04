@@ -312,6 +312,14 @@ public class SqlScanner {
               "information_schema\\.",
               Pattern.CASE_INSENSITIVE
           )
+      ),
+
+      new SqlPattern(
+          "obfuscated SQL via chr()",
+          Pattern.compile(
+              "(\\|\\|\\s*)?chr\\s*\\(\\s*\\d+\\s*\\)(\\s*\\|\\|\\s*chr\\s*\\(\\s*\\d+\\s*\\))+",
+              Pattern.CASE_INSENSITIVE
+          )
       )
   );
 

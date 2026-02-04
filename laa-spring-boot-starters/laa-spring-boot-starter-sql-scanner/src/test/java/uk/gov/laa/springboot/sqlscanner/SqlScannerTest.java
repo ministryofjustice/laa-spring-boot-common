@@ -42,6 +42,16 @@ class SqlScannerTest {
     assertThat(scanner.scan(input)).isPresent();
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "|| chr(59) || chr(68) || chr(82) || chr(79) || chr(80)",
+      "|| chr(59) || chr(68) || chr(69) || chr(76) || chr(69) || chr(84) || chr(69)",
+      "' || chr(59) || chr(68) || chr(82) || chr(79) || chr(80) || ' TABLE users"
+  })
+  void detectsObfuscatedStrings(String input) {
+    assertThat(scanner.scan(input)).isPresent();
+  }
+
   // =====================================================
   // Logical operator abuse (AND / OR)
   // =====================================================
