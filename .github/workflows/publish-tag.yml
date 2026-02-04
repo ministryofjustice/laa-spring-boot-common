@@ -12,6 +12,8 @@ jobs:
       contents: write
       packages: write
     with:
+      java_version: '25'
+      java_distribution: 'corretto'
       build_command: 'assemble'
       publish_package: 'true'
       junit_results: 'false'
