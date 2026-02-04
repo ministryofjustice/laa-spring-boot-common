@@ -167,7 +167,9 @@ class SqlScannerTest {
       "AandB",
       "Terms and Conditions",
       "select a",
-      "drop a ball"
+      "drop a ball",
+      "O&apos;Brien",
+      "O&apos;Connell"
   })
   void doesNotDetectNaturalLanguage(String input) {
     assertThat(scanner.scan(input)).isEmpty();
