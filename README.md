@@ -117,7 +117,7 @@ apply plugin: 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin'
   (deprecated – prefer Spring's built-in `ProblemDetail`/`ErrorResponse` RFC 9457 support)
 - [Slack alerts](laa-spring-boot-starters/laa-spring-boot-starter-slack-alerts/README.md)
 - [SQL input scanning](laa-spring-boot-starters/laa-spring-boot-starter-sql-scanner/README.md)
-- _**[TODO]**_ Entity Converters
+- [CSV exports](laa-spring-boot-starters/laa-spring-boot-starter-export/README.md)
 
 ## Contributing
 Follow the [contribution guide](./CONTRIBUTING.md) to make code changes.
