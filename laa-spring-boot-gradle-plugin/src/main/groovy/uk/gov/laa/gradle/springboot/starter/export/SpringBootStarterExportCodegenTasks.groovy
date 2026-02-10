@@ -237,79 +237,79 @@ class SpringBootStarterExportCodegenTasks {
       String sql,
       List<String> columnOrder) {
     def sb = new StringBuilder()
-    sb << "package ${packageName};\\n\\n"
-    sb << 'import jakarta.annotation.Generated;\\n'
-    sb << 'import java.io.OutputStream;\\n'
-    sb << 'import java.io.OutputStreamWriter;\\n'
-    sb << 'import java.io.Writer;\\n'
-    sb << 'import java.nio.charset.StandardCharsets;\\n'
-    sb << 'import java.util.HashMap;\\n'
-    sb << 'import java.util.List;\\n'
-    sb << 'import java.util.Map;\\n'
-    sb << 'import javax.sql.DataSource;\\n'
-    sb << 'import org.springframework.stereotype.Component;\\n'
-    sb << 'import uk.gov.justice.laa.export.ExportCsvProvider;\\n'
-    sb << 'import uk.gov.justice.laa.export.csv.CsvHeaderWriter;\\n'
-    sb << 'import uk.gov.justice.laa.export.datasource.postgres.PostgresCopyExporter;\\n'
-    sb << 'import uk.gov.justice.laa.export.model.ExportColumn;\\n'
-    sb << 'import uk.gov.justice.laa.export.model.ValidatedExportRequest;\\n\\n'
+    sb << "package ${packageName};\n\n"
+    sb << 'import jakarta.annotation.Generated;\n'
+    sb << 'import java.io.OutputStream;\n'
+    sb << 'import java.io.OutputStreamWriter;\n'
+    sb << 'import java.io.Writer;\n'
+    sb << 'import java.nio.charset.StandardCharsets;\n'
+    sb << 'import java.util.HashMap;\n'
+    sb << 'import java.util.List;\n'
+    sb << 'import java.util.Map;\n'
+    sb << 'import javax.sql.DataSource;\n'
+    sb << 'import org.springframework.stereotype.Component;\n'
+    sb << 'import uk.gov.justice.laa.export.ExportCsvProvider;\n'
+    sb << 'import uk.gov.justice.laa.export.csv.CsvHeaderWriter;\n'
+    sb << 'import uk.gov.justice.laa.export.datasource.postgres.PostgresCopyExporter;\n'
+    sb << 'import uk.gov.justice.laa.export.model.ExportColumn;\n'
+    sb << 'import uk.gov.justice.laa.export.model.ValidatedExportRequest;\n\n'
 
-    sb << '/**\\n'
-    sb << " * Export provider for ${key}.\\n"
-    sb << ' */\\n'
-    sb << "@Component(\"${providerName}\")\\n"
-    sb << '@Generated("export-sql-codegen")\\n'
-    sb << "public class ${providerClassName} implements ExportCsvProvider {\\n"
+    sb << '/**\n'
+    sb << " * Export provider for ${key}.\n"
+    sb << ' */\n'
+    sb << "@Component(\"${providerName}\")\n"
+    sb << '@Generated("export-sql-codegen")\n'
+    sb << "public class ${providerClassName} implements ExportCsvProvider {\n"
 
     def sqlLines = sql.readLines().collect { it.replace('\\\\', '\\\\\\\\').replace('"', '\\\\"') }
-    sb << '  private static final String SQL =\\n'
-    sb << '      String.join("\\n",\\n'
+    sb << '  private static final String SQL =\n'
+    sb << '      String.join("\\n",\n'
     sqlLines.eachWithIndex { line, idx ->
       def suffix = idx == sqlLines.size() - 1 ? '' : ','
-      sb << "          \"${line}\"${suffix}\\n"
+      sb << "          \"${line}\"${suffix}\n"
     }
-    sb << '      );\\n'
+    sb << '      );\n'
 
     def values = columnOrder.collect { "\"${it}\"" }
     if (values.isEmpty()) {
-      sb << '  private static final List<String> COLUMN_ORDER = List.of();\\n'
+      sb << '  private static final List<String> COLUMN_ORDER = List.of();\n'
     } else {
-      sb << '  private static final List<String> COLUMN_ORDER =\\n'
-      sb << '      List.of(\\n'
+      sb << '  private static final List<String> COLUMN_ORDER =\n'
+      sb << '      List.of(\n'
       values.eachWithIndex { value, idx ->
         def suffix = idx == values.size() - 1 ? '' : ','
-        sb << "          ${value}${suffix}\\n"
+        sb << "          ${value}${suffix}\n"
       }
-      sb << '      );\\n'
+      sb << '      );\n'
     }
 
-    sb << '  private final PostgresCopyExporter copyExporter;\\n\\n'
-    sb << "  public ${providerClassName}(DataSource dataSource) {\\n"
-    sb << '    this.copyExporter = new PostgresCopyExporter(dataSource);\\n'
-    sb << '  }\\n\\n'
+    sb << '  private final PostgresCopyExporter copyExporter;\n\n'
+    sb << "  public ${providerClassName}(DataSource dataSource) {\n"
+    sb << '    this.copyExporter = new PostgresCopyExporter(dataSource);\n'
+    sb << '  }\n\n'
 
-    sb << '  @Override\\n'
-    sb << '  public long writeCsv(\\n'
-    sb << '      ValidatedExportRequest request,\\n'
-    sb << '      OutputStream out,\\n'
-    sb << '      List<ExportColumn> columns) {\\n'
-    sb << '    Map<String, Object> params = new HashMap<>();\\n'
-    sb << '    params.putAll(request.getParams());\\n'
-    sb << '    params.put("maxRows", request.getMaxRows());\\n'
-    sb << '    try (Writer writer = new OutputStreamWriter(out, StandardCharsets.UTF_8)) {\\n'
-    sb << '      boolean hasOverrides = columns != null && !columns.isEmpty();\\n'
-    sb << '      if (hasOverrides) {\\n'
-    sb << '        CsvHeaderWriter.writeHeader(writer, COLUMN_ORDER, columns);\\n'
-    sb << '      }\\n'
-    sb << '      boolean includeHeader = !hasOverrides;\\n'
-    sb << '      long rows = copyExporter.copyCsv(SQL, params, writer, includeHeader);\\n'
-    sb << '      writer.flush();\\n'
-    sb << '      return rows;\\n'
-    sb << '    } catch (Exception e) {\\n'
-    sb << '      throw new RuntimeException("CSV export failed", e);\\n'
-    sb << '    }\\n'
-    sb << '  }\\n'
-    sb << '}\\n'
+    sb << '  @Override\n'
+    sb << '  public long writeCsv(\n'
+    sb << '      ValidatedExportRequest request,\n'
+    sb << '      OutputStream out,\n'
+    sb << '      List<ExportColumn> columns) {\n'
+    sb << '    Map<String, Object> params = new HashMap<>();\n'
+    sb << '    params.putAll(request.getParams());\n'
+    sb << '    params.put("maxRows", request.getMaxRows());\n'
+    sb << '    try (Writer writer = new OutputStreamWriter(out, StandardCharsets.UTF_8)) {\n'
+    sb << '      boolean hasOverrides = columns != null && !columns.isEmpty();\n'
+    sb << '      if (hasOverrides) {\n'
+    sb << '        CsvHeaderWriter.writeHeader(writer, COLUMN_ORDER, columns);\n'
+    sb << '      }\n'
+    sb << '      boolean includeHeader = !hasOverrides;\n'
+    sb << '      long rows = copyExporter.copyCsv(SQL, params, writer, includeHeader);\n'
+    sb << '      writer.flush();\n'
+    sb << '      return rows;\n'
+    sb << '    } catch (Exception e) {\n'
+    sb << '      throw new RuntimeException("CSV export failed", e);\n'
+    sb << '    }\n'
+    sb << '  }\n'
+    sb << '}\n'
 
     sb.toString()
   }
@@ -322,33 +322,33 @@ class SpringBootStarterExportCodegenTasks {
     def sb = new StringBuilder()
     def packageName = defn?.packageName ?: DEFAULT_PACKAGE
 
-    sb << "package ${packageName};\\n\\n"
-    sb << 'import io.swagger.v3.oas.annotations.Operation;\\n'
-    sb << 'import io.swagger.v3.oas.annotations.media.Content;\\n'
-    sb << 'import io.swagger.v3.oas.annotations.media.ExampleObject;\\n'
-    sb << 'import io.swagger.v3.oas.annotations.responses.ApiResponse;\\n'
-    sb << 'import java.time.LocalDate;\\n'
-    sb << 'import java.util.HashMap;\\n'
-    sb << 'import java.util.Map;\\n'
-    sb << 'import org.springframework.http.HttpHeaders;\\n'
-    sb << 'import org.springframework.http.ResponseEntity;\\n'
-    sb << 'import org.springframework.web.bind.annotation.GetMapping;\\n'
-    sb << 'import org.springframework.web.bind.annotation.RequestMapping;\\n'
-    sb << 'import org.springframework.web.bind.annotation.RequestParam;\\n'
-    sb << 'import org.springframework.web.bind.annotation.RestController;\\n'
-    sb << 'import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;\\n'
-    sb << 'import uk.gov.justice.laa.export.ExportService;\\n\\n'
+    sb << "package ${packageName};\n\n"
+    sb << 'import io.swagger.v3.oas.annotations.Operation;\n'
+    sb << 'import io.swagger.v3.oas.annotations.media.Content;\n'
+    sb << 'import io.swagger.v3.oas.annotations.media.ExampleObject;\n'
+    sb << 'import io.swagger.v3.oas.annotations.responses.ApiResponse;\n'
+    sb << 'import java.time.LocalDate;\n'
+    sb << 'import java.util.HashMap;\n'
+    sb << 'import java.util.Map;\n'
+    sb << 'import org.springframework.http.HttpHeaders;\n'
+    sb << 'import org.springframework.http.ResponseEntity;\n'
+    sb << 'import org.springframework.web.bind.annotation.GetMapping;\n'
+    sb << 'import org.springframework.web.bind.annotation.RequestMapping;\n'
+    sb << 'import org.springframework.web.bind.annotation.RequestParam;\n'
+    sb << 'import org.springframework.web.bind.annotation.RestController;\n'
+    sb << 'import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;\n'
+    sb << 'import uk.gov.justice.laa.export.ExportService;\n\n'
 
-    sb << '/**\\n'
-    sb << " * Generated export endpoint for ${key}.\\n"
-    sb << ' */\\n'
-    sb << '@RestController\\n'
-    sb << '@RequestMapping("${laa.springboot.starter.exports.web.base-path:/exports}")\\n'
-    sb << "public class ${className} {\\n"
-    sb << '  private final ExportService exportService;\\n\\n'
-    sb << "  public ${className}(ExportService exportService) {\\n"
-    sb << '    this.exportService = exportService;\\n'
-    sb << '  }\\n\\n'
+    sb << '/**\n'
+    sb << " * Generated export endpoint for ${key}.\n"
+    sb << ' */\n'
+    sb << '@RestController\n'
+    sb << '@RequestMapping("${laa.springboot.starter.exports.web.base-path:/exports}")\n'
+    sb << "public class ${className} {\n"
+    sb << '  private final ExportService exportService;\n\n'
+    sb << "  public ${className}(ExportService exportService) {\n"
+    sb << '    this.exportService = exportService;\n'
+    sb << '  }\n\n'
 
     def params = defn?.params ?: []
     def columns = defn?.columns ?: []
@@ -377,34 +377,34 @@ class SpringBootStarterExportCodegenTasks {
     }
 
     def methodName = 'export' + key.split(/[^A-Za-z0-9]+/).findAll { it }.collect { it.capitalize() }.join('')
-    sb << "  @Operation(summary = \"Export ${key}\")\\n"
+    sb << "  @Operation(summary = \"Export ${key}\")\n"
     if (headerLine) {
       def escaped = headerLine.replace('"', '\\\\"')
       def chunks = escaped.collect { it }.collate(80).collect { it.join('') }
-      sb << '  @ApiResponse(\\n'
-      sb << '      responseCode = "200",\\n'
-      sb << '      description = "CSV export",\\n'
-      sb << '      content = @Content(\\n'
-      sb << '          mediaType = "text/csv",\\n'
-      sb << '          examples = @ExampleObject(\\n'
-      sb << '              value =\\n'
+      sb << '  @ApiResponse(\n'
+      sb << '      responseCode = "200",\n'
+      sb << '      description = "CSV export",\n'
+      sb << '      content = @Content(\n'
+      sb << '          mediaType = "text/csv",\n'
+      sb << '          examples = @ExampleObject(\n'
+      sb << '              value =\n'
       chunks.eachWithIndex { chunk, idx ->
         def prefix = idx == 0 ? '                  ' : '                  + '
-        sb << "${prefix}\"${chunk}\"\\n"
+        sb << "${prefix}\"${chunk}\"\n"
       }
-      sb << '          )\\n'
-      sb << '      )\\n'
-      sb << '  )\\n'
+      sb << '          )\n'
+      sb << '      )\n'
+      sb << '  )\n'
     } else {
-      sb << '  @ApiResponse(\\n'
-      sb << '      responseCode = "200",\\n'
-      sb << '      description = "CSV export",\\n'
-      sb << '      content = @Content(mediaType = "text/csv")\\n'
-      sb << '  )\\n'
+      sb << '  @ApiResponse(\n'
+      sb << '      responseCode = "200",\n'
+      sb << '      description = "CSV export",\n'
+      sb << '      content = @Content(mediaType = "text/csv")\n'
+      sb << '  )\n'
     }
 
-    sb << "  @GetMapping(value = \"/${key}.csv\", produces = \"text/csv\")\\n"
-    sb << "  public ResponseEntity<StreamingResponseBody> ${methodName}(\\n"
+    sb << "  @GetMapping(value = \"/${key}.csv\", produces = \"text/csv\")\n"
+    sb << "  public ResponseEntity<StreamingResponseBody> ${methodName}(\n"
 
     def requestParams = []
     params.each { p ->
@@ -412,22 +412,22 @@ class SpringBootStarterExportCodegenTasks {
       def requiredAttr = required ? '' : ', required = false'
       requestParams << "      @RequestParam(name = \"${p.name}\"${requiredAttr}) String ${p.name}"
     }
-    sb << requestParams.join(',\\n')
-    sb << '\\n  ) {\\n'
-    sb << '    Map<String, String[]> rawParams = new HashMap<>();\\n'
+    sb << requestParams.join(',\n')
+    sb << '\n  ) {\n'
+    sb << '    Map<String, String[]> rawParams = new HashMap<>();\n'
     params.each { p ->
-      sb << "    if (${p.name} != null) {\\n"
-      sb << "      rawParams.put(\"${p.name}\", new String[] { ${p.name} });\\n"
-      sb << '    }\\n'
+      sb << "    if (${p.name} != null) {\n"
+      sb << "      rawParams.put(\"${p.name}\", new String[] { ${p.name} });\n"
+      sb << '    }\n'
     }
-    sb << "    String filename = \"${key}-\" + LocalDate.now() + \".csv\";\\n"
-    sb << "    StreamingResponseBody body = out -> exportService.streamCsv(\"${key}\", rawParams, out);\\n"
-    sb << '    return ResponseEntity.ok()\\n'
-    sb << '        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\\\"" + filename + "\\\"")\\n'
-    sb << '        .header(HttpHeaders.CACHE_CONTROL, "no-store")\\n'
-    sb << '        .body(body);\\n'
-    sb << '  }\\n'
-    sb << '}\\n'
+    sb << "    String filename = \"${key}-\" + LocalDate.now() + \".csv\";\n"
+    sb << "    StreamingResponseBody body = out -> exportService.streamCsv(\"${key}\", rawParams, out);\n"
+    sb << '    return ResponseEntity.ok()\n'
+    sb << '        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\\\"" + filename + "\\\"")\n'
+    sb << '        .header(HttpHeaders.CACHE_CONTROL, "no-store")\n'
+    sb << '        .body(body);\n'
+    sb << '  }\n'
+    sb << '}\n'
 
     sb.toString()
   }
