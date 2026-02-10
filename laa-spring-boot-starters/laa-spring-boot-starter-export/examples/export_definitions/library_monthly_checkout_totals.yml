@@ -1,0 +1,32 @@
+description: "Monthly checkout totals by branch"
+provider: libraryMonthlyCheckoutTotalsProvider
+packageName: uk.gov.laa.springboot.export.generated
+maxRows: 12000
+sql: |
+  select
+    date_trunc('month', l.loan_date)::date as checkoutMonth,
+    l.branch_code as branchCode,
+    count(*) as checkoutCount,
+    count(distinct l.member_id) as uniqueMembers
+  from library.loans l
+  where l.loan_date >= :fromDate
+    and l.loan_date < :toDate
+  group by date_trunc('month', l.loan_date)::date, l.branch_code
+  order by checkoutMonth, branchCode
+  limit :maxRows
+columns:
+  - key: checkoutMonth
+    header: Checkout Month
+  - key: branchCode
+    header: Branch
+  - key: checkoutCount
+    header: Checkouts
+  - key: uniqueMembers
+    header: Unique Members
+params:
+  - name: fromDate
+    type: DATE
+    required: true
+  - name: toDate
+    type: DATE
+    required: true

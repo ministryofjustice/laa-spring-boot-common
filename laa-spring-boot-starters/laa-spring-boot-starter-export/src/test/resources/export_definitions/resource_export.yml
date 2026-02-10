@@ -1,0 +1,5 @@
+provider: resourceProvider
+packageName: uk.gov.justice.example.export.generated
+description: Resource export
+sql: |
+  select 1 as id
