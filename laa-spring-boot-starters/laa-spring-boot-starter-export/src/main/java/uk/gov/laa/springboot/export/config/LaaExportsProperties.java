@@ -1,5 +1,6 @@
 package uk.gov.laa.springboot.export.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -90,10 +91,12 @@ public class LaaExportsProperties {
   /**
    * Per-export definition settings.
    */
+  @JsonIgnoreProperties(ignoreUnknown = true)
   public static class Definition {
     private String description;
     private Integer maxRows;
     private String provider;
+    private String packageName;
     private String sql;
     private List<Column> columns = new ArrayList<>();
     private List<Param> params = new ArrayList<>();
@@ -120,6 +123,14 @@ public class LaaExportsProperties {
 
     public void setProvider(String provider) {
       this.provider = provider;
+    }
+
+    public String getPackageName() {
+      return packageName;
+    }
+
+    public void setPackageName(String packageName) {
+      this.packageName = packageName;
     }
 
     public String getSql() {
