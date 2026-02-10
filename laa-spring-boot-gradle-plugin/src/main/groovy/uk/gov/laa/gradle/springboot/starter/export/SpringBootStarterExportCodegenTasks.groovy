@@ -8,7 +8,7 @@ import org.yaml.snakeyaml.Yaml
 
 class SpringBootStarterExportCodegenTasks {
 
-  private static final String DEFAULT_PACKAGE = 'uk.gov.justice.laa.export.generated'
+  private static final String DEFAULT_PACKAGE = 'uk.gov.laa.springboot.export.generated'
   private static final Pattern EXPORT_ALIAS_PATTERN =
       Pattern.compile(/(?i)\bas\s+"?([A-Za-z_][A-Za-z0-9_]*)"?\s*(,|\bfrom\b|$)/)
 
@@ -248,11 +248,11 @@ class SpringBootStarterExportCodegenTasks {
     sb << 'import java.util.Map;\n'
     sb << 'import javax.sql.DataSource;\n'
     sb << 'import org.springframework.stereotype.Component;\n'
-    sb << 'import uk.gov.justice.laa.export.ExportCsvProvider;\n'
-    sb << 'import uk.gov.justice.laa.export.csv.CsvHeaderWriter;\n'
-    sb << 'import uk.gov.justice.laa.export.datasource.postgres.PostgresCopyExporter;\n'
-    sb << 'import uk.gov.justice.laa.export.model.ExportColumn;\n'
-    sb << 'import uk.gov.justice.laa.export.model.ValidatedExportRequest;\n\n'
+    sb << 'import uk.gov.laa.springboot.export.ExportCsvProvider;\n'
+    sb << 'import uk.gov.laa.springboot.export.csv.CsvHeaderWriter;\n'
+    sb << 'import uk.gov.laa.springboot.export.datasource.postgres.PostgresCopyExporter;\n'
+    sb << 'import uk.gov.laa.springboot.export.model.ExportColumn;\n'
+    sb << 'import uk.gov.laa.springboot.export.model.ValidatedExportRequest;\n\n'
 
     sb << '/**\n'
     sb << " * Export provider for ${key}.\n"
@@ -337,7 +337,7 @@ class SpringBootStarterExportCodegenTasks {
     sb << 'import org.springframework.web.bind.annotation.RequestParam;\n'
     sb << 'import org.springframework.web.bind.annotation.RestController;\n'
     sb << 'import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;\n'
-    sb << 'import uk.gov.justice.laa.export.ExportService;\n\n'
+    sb << 'import uk.gov.laa.springboot.export.ExportService;\n\n'
 
     sb << '/**\n'
     sb << " * Generated export endpoint for ${key}.\n"
