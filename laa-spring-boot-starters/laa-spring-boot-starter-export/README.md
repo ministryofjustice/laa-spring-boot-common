@@ -90,6 +90,10 @@ Generated controllers expose CSV endpoints at:
 
 Request params are mapped from definition `params`, and generated OpenAPI annotations include CSV header examples when column metadata is available.
 
+From the example above it would generate the following:
+
+![swagger-ui generated from export starter](swagger-example.png)
+
 ## Troubleshooting
 
 ### Startup error: missing provider bean
