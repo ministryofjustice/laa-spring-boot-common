@@ -92,7 +92,7 @@ Request params are mapped from definition `params`, and generated OpenAPI annota
 
 From the example above it would generate the following:
 
-![swagger-ui generated from export starter](swagger-example.png)
+![swagger-ui generated from export starter](examples/GeneratedSwagger/library_books.png)
 
 ## Troubleshooting
 
