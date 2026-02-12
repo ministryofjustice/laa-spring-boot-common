@@ -30,12 +30,21 @@ public class LibraryBooksExportController {
       rawParams.put("status", new String[] {status});
     }
 
-    String filename = "library-books-" + LocalDate.now() + ".csv";
+    StringBuilder filename = new StringBuilder("library-books");
+    if (status != null && !status.isBlank()) {
+      filename.append("-").append(sanitizeFilenamePart(status));
+    }
+    filename.append("-").append(LocalDate.now()).append(".csv");
+    String outputFilename = filename.toString();
     StreamingResponseBody body = out -> exportService.streamCsv("library-books", rawParams, out);
 
     return ResponseEntity.ok()
-        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + outputFilename + "\"")
         .header(HttpHeaders.CACHE_CONTROL, "no-store")
         .body(body);
+  }
+
+  private String sanitizeFilenamePart(String value) {
+    return value.replaceAll("[^A-Za-z0-9._-]", "_");
   }
 }

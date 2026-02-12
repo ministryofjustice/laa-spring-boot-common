@@ -424,12 +424,23 @@ class SpringBootStarterExportCodegenTasks {
       sb << "      rawParams.put(\"${p.name}\", new String[] { ${p.name} });\n"
       sb << '    }\n'
     }
-    sb << "    String filename = \"${key}-\" + LocalDate.now() + \".csv\";\n"
+    sb << "    StringBuilder filename = new StringBuilder(\"${key}\");\n"
+    params.each { p ->
+      sb << "    if (${p.name} != null && !${p.name}.isBlank()) {\n"
+      sb << "      filename.append(\"-\").append(sanitizeFilenamePart(${p.name}));\n"
+      sb << '    }\n'
+    }
+    sb << '    filename.append("-").append(LocalDate.now()).append(".csv");\n'
+    sb << '    String outputFilename = filename.toString();\n'
     sb << "    StreamingResponseBody body = out -> exportService.streamCsv(\"${key}\", rawParams, out);\n"
     sb << '    return ResponseEntity.ok()\n'
-    sb << '        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\\\"" + filename + "\\\"")\n'
+    sb << '        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\\\"" + outputFilename + "\\\"")\n'
     sb << '        .header(HttpHeaders.CACHE_CONTROL, "no-store")\n'
     sb << '        .body(body);\n'
+    sb << '  }\n'
+    sb << '\n'
+    sb << '  private String sanitizeFilenamePart(String value) {\n'
+    sb << '    return value.replaceAll("[^A-Za-z0-9._-]", "_");\n'
     sb << '  }\n'
     sb << '}\n'
 

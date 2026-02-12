@@ -89,10 +89,37 @@ Generated controllers expose CSV endpoints at:
 - `${laa.springboot.starter.exports.web.base-path:/exports}/{exportKey}.csv`
 
 Request params are mapped from definition `params`, and generated OpenAPI annotations include CSV header examples when column metadata is available.
+Generated filenames include the export key, non-empty request params (in definition order), and current date:
+
+- `{exportKey}-{param1}-{param2}-...-{yyyy-MM-dd}.csv`
 
 From the example above it would generate the following:
 
 ![swagger-ui generated from export starter](examples/GeneratedSwagger/library_books.png)
+
+## Auditing
+
+By default, export events are logged by `uk.gov.laa.springboot.export.audit.LogExportAuditSink`.
+
+Example success event:
+
+```text
+u.g.l.s.export.audit.LogExportAuditSink : export_success key=library_books rows=3 maxRows=50000 durationMs=48 startedAt=2026-02-12T13:13:39.824Z
+```
+
+Example failure event:
+
+```text
+u.g.l.s.export.audit.LogExportAuditSink : export_failed key=library_books rows=0 maxRows=50000 durationMs=12 startedAt=2026-02-12T13:13:39.824Z error=Filter minId must be a long
+```
+
+To customize this behavior, define your own `ExportAuditSink` bean.
+
+## Error Handling
+
+Validation failures are handled by `uk.gov.laa.springboot.export.config.ExportExceptionHandler`.
+When an `ExportValidationException` is thrown, the starter returns `400 Bad Request` as a
+`ProblemDetail` response with the validation message in the `detail` field.
 
 ## Troubleshooting
 

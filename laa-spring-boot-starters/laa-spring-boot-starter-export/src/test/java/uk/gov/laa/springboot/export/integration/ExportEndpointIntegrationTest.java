@@ -1,9 +1,10 @@
 package uk.gov.laa.springboot.export.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -21,7 +22,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import uk.gov.laa.springboot.export.ExportCsvProvider;
-import uk.gov.laa.springboot.export.ExportValidationException;
 import uk.gov.laa.springboot.export.generated.LibraryBooksExportController;
 import uk.gov.laa.springboot.export.model.ExportColumn;
 import uk.gov.laa.springboot.export.model.ValidatedExportRequest;
@@ -53,6 +53,9 @@ class ExportEndpointIntegrationTest {
             .perform(asyncDispatch(asyncResult))
             .andExpect(status().isOk())
             .andExpect(header().string("Cache-Control", "no-store"))
+            .andExpect(
+                header().string(
+                    "Content-Disposition", containsString("filename=\"library-books-7-")))
             .andReturn();
 
     assertThat(response.getResponse().getContentAsString()).contains("status").contains("7");
@@ -66,9 +69,10 @@ class ExportEndpointIntegrationTest {
             .andExpect(request().asyncStarted())
             .andReturn();
 
-    assertThatThrownBy(() -> mockMvc.perform(asyncDispatch(asyncResult)).andReturn())
-        .hasRootCauseInstanceOf(ExportValidationException.class)
-        .hasRootCauseMessage("Filter status must be an integer");
+    mockMvc
+        .perform(asyncDispatch(asyncResult))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string(org.hamcrest.Matchers.containsString("Filter status must be an integer")));
   }
 
   @SpringBootApplication

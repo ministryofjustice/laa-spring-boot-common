@@ -54,4 +54,10 @@ public class ExportAutoConfiguration {
     return new DefaultExportService(registry, validator, audit);
   }
 
+  @Bean
+  @ConditionalOnMissingBean
+  public ExportExceptionHandler exportExceptionHandler() {
+    return new ExportExceptionHandler();
+  }
+
 }
