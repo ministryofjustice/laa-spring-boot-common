@@ -261,7 +261,7 @@ class SpringBootStarterExportCodegenTasks {
     sb << '@Generated("export-sql-codegen")\n'
     sb << "public class ${providerClassName} implements ExportCsvProvider {\n"
 
-    def sqlLines = sql.readLines().collect { it.replace('\\\\', '\\\\\\\\').replace('"', '\\\\"') }
+    def sqlLines = sql.readLines().collect { escapeSqlLineForJavaString(it) }
     sb << '  private static final String SQL =\n'
     sb << '      String.join("\\n",\n'
     sqlLines.eachWithIndex { line, idx ->
@@ -312,6 +312,10 @@ class SpringBootStarterExportCodegenTasks {
     sb << '}\n'
 
     sb.toString()
+  }
+
+  private static String escapeSqlLineForJavaString(String line) {
+    return line.replace('\\\\', '\\\\\\\\').replace('"', '\\\\"')
   }
 
   private static String renderControllerSource(

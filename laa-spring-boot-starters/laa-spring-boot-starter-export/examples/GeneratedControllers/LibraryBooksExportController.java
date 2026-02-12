@@ -42,12 +42,10 @@ public class LibraryBooksExportController {
   )
   @GetMapping(value = "/library_books.csv", produces = "text/csv")
   public ResponseEntity<StreamingResponseBody> exportLibraryBooks(
-      @RequestParam(name = "minId", required = false) String minId
+      @RequestParam(name = "minId") String minId
   ) {
     Map<String, String[]> rawParams = new HashMap<>();
-    if (minId != null) {
-      rawParams.put("minId", new String[] { minId });
-    }
+    rawParams.put("minId", new String[] { minId });
     String filename = "library_books-" + LocalDate.now() + ".csv";
     StreamingResponseBody body = out -> exportService.streamCsv("library_books", rawParams, out);
     return ResponseEntity.ok()

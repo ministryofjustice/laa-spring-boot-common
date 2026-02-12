@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 import uk.gov.laa.springboot.export.model.ExportColumn;
 
 /**
@@ -23,19 +24,12 @@ public final class CsvHeaderWriter {
       List<String> columnOrder,
       List<ExportColumn> columns) throws IOException {
     List<ExportColumn> resolved = resolveColumns(columnOrder, columns);
-    if (resolved.isEmpty()) {
-      return;
-    }
-    StringBuilder line = new StringBuilder();
-    for (int i = 0; i < resolved.size(); i++) {
-      if (i > 0) {
-        line.append(',');
-      }
-      ExportColumn column = resolved.get(i);
+    StringJoiner joiner = new StringJoiner(",");
+    for (ExportColumn column : resolved) {
       String header = column.getHeader() == null ? column.getKey() : column.getHeader();
-      line.append(escape(header));
+      joiner.add(escape(header));
     }
-    writer.write(line.toString());
+    writer.write(joiner.toString());
     writer.write("\n");
   }
 

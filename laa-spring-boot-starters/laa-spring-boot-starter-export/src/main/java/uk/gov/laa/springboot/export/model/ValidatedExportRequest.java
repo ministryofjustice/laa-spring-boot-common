@@ -29,10 +29,12 @@ public final class ValidatedExportRequest {
     return Collections.unmodifiableMap(params);
   }
 
+  /**
+   * Backward-compatible alias for {@link #getParams()} used by existing consumers.
+   */
   public Map<String, Object> getFilters() {
     return getParams();
   }
-
 
   public int getMaxRows() {
     return maxRows;

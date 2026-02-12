@@ -6,6 +6,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Map;
+import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,16 +70,11 @@ public final class PostgresSqlRenderer {
       if (collection.isEmpty()) {
         return "NULL";
       }
-      StringBuilder joined = new StringBuilder();
-      boolean first = true;
+      StringJoiner joiner = new StringJoiner(", ");
       for (Object item : collection) {
-        if (!first) {
-          joined.append(", ");
-        }
-        joined.append(formatValue(item));
-        first = false;
+        joiner.add(formatValue(item));
       }
-      return joined.toString();
+      return joiner.toString();
     }
     return quote(value.toString());
   }
