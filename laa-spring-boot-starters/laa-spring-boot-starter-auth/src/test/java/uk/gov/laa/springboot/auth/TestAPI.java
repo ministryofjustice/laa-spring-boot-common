@@ -1,5 +1,6 @@
 package uk.gov.laa.springboot.auth;
 
+import java.nio.charset.StandardCharsets;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,6 +8,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 @SpringBootApplication
 public class TestAPI {
@@ -63,6 +65,13 @@ public class TestAPI {
         @PatchMapping(path = "/method-array")
         public ResponseEntity<?> returnMethodArrayPatch() {
             return noContent();
+        }
+
+        @GetMapping(path = "/stream-requires-group1-role", produces = "text/plain")
+        public ResponseEntity<StreamingResponseBody> streamGroup1RoleRestricted() {
+            StreamingResponseBody body =
+                outputStream -> outputStream.write("stream-ok".getBytes(StandardCharsets.UTF_8));
+            return ResponseEntity.ok(body);
         }
 
     }

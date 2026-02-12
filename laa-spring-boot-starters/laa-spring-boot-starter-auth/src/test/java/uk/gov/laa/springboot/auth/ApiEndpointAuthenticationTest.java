@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -163,6 +164,16 @@ class ApiEndpointAuthenticationTest {
     mockMvc.perform(patch("/resource1/method-array").header(HttpHeaders.AUTHORIZATION,
             "b1a0a16b-8e2e-4865-8d49-45ddb6d350a8"))
         .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+  }
+
+  @Test
+  void testStreamEndpointAuthorized() throws Exception {
+    mockMvc
+        .perform(
+            get("/resource1/stream-requires-group1-role")
+                .header(HttpHeaders.AUTHORIZATION, "b7bbdb3d-d0b9-4632-b752-b2e0f9486baf"))
+        .andExpect(status().is(HttpStatus.OK.value()))
+        .andExpect(content().string("stream-ok"));
   }
 
 }
