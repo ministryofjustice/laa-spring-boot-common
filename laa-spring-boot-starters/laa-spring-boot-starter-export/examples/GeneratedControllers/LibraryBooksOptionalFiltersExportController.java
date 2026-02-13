@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import uk.gov.laa.springboot.export.ExportService;
+import uk.gov.laa.springboot.export.model.ValidatedExportRequest;
 
 /**
  * Generated export endpoint for library_books_optional_filters.
@@ -57,7 +58,8 @@ public class LibraryBooksOptionalFiltersExportController {
       rawParams.put("createdOnOrAfter", new String[] { createdOnOrAfter });
     }
     String filename = "library_books_optional_filters-" + LocalDate.now() + ".csv";
-    StreamingResponseBody body = out -> exportService.streamCsv("library_books_optional_filters", rawParams, out);
+    ValidatedExportRequest validatedRequest = exportService.validateRequest("library_books_optional_filters", rawParams);
+    StreamingResponseBody body = out -> exportService.streamCsv("library_books_optional_filters", validatedRequest, out);
     return ResponseEntity.ok()
         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
         .header(HttpHeaders.CACHE_CONTROL, "no-store")

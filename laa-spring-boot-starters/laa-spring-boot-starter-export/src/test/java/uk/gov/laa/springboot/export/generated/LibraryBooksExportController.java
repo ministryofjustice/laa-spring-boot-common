@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import uk.gov.laa.springboot.export.ExportService;
+import uk.gov.laa.springboot.export.model.ValidatedExportRequest;
 
 @RestController
 @RequestMapping("${laa.springboot.starter.exports.web.base-path:/exports}")
@@ -36,7 +37,8 @@ public class LibraryBooksExportController {
     }
     filename.append("-").append(LocalDate.now()).append(".csv");
     String outputFilename = filename.toString();
-    StreamingResponseBody body = out -> exportService.streamCsv("library-books", rawParams, out);
+    ValidatedExportRequest validatedRequest = exportService.validateRequest("library-books", rawParams);
+    StreamingResponseBody body = out -> exportService.streamCsv("library-books", validatedRequest, out);
 
     return ResponseEntity.ok()
         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + outputFilename + "\"")

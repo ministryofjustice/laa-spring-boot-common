@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import uk.gov.laa.springboot.export.ExportService;
+import uk.gov.laa.springboot.export.model.ValidatedExportRequest;
 
 /**
  * Generated export endpoint for library_books.
@@ -47,7 +48,8 @@ public class LibraryBooksExportController {
     Map<String, String[]> rawParams = new HashMap<>();
     rawParams.put("minId", new String[] { minId });
     String filename = "library_books-" + LocalDate.now() + ".csv";
-    StreamingResponseBody body = out -> exportService.streamCsv("library_books", rawParams, out);
+    ValidatedExportRequest validatedRequest = exportService.validateRequest("library_books", rawParams);
+    StreamingResponseBody body = out -> exportService.streamCsv("library_books", validatedRequest, out);
     return ResponseEntity.ok()
         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
         .header(HttpHeaders.CACHE_CONTROL, "no-store")

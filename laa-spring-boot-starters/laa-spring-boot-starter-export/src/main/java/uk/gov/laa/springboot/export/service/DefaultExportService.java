@@ -36,9 +36,26 @@ public final class DefaultExportService implements ExportService {
    * Streams a CSV export for the given key and raw parameters.
    */
   @Override
-  public void streamCsv(String exportKey, Map<String, String[]> rawParams, OutputStream out) {
+  public ValidatedExportRequest validateRequest(String exportKey, Map<String, String[]> rawParams) {
     ExportDefinition def = registry.getRequired(exportKey);
-    ValidatedExportRequest validated = validator.validate(def, rawParams);
+    return validator.validate(def, rawParams);
+  }
+
+  /**
+   * Streams a CSV export for the given key and raw parameters.
+   */
+  @Override
+  public void streamCsv(String exportKey, Map<String, String[]> rawParams, OutputStream out) {
+    ValidatedExportRequest validated = validateRequest(exportKey, rawParams);
+    streamCsv(exportKey, validated, out);
+  }
+
+  /**
+   * Streams a CSV export for a pre-validated request.
+   */
+  @Override
+  public void streamCsv(String exportKey, ValidatedExportRequest validated, OutputStream out) {
+    ExportDefinition def = registry.getRequired(exportKey);
 
     long start = System.currentTimeMillis();
     AtomicLong rowCounter = new AtomicLong();

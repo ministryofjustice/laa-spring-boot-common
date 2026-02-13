@@ -342,6 +342,7 @@ class SpringBootStarterExportCodegenTasks {
     sb << 'import org.springframework.web.bind.annotation.RestController;\n'
     sb << 'import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;\n'
     sb << 'import uk.gov.laa.springboot.export.ExportService;\n\n'
+    sb << 'import uk.gov.laa.springboot.export.model.ValidatedExportRequest;\n\n'
 
     sb << '/**\n'
     sb << " * Generated export endpoint for ${key}.\n"
@@ -432,7 +433,8 @@ class SpringBootStarterExportCodegenTasks {
     }
     sb << '    filename.append("-").append(LocalDate.now()).append(".csv");\n'
     sb << '    String outputFilename = filename.toString();\n'
-    sb << "    StreamingResponseBody body = out -> exportService.streamCsv(\"${key}\", rawParams, out);\n"
+    sb << "    ValidatedExportRequest validatedRequest = exportService.validateRequest(\"${key}\", rawParams);\n"
+    sb << "    StreamingResponseBody body = out -> exportService.streamCsv(\"${key}\", validatedRequest, out);\n"
     sb << '    return ResponseEntity.ok()\n'
     sb << '        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\\\"" + outputFilename + "\\\"")\n'
     sb << '        .header(HttpHeaders.CACHE_CONTROL, "no-store")\n'

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import uk.gov.laa.springboot.export.ExportService;
+import uk.gov.laa.springboot.export.model.ValidatedExportRequest;
 
 /**
  * Generated export endpoint for library_overdue_loans.
@@ -53,7 +54,8 @@ public class LibraryOverdueLoansExportController {
       rawParams.put("branchCode", new String[] { branchCode });
     }
     String filename = "library_overdue_loans-" + LocalDate.now() + ".csv";
-    StreamingResponseBody body = out -> exportService.streamCsv("library_overdue_loans", rawParams, out);
+    ValidatedExportRequest validatedRequest = exportService.validateRequest("library_overdue_loans", rawParams);
+    StreamingResponseBody body = out -> exportService.streamCsv("library_overdue_loans", validatedRequest, out);
     return ResponseEntity.ok()
         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
         .header(HttpHeaders.CACHE_CONTROL, "no-store")

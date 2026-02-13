@@ -63,14 +63,8 @@ class ExportEndpointIntegrationTest {
 
   @Test
   void throwsValidationExceptionForInvalidExportParam() throws Exception {
-    MvcResult asyncResult =
-        mockMvc
-            .perform(get("/exports/library-books.csv").param("status", "not-an-int"))
-            .andExpect(request().asyncStarted())
-            .andReturn();
-
     mockMvc
-        .perform(asyncDispatch(asyncResult))
+        .perform(get("/exports/library-books.csv").param("status", "not-an-int"))
         .andExpect(status().isBadRequest())
         .andExpect(content().string(org.hamcrest.Matchers.containsString("Filter status must be an integer")));
   }
