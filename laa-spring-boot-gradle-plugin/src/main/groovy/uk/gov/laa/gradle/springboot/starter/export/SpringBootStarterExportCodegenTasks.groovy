@@ -384,7 +384,7 @@ class SpringBootStarterExportCodegenTasks {
     }
 
     def methodName = 'export' + key.split(/[^A-Za-z0-9]+/).findAll { it }.collect { it.capitalize() }.join('').replace("_"," ")
-    sb << "  @Operation(summary = \"Export ${key}\")\n"
+    sb << "  @Operation(summary = \"Export ${key.replace('_',' ')}\")\n"
     if (headerLine) {
       def escaped = headerLine.replace('"', '\\\\"')
       def chunks = escaped.collect { it }.collate(80).collect { it.join('') }
