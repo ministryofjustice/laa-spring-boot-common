@@ -331,6 +331,7 @@ class SpringBootStarterExportCodegenTasks {
     sb << 'import io.swagger.v3.oas.annotations.media.Content;\n'
     sb << 'import io.swagger.v3.oas.annotations.media.ExampleObject;\n'
     sb << 'import io.swagger.v3.oas.annotations.responses.ApiResponse;\n'
+    sb << 'import io.swagger.v3.oas.annotations.tags.Tag;\n'
     sb << 'import java.time.LocalDate;\n'
     sb << 'import java.util.HashMap;\n'
     sb << 'import java.util.Map;\n'
@@ -348,6 +349,7 @@ class SpringBootStarterExportCodegenTasks {
     sb << " * Generated export endpoint for ${key}.\n"
     sb << ' */\n'
     sb << '@RestController\n'
+    sb << '@Tag(name="Export operations", description="Operations generated via LAA Spring Boot export starter")\n'
     sb << '@RequestMapping("${laa.springboot.starter.exports.web.base-path:/exports}")\n'
     sb << "public class ${className} {\n"
     sb << '  private final ExportService exportService;\n\n'
@@ -381,7 +383,7 @@ class SpringBootStarterExportCodegenTasks {
       headerLine = headers.join(',')
     }
 
-    def methodName = 'export' + key.split(/[^A-Za-z0-9]+/).findAll { it }.collect { it.capitalize() }.join('')
+    def methodName = 'export' + key.split(/[^A-Za-z0-9]+/).findAll { it }.collect { it.capitalize() }.join('').replace("_"," ")
     sb << "  @Operation(summary = \"Export ${key}\")\n"
     if (headerLine) {
       def escaped = headerLine.replace('"', '\\\\"')
