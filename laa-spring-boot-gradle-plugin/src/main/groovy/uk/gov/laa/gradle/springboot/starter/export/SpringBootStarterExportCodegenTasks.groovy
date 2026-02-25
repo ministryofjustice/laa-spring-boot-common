@@ -410,27 +410,36 @@ class SpringBootStarterExportCodegenTasks {
       sb << '  )\n'
     }
 
-    sb << "  @GetMapping(value = \"/${key}.csv\", produces = \"text/csv\")\n"
+    sb << "  @GetMapping(value = \"/${key}\", produces = \"text/csv\")\n"
     sb << "  public ResponseEntity<StreamingResponseBody> ${methodName}(\n"
 
     def requestParams = []
+    def paramBindings = []
     params.each { p ->
       def required = p.required == true
       def requiredAttr = required ? '' : ', required = false'
-      requestParams << "      @RequestParam(name = \"${p.name}\"${requiredAttr}) String ${p.name}"
+      def dbParamName = p.name
+      def requestParamName = resolveParamRequestName(p)
+      def javaParamName = toJavaParamName(dbParamName)
+      requestParams <<
+          "      @RequestParam(name = \"${requestParamName}\"${requiredAttr}) String ${javaParamName}"
+      paramBindings << [
+        dbParamName: dbParamName,
+        javaParamName: javaParamName
+      ]
     }
     sb << requestParams.join(',\n')
     sb << '\n  ) {\n'
     sb << '    Map<String, String[]> rawParams = new HashMap<>();\n'
-    params.each { p ->
-      sb << "    if (${p.name} != null) {\n"
-      sb << "      rawParams.put(\"${p.name}\", new String[] { ${p.name} });\n"
+    paramBindings.each { p ->
+      sb << "    if (${p.javaParamName} != null) {\n"
+      sb << "      rawParams.put(\"${p.dbParamName}\", new String[] { ${p.javaParamName} });\n"
       sb << '    }\n'
     }
     sb << "    StringBuilder filename = new StringBuilder(\"${key}\");\n"
-    params.each { p ->
-      sb << "    if (${p.name} != null && !${p.name}.isBlank()) {\n"
-      sb << "      filename.append(\"-\").append(sanitizeFilenamePart(${p.name}));\n"
+    paramBindings.each { p ->
+      sb << "    if (${p.javaParamName} != null && !${p.javaParamName}.isBlank()) {\n"
+      sb << "      filename.append(\"-\").append(sanitizeFilenamePart(${p.javaParamName}));\n"
       sb << '    }\n'
     }
     sb << '    filename.append("-").append(LocalDate.now()).append(".csv");\n'
@@ -449,5 +458,41 @@ class SpringBootStarterExportCodegenTasks {
     sb << '}\n'
 
     sb.toString()
+  }
+
+  private static String resolveParamRequestName(Map param) {
+    def override = param?.requestName ?: param?.'request-name'
+    if (override != null && !override.toString().isBlank()) {
+      return override.toString()
+    }
+    return param?.name?.toString()
+  }
+
+  private static List<String> splitNameWords(String name) {
+    if (name == null || name.isBlank()) {
+      return []
+    }
+    return name
+        .trim()
+        .replaceAll(/([a-z0-9])([A-Z])/, '$1 $2')
+        .replace('_', ' ')
+        .replace('-', ' ')
+        .toLowerCase()
+        .split(/\s+/)
+        .toList()
+  }
+
+  private static String toJavaParamName(String name) {
+    if (name == null || name.isBlank()) {
+      return 'param'
+    }
+    def parts = splitNameWords(name)
+    def candidate = parts.isEmpty()
+        ? name.replaceAll(/[^A-Za-z0-9_]/, '_')
+        : parts.head() + parts.tail().collect { it.capitalize() }.join('')
+    if (!(candidate ==~ /^[A-Za-z_].*/)) {
+      candidate = "param${candidate.capitalize()}"
+    }
+    return candidate
   }
 }

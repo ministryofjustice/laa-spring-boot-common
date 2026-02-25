@@ -23,17 +23,17 @@ public class LibraryBooksExportController {
     this.exportService = exportService;
   }
 
-  @GetMapping(value = "/library-books.csv", produces = "text/csv")
+  @GetMapping(value = "/library-books", produces = "text/csv")
   public ResponseEntity<StreamingResponseBody> exportLibraryBooks(
-      @RequestParam(name = "status", required = false) String status) {
+      @RequestParam(name = "statusCode", required = false) String statusCode) {
     Map<String, String[]> rawParams = new HashMap<>();
-    if (status != null) {
-      rawParams.put("status", new String[] {status});
+    if (statusCode != null) {
+      rawParams.put("statusCode", new String[] {statusCode});
     }
 
     StringBuilder filename = new StringBuilder("library-books");
-    if (status != null && !status.isBlank()) {
-      filename.append("-").append(sanitizeFilenamePart(status));
+    if (statusCode != null && !statusCode.isBlank()) {
+      filename.append("-").append(sanitizeFilenamePart(statusCode));
     }
     filename.append("-").append(LocalDate.now()).append(".csv");
     String outputFilename = filename.toString();

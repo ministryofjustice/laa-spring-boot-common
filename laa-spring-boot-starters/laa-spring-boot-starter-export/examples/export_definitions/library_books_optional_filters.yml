@@ -35,5 +35,6 @@ params:
     required: false
     defaultValue: AVAILABLE
   - name: createdOnOrAfter
+    requestName: created-on-or-after
     type: DATE
     required: false

@@ -69,6 +69,7 @@ public class DefaultExportRegistry implements ExportRegistry {
                       p ->
                           new ExportParamDefinition(
                               p.getName(),
+                              resolveRequestParamName(p),
                               parseFilterType(p.getType()),
                               p.getEnumClass(),
                               p.getAllowed(),
@@ -111,6 +112,13 @@ public class DefaultExportRegistry implements ExportRegistry {
       throw new ExportConfigurationException("Invalid filter type: " + raw);
     }
     return normalized;
+  }
+
+  private String resolveRequestParamName(LaaExportsProperties.Param param) {
+    if (param.getRequestName() != null && !param.getRequestName().isBlank()) {
+      return param.getRequestName();
+    }
+    return param.getName();
   }
 
   private boolean isSupportedType(String type) {

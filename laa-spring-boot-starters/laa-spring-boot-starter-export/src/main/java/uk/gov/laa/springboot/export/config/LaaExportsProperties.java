@@ -197,6 +197,7 @@ public class LaaExportsProperties {
    */
   public static class Param {
     private String name;
+    private String requestName;
     private String type;
     private String enumClass;
     private List<String> allowed = new ArrayList<>();
@@ -209,6 +210,14 @@ public class LaaExportsProperties {
 
     public void setName(String name) {
       this.name = name;
+    }
+
+    public String getRequestName() {
+      return requestName;
+    }
+
+    public void setRequestName(String requestName) {
+      this.requestName = requestName;
     }
 
     public String getType() {

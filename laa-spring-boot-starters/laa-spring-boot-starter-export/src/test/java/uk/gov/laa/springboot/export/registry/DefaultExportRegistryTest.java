@@ -10,6 +10,7 @@ import uk.gov.laa.springboot.export.ExportConfigurationException;
 import uk.gov.laa.springboot.export.ExportCsvProvider;
 import uk.gov.laa.springboot.export.config.LaaExportsProperties;
 import uk.gov.laa.springboot.export.model.ExportDefinition;
+import uk.gov.laa.springboot.export.model.ExportParamDefinition;
 import uk.gov.laa.springboot.export.model.ValidatedExportRequest;
 
 class DefaultExportRegistryTest {
@@ -78,6 +79,40 @@ class DefaultExportRegistryTest {
     assertThatThrownBy(() -> new DefaultExportRegistry(context, properties))
         .isInstanceOf(ExportConfigurationException.class)
         .hasMessageContaining("missingProvider");
+  }
+
+  @Test
+  void usesNameAsRequestNameByDefaultAndSupportsRequestNameOverride() {
+    GenericApplicationContext context = new GenericApplicationContext();
+    context.registerBean("resourceProvider", ExportCsvProvider.class, NoOpProvider::new);
+    context.registerBean("libraryProvider", ExportCsvProvider.class, NoOpProvider::new);
+    context.refresh();
+
+    LaaExportsProperties properties = new LaaExportsProperties();
+    LaaExportsProperties.Definition definition = new LaaExportsProperties.Definition();
+    definition.setProvider("libraryProvider");
+    definition.setSql("select 1 as id");
+
+    LaaExportsProperties.Param automatic = new LaaExportsProperties.Param();
+    automatic.setName("submissionId");
+    automatic.setType("LONG");
+
+    LaaExportsProperties.Param overridden = new LaaExportsProperties.Param();
+    overridden.setName("accountId");
+    overridden.setType("LONG");
+    overridden.setRequestName("account-id");
+
+    definition.setParams(java.util.List.of(automatic, overridden));
+    properties.setDefinitions(Map.of("library-books", definition));
+
+    DefaultExportRegistry registry = new DefaultExportRegistry(context, properties);
+
+    ExportDefinition exportDefinition = registry.getRequired("library-books");
+    ExportParamDefinition automaticParam = exportDefinition.getParams().get(0);
+    ExportParamDefinition overriddenParam = exportDefinition.getParams().get(1);
+
+    assertThat(automaticParam.getRequestName()).isEqualTo("submissionId");
+    assertThat(overriddenParam.getRequestName()).isEqualTo("account-id");
   }
 
   private static final class NoOpProvider implements ExportCsvProvider {

@@ -32,7 +32,7 @@ import uk.gov.laa.springboot.export.model.ValidatedExportRequest;
     properties = {
       "laa.springboot.starter.exports.enabled=true",
       "laa.springboot.starter.exports.definitions.library-books.provider=libraryBooksProvider",
-      "laa.springboot.starter.exports.definitions.library-books.params[0].name=status",
+      "laa.springboot.starter.exports.definitions.library-books.params[0].name=statusCode",
       "laa.springboot.starter.exports.definitions.library-books.params[0].type=INT",
       "laa.springboot.starter.exports.definitions.library-books.params[0].required=false"
     })
@@ -44,7 +44,7 @@ class ExportEndpointIntegrationTest {
   void streamsCsvForGeneratedControllerEndpoint() throws Exception {
     MvcResult asyncResult =
         mockMvc
-            .perform(get("/exports/library-books.csv").param("status", "7"))
+            .perform(get("/exports/library-books").param("statusCode", "7"))
             .andExpect(request().asyncStarted())
             .andReturn();
 
@@ -58,15 +58,15 @@ class ExportEndpointIntegrationTest {
                     "Content-Disposition", containsString("filename=\"library-books-7-")))
             .andReturn();
 
-    assertThat(response.getResponse().getContentAsString()).contains("status").contains("7");
+    assertThat(response.getResponse().getContentAsString()).contains("statusCode").contains("7");
   }
 
   @Test
   void throwsValidationExceptionForInvalidExportParam() throws Exception {
     mockMvc
-        .perform(get("/exports/library-books.csv").param("status", "not-an-int"))
+        .perform(get("/exports/library-books").param("statusCode", "not-an-int"))
         .andExpect(status().isBadRequest())
-        .andExpect(content().string(org.hamcrest.Matchers.containsString("Filter status must be an integer")));
+        .andExpect(content().string(org.hamcrest.Matchers.containsString("Filter statusCode must be an integer")));
   }
 
   @SpringBootApplication
@@ -85,8 +85,8 @@ class ExportEndpointIntegrationTest {
         public long writeCsv(
             ValidatedExportRequest request, OutputStream out, List<ExportColumn> columns)
             throws RuntimeException {
-          String status = String.valueOf(request.getParams().getOrDefault("status", ""));
-          String csv = "status\\n" + status + "\\n";
+          String statusCode = String.valueOf(request.getParams().getOrDefault("statusCode", ""));
+          String csv = "statusCode\\n" + statusCode + "\\n";
           try {
             out.write(csv.getBytes(StandardCharsets.UTF_8));
             return 1;

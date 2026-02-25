@@ -10,5 +10,6 @@ columns:
     header: Status
 params:
   - name: minId
+    requestName: min-id
     type: LONG
     required: true

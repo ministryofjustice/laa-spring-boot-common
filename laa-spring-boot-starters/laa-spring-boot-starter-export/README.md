@@ -39,6 +39,7 @@ laa:
                 header: Status
             params:
               - name: minId
+                requestName: min-id
                 type: LONG
                 required: false
 ```
@@ -52,6 +53,12 @@ Definitions can be supplied in either:
 
 Supported param types are `STRING`, `UUID`, `INT`, `LONG`, `BOOLEAN`, `DATE`, and `ENUM`.
 
+Request parameter names can be controlled per param with:
+
+- `requestName`
+
+`name` remains the internal SQL parameter key used for binding in providers.
+
 Example definition files are available in:
 
 - `examples/export_definitions/library_books_basic.yml`
@@ -59,6 +66,7 @@ Example definition files are available in:
 - `examples/export_definitions/library_overdue_loans.yml`
 - `examples/export_definitions/library_monthly_checkout_totals.yml`
 - `examples/export_definitions/library_books_optional_filters.yml`
+- `examples/export_definitions/legal_help_submission.yml`
 
 ## Generated Code
 
@@ -86,9 +94,15 @@ Override per definition with:
 
 Generated controllers expose CSV endpoints at:
 
-- `${laa.springboot.starter.exports.web.base-path:/exports}/{exportKey}.csv`
+- `${laa.springboot.starter.exports.web.base-path:/exports}/{exportKey}`
 
-Request params are mapped from definition `params`, and generated OpenAPI annotations include CSV header examples when column metadata is available.
+Request params are mapped from definition `params` with:
+
+- `name`: internal SQL parameter key
+- `requestName`: external API query param name (optional)
+
+When `requestName` is not set, generated query parameter names use `name` directly.
+Generated OpenAPI annotations include CSV header examples when column metadata is available.
 Generated filenames include the export key, non-empty request params (in definition order), and current date:
 
 - `{exportKey}-{param1}-{param2}-...-{yyyy-MM-dd}.csv`

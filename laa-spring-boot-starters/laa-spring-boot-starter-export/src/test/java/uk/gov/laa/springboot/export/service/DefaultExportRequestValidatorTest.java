@@ -72,4 +72,23 @@ class DefaultExportRequestValidatorTest {
         .isInstanceOf(ExportValidationException.class)
         .hasMessage("maxRows must be an integer");
   }
+
+  @Test
+  void acceptsRequestNameAliasAndMapsToInternalName() {
+    ExportDefinition definition =
+        new ExportDefinition(
+            "library-books",
+            "Library books export",
+            200,
+            "libraryProvider",
+            List.of(),
+            List.of(
+                new ExportParamDefinition(
+                    "submissionId", "submission-id", "LONG", null, List.of(), true, null)));
+
+    ValidatedExportRequest request =
+        validator.validate(definition, Map.of("submission-id", new String[] {"123"}));
+
+    assertThat(request.getParam("submissionId", Long.class)).contains(123L);
+  }
 }

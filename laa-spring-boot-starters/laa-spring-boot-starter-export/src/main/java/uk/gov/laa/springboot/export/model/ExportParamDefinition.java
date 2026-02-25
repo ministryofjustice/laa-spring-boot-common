@@ -8,6 +8,7 @@ import java.util.List;
  */
 public final class ExportParamDefinition {
   private final String name;
+  private final String requestName;
   private final String type;
   private final String enumClass;
   private final List<String> allowed;
@@ -19,12 +20,14 @@ public final class ExportParamDefinition {
    */
   public ExportParamDefinition(
       String name,
+      String requestName,
       String type,
       String enumClass,
       List<String> allowed,
       boolean required,
       String defaultValue) {
     this.name = name;
+    this.requestName = requestName;
     this.type = type;
     this.enumClass = enumClass;
     this.allowed = allowed == null ? List.of() : List.copyOf(allowed);
@@ -32,8 +35,25 @@ public final class ExportParamDefinition {
     this.defaultValue = defaultValue;
   }
 
+  /**
+   * Creates a parameter definition without an explicit request name override.
+   */
+  public ExportParamDefinition(
+      String name,
+      String type,
+      String enumClass,
+      List<String> allowed,
+      boolean required,
+      String defaultValue) {
+    this(name, null, type, enumClass, allowed, required, defaultValue);
+  }
+
   public String getName() {
     return name;
+  }
+
+  public String getRequestName() {
+    return requestName;
   }
 
   public String getType() {

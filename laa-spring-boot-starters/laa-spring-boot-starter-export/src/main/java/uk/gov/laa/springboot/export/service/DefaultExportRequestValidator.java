@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import uk.gov.laa.springboot.export.ExportRequestValidator;
 import uk.gov.laa.springboot.export.ExportValidationException;
 import uk.gov.laa.springboot.export.model.ExportDefinition;
@@ -22,8 +21,13 @@ public class DefaultExportRequestValidator implements ExportRequestValidator {
   @Override
   public ValidatedExportRequest validate(ExportDefinition def, Map<String, String[]> rawParams) {
     Map<String, String[]> params = rawParams == null ? Map.of() : rawParams;
-    Map<String, ExportParamDefinition> paramsByName =
-        def.getParams().stream().collect(Collectors.toMap(ExportParamDefinition::getName, f -> f));
+    Map<String, ExportParamDefinition> paramsByName = new HashMap<>();
+    for (ExportParamDefinition definition : def.getParams()) {
+      paramsByName.put(definition.getName(), definition);
+      if (definition.getRequestName() != null && !definition.getRequestName().isBlank()) {
+        paramsByName.put(definition.getRequestName(), definition);
+      }
+    }
 
     Map<String, Object> parsedParams = new HashMap<>();
     for (Map.Entry<String, String[]> entry : params.entrySet()) {
@@ -35,7 +39,7 @@ public class DefaultExportRequestValidator implements ExportRequestValidator {
       if (param == null) {
         throw new ExportValidationException("Unknown param: " + name);
       }
-      parsedParams.put(name, parseParam(param, entry.getValue()));
+      parsedParams.put(param.getName(), parseParam(param, entry.getValue()));
     }
 
     for (ExportParamDefinition param : def.getParams()) {
