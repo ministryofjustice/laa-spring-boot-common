@@ -1,0 +1,40 @@
+description: "Books export with optional filters and defaults"
+provider: libraryBooksOptionalFiltersProvider
+packageName: uk.gov.laa.springboot.export.generated
+maxRows: 15000
+sql: |
+  select
+    b.id as bookId,
+    b.title as title,
+    b.genre as genre,
+    b.status as status,
+    b.created_on as createdOn
+  from library.books b
+  where (:genre is null or b.genre = :genre)
+    and (:status is null or b.status = :status)
+    and (:createdOnOrAfter is null or b.created_on >= :createdOnOrAfter)
+  order by b.created_on desc
+  limit :maxRows
+columns:
+  - key: bookId
+    header: Book ID
+  - key: title
+    header: Title
+  - key: genre
+    header: Genre
+  - key: status
+    header: Status
+  - key: createdOn
+    header: Created On
+params:
+  - name: genre
+    type: STRING
+    required: false
+  - name: status
+    type: STRING
+    required: false
+    defaultValue: AVAILABLE
+  - name: createdOnOrAfter
+    requestName: created-on-or-after
+    type: DATE
+    required: false

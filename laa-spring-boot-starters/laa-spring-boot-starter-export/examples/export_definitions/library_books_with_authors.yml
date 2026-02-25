@@ -1,0 +1,36 @@
+description: "Books joined to authors and library branches"
+provider: libraryBooksWithAuthorsProvider
+packageName: uk.gov.laa.springboot.export.generated
+maxRows: 50000
+sql: |
+  select
+    b.id as bookId,
+    b.title as title,
+    a.full_name as authorName,
+    br.branch_name as branchName,
+    b.status as status
+  from library.books b
+  join library.authors a on a.id = b.author_id
+  left join library.branches br on br.id = b.branch_id
+  where (:branchCode is null or br.branch_code = :branchCode)
+    and (:status is null or b.status = :status)
+  order by br.branch_name, a.full_name, b.title
+  limit :maxRows
+columns:
+  - key: bookId
+    header: Book ID
+  - key: title
+    header: Title
+  - key: authorName
+    header: Author
+  - key: branchName
+    header: Branch
+  - key: status
+    header: Status
+params:
+  - name: branchCode
+    type: STRING
+    required: false
+  - name: status
+    type: STRING
+    required: false

@@ -1,0 +1,15 @@
+description: "Default library books"
+provider: libraryBooksProvider
+packageName: uk.gov.justice.laa.dstew.payments.claimsdata.export.generated
+sql: |
+  select id as book_id, status as status from library_books where id > :minId
+columns:
+  - key: book_id
+    header: Book ID
+  - key: status
+    header: Status
+params:
+  - name: minId
+    requestName: min-id
+    type: LONG
+    required: true

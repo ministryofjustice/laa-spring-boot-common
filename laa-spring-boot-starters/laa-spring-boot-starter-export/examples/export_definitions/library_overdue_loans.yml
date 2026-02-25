@@ -1,0 +1,43 @@
+description: "Overdue loans with member and book details"
+provider: libraryOverdueLoansProvider
+packageName: uk.gov.laa.springboot.export.generated
+maxRows: 20000
+sql: |
+  select
+    l.id as loanId,
+    m.membership_number as memberNumber,
+    m.full_name as memberName,
+    b.title as bookTitle,
+    l.loan_date as loanDate,
+    l.due_date as dueDate,
+    (current_date - l.due_date) as daysOverdue
+  from library.loans l
+  join library.members m on m.id = l.member_id
+  join library.books b on b.id = l.book_id
+  where l.returned_on is null
+    and l.due_date < :asOfDate
+    and (:branchCode is null or l.branch_code = :branchCode)
+  order by daysOverdue desc, l.due_date
+  limit :maxRows
+columns:
+  - key: loanId
+    header: Loan ID
+  - key: memberNumber
+    header: Member Number
+  - key: memberName
+    header: Member Name
+  - key: bookTitle
+    header: Book Title
+  - key: loanDate
+    header: Loan Date
+  - key: dueDate
+    header: Due Date
+  - key: daysOverdue
+    header: Days Overdue
+params:
+  - name: asOfDate
+    type: DATE
+    required: true
+  - name: branchCode
+    type: STRING
+    required: false

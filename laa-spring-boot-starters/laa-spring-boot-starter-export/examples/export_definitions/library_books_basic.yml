@@ -1,0 +1,30 @@
+description: "Basic books export"
+provider: libraryBooksBasicProvider
+packageName: uk.gov.laa.springboot.export.generated
+maxRows: 25000
+sql: |
+  select
+    b.id as bookId,
+    b.isbn as isbn,
+    b.title as title,
+    b.status as status,
+    b.published_on as publishedOn
+  from library.books b
+  where (:status is null or b.status = :status)
+  order by b.id
+  limit :maxRows
+columns:
+  - key: bookId
+    header: Book ID
+  - key: isbn
+    header: ISBN
+  - key: title
+    header: Title
+  - key: status
+    header: Status
+  - key: publishedOn
+    header: Published On
+params:
+  - name: status
+    type: STRING
+    required: false

@@ -47,6 +47,20 @@ plugins {
 }
 ```
 
+### `laa-spring-boot-starter-export-codegen-gradle-plugin` for Export Code Generation
+
+Optional plugin that registers CSV export code generation tasks used with the export starter.
+Use this if you want both SQL and controller generation explicitly.
+
+```groovy
+plugins {
+    id 'uk.gov.laa.springboot.laa-spring-boot-starter-export-codegen-gradle-plugin' version '<latest>'
+}
+```
+
+`laa-spring-boot-gradle-plugin` auto-registers export code generation when
+`laa-spring-boot-starter-export` is on the dependency graph. It registers both SQL and controller tasks by default.
+
 ## Using the Plugins
 
 For the plugins to work in your project, you will need to configure the plugin repository and provide your GitHub credentials in your local `gradle.properties` file.
@@ -117,7 +131,7 @@ apply plugin: 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin'
   (deprecated – prefer Spring's built-in `ProblemDetail`/`ErrorResponse` RFC 9457 support)
 - [Slack alerts](laa-spring-boot-starters/laa-spring-boot-starter-slack-alerts/README.md)
 - [SQL input scanning](laa-spring-boot-starters/laa-spring-boot-starter-sql-scanner/README.md)
-- _**[TODO]**_ Entity Converters
+- [CSV exports](laa-spring-boot-starters/laa-spring-boot-starter-export/README.md)
 
 ## Contributing
 Follow the [contribution guide](./CONTRIBUTING.md) to make code changes.

@@ -55,7 +55,8 @@ laa.springboot.starter.auth:
       {
           "name": "GROUP1",
           "uris": [
-              "/resource1/requires-group1-role/**"
+              "/resource1/requires-group1-role/**",
+              "/resource1/stream-requires-group1-role/**"
        ]
       },
       {

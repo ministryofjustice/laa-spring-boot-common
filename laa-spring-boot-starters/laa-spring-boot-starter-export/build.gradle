@@ -1,0 +1,48 @@
+plugins {
+    id 'spring-boot-starter-conventions'
+    id 'checkstyle'
+}
+
+dependencies {
+    testImplementation platform(project(':laa-spring-boot-dependencies'))
+    testImplementation platform('org.testcontainers:testcontainers-bom:1.20.1')
+
+    api 'com.fasterxml.jackson.core:jackson-databind'
+    api 'org.springframework.boot:spring-boot-autoconfigure'
+    api 'org.postgresql:postgresql'
+
+    implementation(project(':laa-java-gradle-plugin')) {
+        transitive = false
+    }
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.security:spring-security-core'
+    implementation 'org.yaml:snakeyaml'
+
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+checkstyle {
+    maxWarnings = 0
+    toolVersion = checkstyleVersion
+    sourceSets = sourceSets.main as SourceSetContainer
+    showViolations = true
+}
+
+publishing.publications {
+    library(MavenPublication) {
+        from components.java
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
