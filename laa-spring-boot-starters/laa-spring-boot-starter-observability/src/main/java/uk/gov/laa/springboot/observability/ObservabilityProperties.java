@@ -1,4 +1,4 @@
-package uk.gov.laa.springboot.observability.config;
+package uk.gov.laa.springboot.observability;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

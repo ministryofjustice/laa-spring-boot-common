@@ -1,5 +1,6 @@
-package uk.gov.laa.springboot.observability.config;
+package uk.gov.laa.springboot.observability;
 
+import co.elastic.logging.AdditionalField;
 import co.elastic.logging.logback.EcsEncoder;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
@@ -24,13 +25,19 @@ public class ObservabilityAutoConfiguration {
   }
 
   private void configureEcsLogging(ObservabilityProperties properties) {
+
     LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+    AdditionalField processPid = new AdditionalField();
+    processPid.setKey("process.pid");
+    processPid.setValue(String.valueOf(ProcessHandle.current().pid()));
 
     // ECS Encoder
     EcsEncoder ecsEncoder = new EcsEncoder();
     ecsEncoder.setServiceName(properties.getServiceName());
     ecsEncoder.setServiceVersion(properties.getServiceVersion());
     ecsEncoder.setServiceEnvironment(properties.getEnvironment());
+    ecsEncoder.addAdditionalField(processPid);
     ecsEncoder.setContext(context);
     ecsEncoder.start();
 
