@@ -1,10 +1,12 @@
 # LAA Spring Boot Starter - Observability
 
-This Spring Boot starter provides automatic configuration for Elastic Common Schema (ECS) logging, enabling structured logging with service metadata for observability.
+This Spring Boot starter provides automatic configuration for Elastic Common Schema (ECS) logging, enabling structured
+logging with service metadata for observability.
 
 ## Overview
 
-The `ObservabilityAutoConfiguration` class automatically configures ECS logging when enabled, providing structured JSON logs that include service metadata such as service name, version, environment, and process ID.
+The `ObservabilityAutoConfiguration` class automatically configures ECS logging when enabled, providing structured JSON
+logs that include service metadata such as service name, version, environment, and process ID.
 
 ## Features
 
@@ -59,6 +61,7 @@ Once configured, all log output will be automatically formatted in ECS JSON form
 ## Auto-configuration
 
 The starter uses Spring Boot's auto-configuration mechanism:
+
 - Activates only when `laa.springboot.starter.observability.enabled=true`
 - Configures ECS encoder with service metadata
 - Replaces all existing console appenders with ECS-formatted console appender

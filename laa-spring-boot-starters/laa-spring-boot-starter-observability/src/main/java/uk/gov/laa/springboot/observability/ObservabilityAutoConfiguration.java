@@ -1,16 +1,19 @@
 package uk.gov.laa.springboot.observability;
 
-import co.elastic.logging.AdditionalField;
-import co.elastic.logging.logback.EcsEncoder;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.ConsoleAppender;
+import co.elastic.logging.AdditionalField;
+import co.elastic.logging.logback.EcsEncoder;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
+/**
+ * Configuration for ECS structured logging.
+ */
 @AutoConfiguration
 @EnableConfigurationProperties(ObservabilityProperties.class)
 @ConditionalOnProperty(
@@ -26,11 +29,11 @@ public class ObservabilityAutoConfiguration {
 
   private void configureEcsLogging(ObservabilityProperties properties) {
 
-    LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-
     AdditionalField processPid = new AdditionalField();
     processPid.setKey("process.pid");
     processPid.setValue(String.valueOf(ProcessHandle.current().pid()));
+
+    LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
 
     // ECS Encoder
     EcsEncoder ecsEncoder = new EcsEncoder();
