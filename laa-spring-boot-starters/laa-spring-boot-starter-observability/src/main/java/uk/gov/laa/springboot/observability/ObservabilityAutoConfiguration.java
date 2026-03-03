@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 
 /**
  * Configuration for ECS structured logging.
@@ -54,5 +55,10 @@ public class ObservabilityAutoConfiguration {
     Logger rootLogger = context.getLogger(Logger.ROOT_LOGGER_NAME);
     rootLogger.detachAndStopAllAppenders();
     rootLogger.addAppender(consoleAppender);
+  }
+
+  @Bean
+  public ObservabilityFilter observabilityFilter() {
+    return new ObservabilityFilter();
   }
 }

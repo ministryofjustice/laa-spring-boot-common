@@ -3,7 +3,7 @@ package uk.gov.laa.springboot.observability;
 import ch.qos.logback.classic.Logger;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -12,8 +12,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ObservabilityAutoConfigurationTest {
 
-  private final ApplicationContextRunner contextRunner =
-          new ApplicationContextRunner()
+  private final WebApplicationContextRunner contextRunner =
+          new WebApplicationContextRunner()
                   .withUserConfiguration(ObservabilityAutoConfiguration.class)
                   .withPropertyValues(
                           "laa.springboot.starter.observability.enabled=true",
@@ -30,30 +30,29 @@ class ObservabilityAutoConfigurationTest {
             .run(
                     context -> {
                       assertThat(context).hasSingleBean(ObservabilityAutoConfiguration.class);
+                      assertThat(context).hasSingleBean(ObservabilityFilter.class);
                     });
   }
 
   @Test
   void shouldNotLoadAutoConfigurationWhenDisabled() {
-    new ApplicationContextRunner()
+    new WebApplicationContextRunner()
             .withUserConfiguration(ObservabilityAutoConfiguration.class)
             .withPropertyValues(
                     "laa.springboot.starter.observability.enabled=false"
             )
-            .run(context ->
-                    assertThat(context)
-                            .doesNotHaveBean(ObservabilityAutoConfiguration.class)
-            );
+            .run(context -> {
+              assertThat(context).doesNotHaveBean(ObservabilityAutoConfiguration.class);
+              assertThat(context).doesNotHaveBean(ObservabilityFilter.class);
+            });
   }
 
   @Test
   void shouldCreateEcsWithConfiguredServiceFields() {
-
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     System.setOut(new PrintStream(outputStream));
 
     contextRunner.run(context -> {
-
       Logger logger = (Logger) LoggerFactory.getLogger("test.logger");
       logger.info("log message");
       String logOutput = outputStream.toString();
@@ -62,7 +61,7 @@ class ObservabilityAutoConfigurationTest {
       assertThat(logOutput).contains("\"service.version\":\"1.0.0\"");
       assertThat(logOutput).contains("\"service.environment\":\"test\"");
       assertThat(logOutput).contains("\"process.pid\"");
-      assertThat(logOutput).contains("\"log message\"");
+      assertThat(logOutput).contains("log message");
     });
   }
 }

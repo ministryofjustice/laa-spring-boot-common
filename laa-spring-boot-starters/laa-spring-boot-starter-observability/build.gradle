@@ -16,7 +16,11 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+    compileOnly 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'jakarta.servlet:jakarta.servlet-api'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-web'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 

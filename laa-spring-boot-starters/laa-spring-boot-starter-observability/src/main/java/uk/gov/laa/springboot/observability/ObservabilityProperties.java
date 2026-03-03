@@ -1,6 +1,7 @@
 package uk.gov.laa.springboot.observability;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -16,7 +17,7 @@ public class ObservabilityProperties {
   /**
    * ECS logging configurable via property.
    */
-  @NotBlank(message = "enabled is required")
+  @NotNull(message = "enabled is required")
   private Boolean enabled;
 
   /**
