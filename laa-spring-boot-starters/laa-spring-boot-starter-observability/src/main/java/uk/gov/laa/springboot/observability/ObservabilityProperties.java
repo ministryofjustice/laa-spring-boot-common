@@ -4,31 +4,32 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * Configuration properties for ECS structured logging.
  */
 @Getter
 @Setter
+@Validated
 @ConfigurationProperties(prefix = "laa.springboot.starter.observability")
 public class ObservabilityProperties {
 
   /**
-   * ECS logging configurable via property.
+   * Enable ECS logging.
    */
-  @NotBlank(message = "enabled is required")
-  private Boolean enabled;
+  private boolean enabled = true;
 
   /**
    * The name of the service.
    */
-  @NotBlank(message = "serviceName is required")
+  @NotBlank(message = "service-name is required")
   private String serviceName;
 
   /**
    * The version of the service.
    */
-  @NotBlank(message = "serviceVersion is required")
+  @NotBlank(message = "service-version is required")
   private String serviceVersion;
 
   /**
