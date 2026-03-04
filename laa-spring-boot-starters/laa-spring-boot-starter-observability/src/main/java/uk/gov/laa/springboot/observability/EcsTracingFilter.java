@@ -49,7 +49,8 @@ public class EcsTracingFilter extends OncePerRequestFilter {
 
   private static String generateTraceId() {
     UUID uuid = UUID.randomUUID();
-    return String.format("%016x%016x", uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
+    return String.format("%016x%016x", uuid.getMostSignificantBits(),
+            uuid.getLeastSignificantBits());
   }
 
   private static String generateTransactionId() {
