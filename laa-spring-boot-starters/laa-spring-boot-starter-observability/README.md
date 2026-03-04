@@ -11,9 +11,11 @@ logs that include service metadata such as service name, version, environment, a
 ## Features
 
 - **ECS Logging**: Configures Logback to output logs in Elastic Common Schema format
-- **Service Metadata**: Automatically adds service name, version, and environment to log entries
-- **Process ID**: Includes the process ID in log entries for better tracing
 - **Conditional Activation**: Only activates when explicitly enabled via configuration
+- **Tracing filter MDC**: Trace ID/Transaction ID Management: Extracts or generates from:
+1. Request header trace.id/transaction.id
+2. Spring's MDC traceId/spanId
+3. Generates a random UUID if neither exists
 
 ## Configuration
 
@@ -26,14 +28,33 @@ dependencies {
 ```
 
 ```yaml
+logging:
+  structured:
+    format:
+      console: ecs
+    ecs:
+      service:
+        name: ${SPRING_APPLICATION_NAME:default}
+        version: ${APP_VERSION:default}
+        environment: ${SPRING_PROFILES_ACTIVE:default}
+
 laa:
   springboot:
     starter:
       observability:
         enabled: true
-        service-name: ${SPRING_APPLICATION_NAME:default}
-        service-version: ${APP_VERSION:default}
-        environment: ${SPRING_PROFILES_ACTIVE:default}
+```
+
+### logback-spring.xml
+The presence of this file will conflict and will take precedence over ecs structured logging.
+
+For local/developement rename logback-local-spring.xml
+
+set in application-local.yml
+
+```yaml
+logging:
+  config: classpath:logback-local-spring.xml
 ```
 
 ## Usage
@@ -42,19 +63,40 @@ Once configured, all log output will be automatically formatted in ECS JSON form
 
 ```json
 {
-  "@timestamp": "2026-03-02T16:39:13.176Z",
-  "log.level": "INFO",
+  "@timestamp": "2026-03-04T10:30:46.421924Z",
+  "log": {
+    "level": "INFO",
+    "logger": "uk.gov.justice.laa.fee.scheme.controller.FeeCalculationController"
+  },
+  "process": {
+    "pid": 55107,
+    "thread": {
+      "name": "http-nio-8085-exec-1"
+    }
+  },
+  "service": {
+    "name": "laa-fee-scheme-api",
+    "version": "1.0.0",
+    "environment": "local",
+    "node": {
+      "name": "banana"
+    }
+  },
   "message": "Successfully retrieved fee calculation",
-  "ecs.version": "1.2.0",
-  "service.name": "laa-fee-scheme-api",
-  "service.version": "1.0.0",
-  "service.environment": "local",
-  "event.dataset": "laa-fee-scheme-api",
-  "process.thread.name": "http-nio-8085-exec-4",
-  "log.logger": "uk.gov.justice.laa.fee.scheme.controller.FeeCalculationController",
-  "process.pid": "7289",
-  "traceId": "e6b15cf16eae9c7bf988b3be676c632b",
-  "spanId": "6de8bb9fbf899f7c"
+  "transaction": {
+    "id": "124918be1267b4ca"
+  },
+  "trace": {
+    "id": "faf25bb96fd10c069fadf498fffd32df"
+  },
+  "label": {
+    "startDate": "2020-09-30",
+    "feeCode": "EDUFIN",
+    "correlationId": "c2096ee6-367c-43f9-a728-dcbf14bcbe8b"
+  },
+  "ecs": {
+    "version": "8.11"
+  }
 }
 ```
 
@@ -63,14 +105,11 @@ Once configured, all log output will be automatically formatted in ECS JSON form
 The starter uses Spring Boot's auto-configuration mechanism:
 
 - Activates only when `laa.springboot.starter.observability.enabled=true`
-- Configures ECS encoder with service metadata
-- Replaces all existing console appenders with ECS-formatted console appender
-- Automatically adds process ID to all log entries
 
 ## Integration
 
 To use this starter in your Spring Boot application:
 
-1. Add the dependency to your `pom.xml` or `build.gradle`
-2. Configure the required properties in `application.yml` or `application.properties`
+1. Add the dependency to your `build.gradle`
+2. Configure the required properties in `application.yml`
 3. Start logging normally - the output will automatically be formatted in ECS

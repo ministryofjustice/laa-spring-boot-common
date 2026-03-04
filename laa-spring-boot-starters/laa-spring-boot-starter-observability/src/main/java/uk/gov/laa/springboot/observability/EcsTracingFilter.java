@@ -4,14 +4,16 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.MDC;
-import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.MDC;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-public class ObservabilityFilter extends OncePerRequestFilter {
+/**
+ * Observability Filter for MDC.
+ */
+public class EcsTracingFilter extends OncePerRequestFilter {
 
   private static final String TRACE_ID = "trace.id";
   private static final String TRANSACTION_ID = "transaction.id";
@@ -27,11 +29,11 @@ public class ObservabilityFilter extends OncePerRequestFilter {
     try {
       String traceId = Optional.ofNullable(request.getHeader(TRACE_ID))
               .or(() -> Optional.ofNullable(MDC.get(SPRING_TRACE_ID)))
-              .orElseGet(() -> UUID.randomUUID().toString().replace("-", ""));
+              .orElseGet(EcsTracingFilter::generateTraceId);
 
       String transactionId = Optional.ofNullable(request.getHeader(TRANSACTION_ID))
               .or(() -> Optional.ofNullable(MDC.get(SPRING_SPAN_ID)))
-              .orElseGet(() -> UUID.randomUUID().toString().replace("-", ""));
+              .orElseGet(EcsTracingFilter::generateTransactionId);
 
       MDC.put(TRACE_ID, traceId);
       MDC.put(TRANSACTION_ID, transactionId);
@@ -43,5 +45,15 @@ public class ObservabilityFilter extends OncePerRequestFilter {
     } finally {
       MDC.clear();
     }
+  }
+
+  private static String generateTraceId() {
+    UUID uuid = UUID.randomUUID();
+    return String.format("%016x%016x", uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
+  }
+
+  private static String generateTransactionId() {
+    UUID uuid = UUID.randomUUID();
+    return String.format("%016x", uuid.getLeastSignificantBits());
   }
 }
