@@ -14,6 +14,10 @@ logs that include service metadata such as service name, version, environment, a
 - **Service Metadata**: Automatically adds service name, version, and environment to log entries
 - **Process ID**: Includes the process ID in log entries for better tracing
 - **Conditional Activation**: Only activates when explicitly enabled via configuration
+- **Tracing filter MDC**: Trace ID/Transaction ID Management: Extracts or generates from:
+1. Request header trace.id/transaction.id
+2. Spring's MDC traceId/spanId
+3. Generates a random UUID if neither exists
 
 ## Configuration
 
@@ -71,6 +75,6 @@ The starter uses Spring Boot's auto-configuration mechanism:
 
 To use this starter in your Spring Boot application:
 
-1. Add the dependency to your `pom.xml` or `build.gradle`
-2. Configure the required properties in `application.yml` or `application.properties`
+1. Add the dependency to your `build.gradle`
+2. Configure the required properties in `application.yml`
 3. Start logging normally - the output will automatically be formatted in ECS

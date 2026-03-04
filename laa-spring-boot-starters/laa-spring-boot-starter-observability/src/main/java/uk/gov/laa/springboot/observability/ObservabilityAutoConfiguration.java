@@ -58,7 +58,7 @@ public class ObservabilityAutoConfiguration {
   }
 
   @Bean
-  public ObservabilityFilter observabilityFilter() {
-    return new ObservabilityFilter();
+  public EcsTracingFilter ecsTracingFilter() {
+    return new EcsTracingFilter();
   }
 }
