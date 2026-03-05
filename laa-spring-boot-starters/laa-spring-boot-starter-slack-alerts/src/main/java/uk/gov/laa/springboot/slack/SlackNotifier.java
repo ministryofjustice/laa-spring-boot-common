@@ -3,6 +3,7 @@ package uk.gov.laa.springboot.slack;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -90,7 +91,7 @@ public class SlackNotifier {
   private void postPayload(String payload) {
     HttpURLConnection connection = null;
     try {
-      URL url = new URL(webhook);
+      URL url = URI.create(webhook).toURL();
       connection = openConnection(url);
       connection.setDoOutput(true);
       connection.setRequestMethod("POST");

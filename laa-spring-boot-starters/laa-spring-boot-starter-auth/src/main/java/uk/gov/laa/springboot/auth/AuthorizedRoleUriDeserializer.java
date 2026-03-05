@@ -31,14 +31,14 @@ public class AuthorizedRoleUriDeserializer extends StdDeserializer<AuthorizedRol
     if (token == JsonToken.START_OBJECT) {
       JsonNode node = parser.readValueAsTree();
       JsonNode uriNode = getCaseInsensitiveField(node, "uri");
-      if (uriNode == null || uriNode.isNull() || uriNode.asText().isBlank()) {
+      if (uriNode == null || uriNode.isNull() || uriNode.asString().isBlank()) {
         throw InvalidFormatException.from(
             parser,
             "Authorized role uri entries must include a non-empty 'uri' field.",
             node,
             AuthorizedRoleUri.class);
       }
-      String uri = uriNode.asText();
+      String uri = uriNode.asString();
 
       JsonNode methodsNode = getCaseInsensitiveField(node, "method");
       if (methodsNode == null) {
@@ -49,11 +49,11 @@ public class AuthorizedRoleUriDeserializer extends StdDeserializer<AuthorizedRol
         if (methodsNode.isArray()) {
           List<String> values = new ArrayList<>();
           for (JsonNode methodNode : methodsNode) {
-            values.add(methodNode.asText());
+            values.add(methodNode.asString());
           }
           methods = values.toArray(new String[0]);
         } else {
-          methods = new String[] { methodsNode.asText() };
+          methods = new String[] { methodsNode.asString() };
         }
       }
 

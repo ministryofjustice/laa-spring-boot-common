@@ -11,7 +11,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.postgresql.ds.PGSimpleDataSource;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -19,8 +19,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class PostgresCopyExporterTest {
 
   @Container
-  private static final PostgreSQLContainer<?> POSTGRES =
-      new PostgreSQLContainer<>("postgres:16-alpine");
+  private static final PostgreSQLContainer POSTGRES =
+      new PostgreSQLContainer("postgres:16-alpine");
 
   private static DataSource dataSource;
 
