@@ -1,0 +1,42 @@
+plugins {
+    id 'spring-boot-starter-conventions'
+    id 'checkstyle'
+    id 'io.freefair.lombok' version '9.2.0'
+}
+
+dependencies {
+
+    implementation(project(':laa-java-gradle-plugin')) {
+        transitive = false
+    }
+
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-logging'
+    implementation 'co.elastic.logging:logback-ecs-encoder:1.7.0'
+
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    compileOnly 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'jakarta.servlet:jakarta.servlet-api'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-web'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+checkstyle {
+    maxWarnings = 0
+    toolVersion = checkstyleVersion
+    sourceSets = sourceSets.main as SourceSetContainer
+    showViolations = true
+}
+
+publishing.publications {
+    library(MavenPublication) {
+        from components.java
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
