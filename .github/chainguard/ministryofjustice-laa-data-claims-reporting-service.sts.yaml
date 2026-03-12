@@ -1,6 +1,6 @@
 ---
 issuer: https://token.actions.githubusercontent.com
-subject_pattern: repo:ministryofjustice/laa-spring-boot-common:.*
+subject_pattern: repo:ministryofjustice/laa-data-claims-reporting-service:.*
 
 permissions:
   packages: read
