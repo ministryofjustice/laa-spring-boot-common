@@ -141,6 +141,9 @@ Follow the [contribution guide](./CONTRIBUTING.md) to make code changes.
 This repository includes a workflow that opens downstream PRs to bump:
 `uk.gov.laa.springboot.laa-spring-boot-gradle-plugin`
 
+The update step scans Gradle build files recursively in the downstream repository,
+including nested module paths such as `some-module/build.gradle` and Kotlin DSL variants (`*.gradle.kts`).
+
 Workflow file:
 - `.github/workflows/bump-downstream-on-release.yml`
 
