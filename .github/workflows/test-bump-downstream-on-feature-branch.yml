@@ -6,13 +6,53 @@ on:
       - feat/automate-update-prs
 
 jobs:
-  test-bump-submit-a-bulk-claim:
+  prepare-target-repositories:
+    runs-on: ubuntu-latest
+    outputs:
+      repositories: ${{ steps.build-matrix.outputs.targets }}
+    steps:
+      - name: Build repository matrix from comma-separated env var
+        id: build-matrix
+        uses: actions/github-script@v7
+        env:
+          REPOSITORIES_CSV: ${{ vars.DOWNSTREAM_REPOS }}
+          DEFAULT_OWNER: ministryofjustice
+        with:
+          script: |
+            const raw = process.env.REPOSITORIES_CSV || '';
+            const defaultOwner = process.env.DEFAULT_OWNER || 'ministryofjustice';
+            const repositories = raw
+              .split(',')
+              .map((repo) => repo.trim())
+              .filter((repo) => repo.length > 0);
+
+            if (repositories.length === 0) {
+              core.setFailed('Repository variable `downstream_repos` (or `DOWNSTREAM_REPOS`) is empty. Provide at least one repo.');
+              return;
+            }
+
+            const targets = repositories.map((repo) => {
+              const fullRepo = repo.includes('/') ? repo : `${defaultOwner}/${repo}`;
+              const repoName = fullRepo.split('/')[1] || fullRepo;
+              return { full: fullRepo, name: repoName };
+            });
+
+            core.info(`Target repositories: ${targets.map((t) => t.full).join(', ')}`);
+            core.setOutput('targets', JSON.stringify(targets));
+
+  test-bump-downstream:
+    name: bump-${{ matrix.target.name }}
+    needs: prepare-target-repositories
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJson(needs.prepare-target-repositories.outputs.repositories) }}
     uses: ./.github/workflows/bump-downstream-gradle-plugin.yml
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
     with:
-      target_repository: ministryofjustice/laa-submit-a-bulk-claim
+      target_repository: ${{ matrix.target.full }}
       base_branch: main
       new_version: '2.1.6'
     secrets: inherit
