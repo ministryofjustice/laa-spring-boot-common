@@ -19,7 +19,7 @@ on:
         required: true
 
 jobs:
-  create-downstream-pr:
+  update-java-plugin:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -110,8 +110,8 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           path: target-repo
           commit-message: "chore: bump laa-spring-boot-gradle-plugin to ${{ inputs.new_version }}"
-          author: "laa-java-service-deployer <laa-java-service-deployer@users.noreply.github.com>"
-          committer: "laa-java-service-deployer <laa-java-service-deployer@users.noreply.github.com>"
+          author: "laa-java-service-deployer[bot] <41898282+laa-java-service-deployer[bot]@users.noreply.github.com>"
+          committer: "laa-java-service-deployer[bot] <41898282+laa-java-service-deployer[bot]@users.noreply.github.com>"
           branch: ${{ env.PR_BRANCH }}
           base: ${{ inputs.base_branch }}
           title: "chore: bump laa-spring-boot-gradle-plugin to ${{ inputs.new_version }}"

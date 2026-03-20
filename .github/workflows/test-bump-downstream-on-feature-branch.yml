@@ -40,7 +40,7 @@ jobs:
             core.info(`Target repositories: ${targets.map((t) => t.full).join(', ')}`);
             core.setOutput('targets', JSON.stringify(targets));
 
-  test-bump-downstream:
+  bump-downstream-repos:
     name: bump-${{ matrix.target.name }}
     needs: prepare-target-repositories
     strategy:
