@@ -50,7 +50,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          pattern="id 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin' version"
+          plugin_id="uk.gov.laa.springboot.laa-spring-boot-gradle-plugin"
           files=(
             "target-repo/build.gradle"
             "target-repo/settings.gradle"
@@ -63,19 +63,22 @@ jobs:
               continue
             fi
 
-            if ! grep -qF "$pattern" "$file"; then
+            if ! grep -Eq "id ['\"]$plugin_id['\"] version ['\"][^'\"]+['\"]" "$file"; then
               continue
             fi
 
             found_declaration=true
+            current_version="$(sed -nE "s#.*id ['\"]$plugin_id['\"] version ['\"]([^'\"]+)['\"].*#\\1#p" "$file" | head -n1)"
+            echo "Found $plugin_id in $file (current: ${current_version}, target: ${{ inputs.new_version }})"
 
             sed -E -i.bak \
-              "s#(id 'uk\\.gov\\.laa\\.springboot\\.laa-spring-boot-gradle-plugin' version ')[^']+('.*)#\\1${{ inputs.new_version }}\\2#g" \
+              "s#(id ['\"]uk\\.gov\\.laa\\.springboot\\.laa-spring-boot-gradle-plugin['\"] version ['\"])[^'\"]+(['\"].*)#\\1${{ inputs.new_version }}\\2#g" \
               "$file"
             rm -f "${file}.bak"
 
             if ! git -C target-repo diff --quiet -- "$file"; then
               changed_any=true
+              echo "Updated $file to ${{ inputs.new_version }}"
             fi
           done
 
