@@ -1,0 +1,18 @@
+name: Test downstream bump on feature branch
+
+on:
+  push:
+    branches:
+      - feat/automate-update-prs
+
+jobs:
+  test-bump-submit-a-bulk-claim:
+    uses: ./.github/workflows/bump-downstream-gradle-plugin.yml
+    permissions:
+      contents: read
+      pull-requests: write
+    with:
+      target_repository: ministryofjustice/laa-submit-a-bulk-claim
+      base_branch: main
+      new_version: '2.1.6'
+    secrets: inherit
