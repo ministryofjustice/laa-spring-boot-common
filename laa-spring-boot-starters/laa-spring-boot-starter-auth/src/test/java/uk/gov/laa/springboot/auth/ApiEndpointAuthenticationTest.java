@@ -8,10 +8,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
 
+import org.springframework.test.web.servlet.MvcResult;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -168,10 +171,14 @@ class ApiEndpointAuthenticationTest {
 
   @Test
   void testStreamEndpointAuthorized() throws Exception {
-    mockMvc
+    MvcResult result = mockMvc
         .perform(
             get("/resource1/stream-requires-group1-role")
                 .header(HttpHeaders.AUTHORIZATION, "b7bbdb3d-d0b9-4632-b752-b2e0f9486baf"))
+            .andExpect(request().asyncStarted())
+            .andReturn();
+
+    mockMvc.perform(asyncDispatch(result))
         .andExpect(status().is(HttpStatus.OK.value()))
         .andExpect(content().string("stream-ok"));
   }
