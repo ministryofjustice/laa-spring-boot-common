@@ -63,7 +63,7 @@ jobs:
               continue
             fi
 
-            if ! rg -q "$pattern" "$file"; then
+            if ! grep -qF "$pattern" "$file"; then
               continue
             fi
 
