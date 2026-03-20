@@ -30,14 +30,14 @@ jobs:
     steps:
       - name: Create GitHub App token
         id: app-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
         with:
           app-id: ${{ vars.LAA_CCMS_CAAB_SERVICE_APP_ID }}
           private-key: ${{ secrets.LAA_CCMS_CAAB_SERVICE_KEY }}
           owner: ministryofjustice
 
       - name: Checkout target repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           repository: ${{ inputs.target_repository }}
           ref: ${{ inputs.base_branch }}
@@ -105,7 +105,7 @@ jobs:
 
       - name: Create or update pull request
         if: steps.update.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
         with:
           token: ${{ steps.app-token.outputs.token }}
           path: target-repo
