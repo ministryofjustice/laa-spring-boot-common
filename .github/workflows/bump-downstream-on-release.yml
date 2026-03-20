@@ -1,12 +1,47 @@
-name: Test downstream bump on feature branch
+name: Bump downstream applications
 
 on:
-  push:
-    branches:
-      - feat/automate-update-prs
+  release:
+    types:
+      - created
+  workflow_dispatch:
+    inputs:
+      new_version:
+        description: "Plugin version to bump to (for example 2.1.7 or v2.1.7)"
+        required: true
+        type: string
+      downstream_repos:
+        description: "Optional comma-separated repositories (owner/repo or repo names)"
+        required: false
+        type: string
 
 jobs:
+  resolve-version:
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.resolve.outputs.new_version }}
+    steps:
+      - name: Resolve target plugin version
+        id: resolve
+        uses: actions/github-script@v7
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          DISPATCH_VERSION: ${{ inputs.new_version }}
+        with:
+          script: |
+            const raw = (process.env.DISPATCH_VERSION || process.env.RELEASE_TAG || '').trim();
+            const normalized = raw.replace(/^v/, '');
+
+            if (!normalized) {
+              core.setFailed('No version found. Provide workflow_dispatch input `new_version` or create a release with a tag.');
+              return;
+            }
+
+            core.info(`Resolved plugin version: ${normalized}`);
+            core.setOutput('new_version', normalized);
+
   prepare-target-repositories:
+    needs: resolve-version
     runs-on: ubuntu-latest
     outputs:
       repositories: ${{ steps.build-matrix.outputs.targets }}
@@ -15,7 +50,7 @@ jobs:
         id: build-matrix
         uses: actions/github-script@v7
         env:
-          REPOSITORIES_CSV: ${{ vars.DOWNSTREAM_REPOS }}
+          REPOSITORIES_CSV: ${{ inputs.downstream_repos || vars.downstream_repos || vars.DOWNSTREAM_REPOS }}
           DEFAULT_OWNER: ministryofjustice
         with:
           script: |
@@ -42,7 +77,9 @@ jobs:
 
   bump-downstream-repos:
     name: bump-${{ matrix.target.name }}
-    needs: prepare-target-repositories
+    needs:
+      - resolve-version
+      - prepare-target-repositories
     strategy:
       fail-fast: false
       matrix:
@@ -54,5 +91,5 @@ jobs:
     with:
       target_repository: ${{ matrix.target.full }}
       base_branch: main
-      new_version: '2.1.6'
+      new_version: ${{ needs.resolve-version.outputs.new_version }}
     secrets: inherit
