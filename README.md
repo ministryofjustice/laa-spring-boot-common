@@ -135,3 +135,46 @@ apply plugin: 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin'
 
 ## Contributing
 Follow the [contribution guide](./CONTRIBUTING.md) to make code changes.
+
+## Downstream bump automation
+
+This repository includes a workflow that opens downstream PRs to bump:
+`uk.gov.laa.springboot.laa-spring-boot-gradle-plugin`
+
+The update step scans Gradle build files recursively in the downstream repository,
+including nested module paths such as `some-module/build.gradle` and Kotlin DSL variants (`*.gradle.kts`).
+
+Workflow file:
+- `.github/workflows/bump-downstream-on-release.yml`
+
+### Triggers
+
+- `release.created`: runs automatically when a release is created.
+- `workflow_dispatch`: allows manual runs from the Actions tab.
+
+### Required repository/org settings
+
+- Repository (or org) variable: `downstream_repos` (or `DOWNSTREAM_REPOS`)
+  - Comma-separated list of repositories to update.
+  - You can use short names (for example `laa-spring-boot-microservice-template`) or full names (`owner/repo`).
+  - If owner is omitted, `ministryofjustice/` is automatically prefixed.
+
+Example:
+
+```text
+laa-spring-boot-microservice-template,laa-another-service,ministryofjustice/some-other-repo
+```
+
+### Workflow dispatch inputs
+
+- `new_version` (required): version to bump to, for example `2.1.7` or `v2.1.7`.
+- `downstream_repos` (optional): comma-separated override for this run only.
+  - If omitted, the workflow uses `downstream_repos` / `DOWNSTREAM_REPOS` variable.
+
+### Release version behavior
+
+For release-triggered runs, `new_version` is taken from the release tag (`github.event.release.tag_name`) and a leading `v` is removed.
+
+Examples:
+- `v2.1.7` -> `2.1.7`
+- `2.1.7` -> `2.1.7`

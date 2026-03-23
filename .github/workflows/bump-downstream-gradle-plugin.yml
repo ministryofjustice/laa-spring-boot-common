@@ -1,0 +1,121 @@
+name: Bump downstream Gradle plugin version
+
+on:
+  workflow_call:
+    inputs:
+      target_repository:
+        required: true
+        type: string
+      base_branch:
+        required: false
+        type: string
+        default: 'main'
+      new_version:
+        required: false
+        type: string
+        default: '2.1.6'
+    secrets:
+      LAA_CCMS_CAAB_SERVICE_KEY:
+        required: true
+
+jobs:
+  update-java-plugin:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      PR_BRANCH: chore/bump-laa-spring-boot-gradle-plugin-${{ inputs.new_version }}
+
+    steps:
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        with:
+          app-id: ${{ vars.LAA_CCMS_CAAB_SERVICE_APP_ID }}
+          private-key: ${{ secrets.LAA_CCMS_CAAB_SERVICE_KEY }}
+          owner: ministryofjustice
+
+      - name: Checkout target repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: ${{ inputs.target_repository }}
+          ref: ${{ inputs.base_branch }}
+          token: ${{ steps.app-token.outputs.token }}
+          path: target-repo
+
+      - name: Update plugin version in build.gradle or settings.gradle
+        id: update
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          plugin_id="uk.gov.laa.springboot.laa-spring-boot-gradle-plugin"
+          files=()
+          while IFS= read -r -d '' file; do
+            files+=("$file")
+          done < <(find target-repo -type f \( -name "build.gradle" -o -name "settings.gradle" -o -name "build.gradle.kts" -o -name "settings.gradle.kts" \) -print0)
+
+          found_declaration=false
+          found_outdated=false
+          changed_any=false
+
+          for file in "${files[@]}"; do
+            if ! grep -Eq "id[[:space:]]*\\(?['\"]$plugin_id['\"]\\)?[[:space:]]*version[[:space:]]*['\"][^'\"]+['\"]" "$file"; then
+              continue
+            fi
+
+            found_declaration=true
+            current_version="$(sed -nE "s#.*id[[:space:]]*\\(?['\"]$plugin_id['\"]\\)?[[:space:]]*version[[:space:]]*['\"]([^'\"]+)['\"].*#\\1#p" "$file" | head -n1)"
+            echo "Found $plugin_id in $file (current: ${current_version}, target: ${{ inputs.new_version }})"
+
+            if [[ "$current_version" == "${{ inputs.new_version }}" ]]; then
+              echo "$file is already on target version."
+              continue
+            fi
+
+            found_outdated=true
+
+            sed -E -i.bak \
+              "s#(id[[:space:]]*\\(?['\"]uk\\.gov\\.laa\\.springboot\\.laa-spring-boot-gradle-plugin['\"]\\)?[[:space:]]*version[[:space:]]*['\"])[^'\"]+(['\"].*)#\\1${{ inputs.new_version }}\\2#g" \
+              "$file"
+            rm -f "${file}.bak"
+
+            if ! git -C target-repo diff --quiet -- "$file"; then
+              changed_any=true
+              echo "Updated $file to ${{ inputs.new_version }}"
+            fi
+          done
+
+          if [[ "$found_declaration" != "true" ]]; then
+            echo "Expected plugin declaration not found in any build/settings Gradle file under target-repo"
+            exit 1
+          fi
+
+          if [[ "$found_outdated" != "true" ]]; then
+            echo "No outdated plugin version found."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update pull request
+        if: steps.update.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          path: target-repo
+          commit-message: "chore: bump laa-spring-boot-gradle-plugin to ${{ inputs.new_version }}"
+          author: "laa-java-service-deployer[bot] <41898282+laa-java-service-deployer[bot]@users.noreply.github.com>"
+          committer: "laa-java-service-deployer[bot] <41898282+laa-java-service-deployer[bot]@users.noreply.github.com>"
+          branch: ${{ env.PR_BRANCH }}
+          base: ${{ inputs.base_branch }}
+          title: "chore: bump laa-spring-boot-gradle-plugin to ${{ inputs.new_version }}"
+          body: |
+            Automated update of `uk.gov.laa.springboot.laa-spring-boot-gradle-plugin` to `${{ inputs.new_version }}`.
+          delete-branch: false
+
+      - name: No changes needed
+        if: steps.update.outputs.changed != 'true'
+        run: echo "Plugin version is already up to date; no branch or PR created."

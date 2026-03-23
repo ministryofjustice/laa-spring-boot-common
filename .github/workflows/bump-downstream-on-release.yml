@@ -1,0 +1,95 @@
+name: Bump downstream applications
+
+on:
+  release:
+    types:
+      - created
+  workflow_dispatch:
+    inputs:
+      new_version:
+        description: "Plugin version to bump to (for example 2.1.7 or v2.1.7)"
+        required: true
+        type: string
+      downstream_repos:
+        description: "Optional comma-separated repositories (owner/repo or repo names)"
+        required: false
+        type: string
+
+jobs:
+  resolve-version:
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.resolve.outputs.new_version }}
+    steps:
+      - name: Resolve target plugin version
+        id: resolve
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          DISPATCH_VERSION: ${{ inputs.new_version }}
+        with:
+          script: |
+            const raw = (process.env.DISPATCH_VERSION || process.env.RELEASE_TAG || '').trim();
+            const normalized = raw.replace(/^v/, '');
+
+            if (!normalized) {
+              core.setFailed('No version found. Provide workflow_dispatch input `new_version` or create a release with a tag.');
+              return;
+            }
+
+            core.info(`Resolved plugin version: ${normalized}`);
+            core.setOutput('new_version', normalized);
+
+  prepare-target-repositories:
+    needs: resolve-version
+    runs-on: ubuntu-latest
+    outputs:
+      repositories: ${{ steps.build-matrix.outputs.targets }}
+    steps:
+      - name: Build repository matrix from comma-separated env var
+        id: build-matrix
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          REPOSITORIES_CSV: ${{ inputs.downstream_repos || vars.downstream_repos || vars.DOWNSTREAM_REPOS }}
+          DEFAULT_OWNER: ministryofjustice
+        with:
+          script: |
+            const raw = process.env.REPOSITORIES_CSV || '';
+            const defaultOwner = process.env.DEFAULT_OWNER || 'ministryofjustice';
+            const repositories = raw
+              .split(',')
+              .map((repo) => repo.trim())
+              .filter((repo) => repo.length > 0);
+
+            if (repositories.length === 0) {
+              core.setFailed('Repository variable `downstream_repos` (or `DOWNSTREAM_REPOS`) is empty. Provide at least one repo.');
+              return;
+            }
+
+            const targets = repositories.map((repo) => {
+              const fullRepo = repo.includes('/') ? repo : `${defaultOwner}/${repo}`;
+              const repoName = fullRepo.split('/')[1] || fullRepo;
+              return { full: fullRepo, name: repoName };
+            });
+
+            core.info(`Target repositories: ${targets.map((t) => t.full).join(', ')}`);
+            core.setOutput('targets', JSON.stringify(targets));
+
+  bump-downstream-repos:
+    name: bump-${{ matrix.target.name }}
+    needs:
+      - resolve-version
+      - prepare-target-repositories
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJson(needs.prepare-target-repositories.outputs.repositories) }}
+    uses: ./.github/workflows/bump-downstream-gradle-plugin.yml
+    permissions:
+      contents: write
+      pull-requests: write
+    with:
+      target_repository: ${{ matrix.target.full }}
+      base_branch: main
+      new_version: ${{ needs.resolve-version.outputs.new_version }}
+    secrets: inherit
