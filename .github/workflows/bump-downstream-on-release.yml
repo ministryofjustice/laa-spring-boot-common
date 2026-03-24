@@ -27,10 +27,16 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
           DISPATCH_VERSION: ${{ inputs.new_version }}
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
         with:
           script: |
             const raw = (process.env.DISPATCH_VERSION || process.env.RELEASE_TAG || '').trim();
-            const normalized = raw.replace(/^v/, '');
+            const repositoryName = (process.env.REPOSITORY_NAME || '').trim();
+            const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const withoutV = raw.replace(/^v/, '');
+            const normalized = repositoryName
+              ? withoutV.replace(new RegExp(`^${escapeRegex(repositoryName)}-`), '')
+              : withoutV;
 
             if (!normalized) {
               core.setFailed('No version found. Provide workflow_dispatch input `new_version` or create a release with a tag.');

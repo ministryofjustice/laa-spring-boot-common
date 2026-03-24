@@ -173,8 +173,9 @@ laa-spring-boot-microservice-template,laa-another-service,ministryofjustice/some
 
 ### Release version behavior
 
-For release-triggered runs, `new_version` is taken from the release tag (`github.event.release.tag_name`) and a leading `v` is removed.
+For release-triggered runs, `new_version` is taken from the release tag (`github.event.release.tag_name`), a leading `v` is removed, and a leading `<repository-name>-` prefix is also removed when present.
 
 Examples:
 - `v2.1.7` -> `2.1.7`
 - `2.1.7` -> `2.1.7`
+- `laa-spring-boot-common-2.1.7` -> `2.1.7`
