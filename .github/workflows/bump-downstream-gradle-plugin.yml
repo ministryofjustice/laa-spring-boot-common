@@ -107,8 +107,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           path: target-repo
           commit-message: "chore: bump laa-spring-boot-gradle-plugin to ${{ inputs.new_version }}"
-          author: "laa-java-service-deployer[bot] <41898282+laa-java-service-deployer[bot]@users.noreply.github.com>"
-          committer: "laa-java-service-deployer[bot] <41898282+laa-java-service-deployer[bot]@users.noreply.github.com>"
+          sign-commits: true
           branch: ${{ env.PR_BRANCH }}
           base: ${{ inputs.base_branch }}
           title: "chore: bump laa-spring-boot-gradle-plugin to ${{ inputs.new_version }}"
