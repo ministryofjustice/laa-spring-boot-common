@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.InvalidPropertyException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
@@ -19,6 +20,7 @@ import tools.jackson.databind.ObjectMapper;
 /**
  * Evaluates endpoint access by comparing configured role/scope mappings with authorities.
  */
+@Slf4j
 public class EndpointAccessManager {
 
   private final Oauth2AuthorizationProperties properties;
@@ -45,6 +47,8 @@ public class EndpointAccessManager {
     unprotectedUris = properties.getUnprotectedUris();
     authorizedRoles = parseMappings(properties.getAuthorizedRoles(), "authorizedRoles");
     authorizedScopes = parseMappings(properties.getAuthorizedScopes(), "authorizedScopes");
+    logRegisteredMappings("Authorized Role Registered: '{}'", authorizedRoles);
+    logRegisteredMappings("Authorized Scope Registered: '{}'", authorizedScopes);
     if (authorizedRoles.isEmpty() && authorizedScopes.isEmpty()) {
       throw new InvalidPropertyException(
           Oauth2AuthorizationProperties.class,
@@ -68,6 +72,12 @@ public class EndpointAccessManager {
           Oauth2AuthorizationProperties.class,
           propertyName,
           "Could not parse JSON value.");
+    }
+  }
+
+  private void logRegisteredMappings(String messagePattern, Set<AuthorizedAuthority> mappings) {
+    for (AuthorizedAuthority mapping : mappings) {
+      log.info(messagePattern, mapping.name());
     }
   }
 
