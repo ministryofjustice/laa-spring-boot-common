@@ -80,8 +80,9 @@ public class SecurityFilterChainAutoConfiguration {
                   isAuthorized(authentication.get(), endpointAccessManager, context.getRequest())));
         })
         .exceptionHandling(exceptionHandling ->
-            exceptionHandling.authenticationEntryPoint(
-                new Oauth2AuthenticationEntryPoint(objectMapper)))
+            exceptionHandling
+                .authenticationEntryPoint(new Oauth2AuthenticationEntryPoint(objectMapper))
+                .accessDeniedHandler(new Oauth2AccessDeniedHandler(objectMapper)))
         .oauth2ResourceServer(oauth2 ->
             oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)));
 

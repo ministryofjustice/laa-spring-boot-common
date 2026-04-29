@@ -55,7 +55,10 @@ class OAuth2EndpointAuthorizationTest {
   void roleMappingRejectsMissingRole() throws Exception {
     mockMvc.perform(get("/resource1/requires-group1-role")
             .header(HttpHeaders.AUTHORIZATION, "Bearer scope-read"))
-        .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+        .andExpect(status().is(HttpStatus.FORBIDDEN.value()))
+        .andExpect(jsonPath("$.code").value(HttpStatus.FORBIDDEN.value()))
+        .andExpect(jsonPath("$.status").value("FORBIDDEN"))
+        .andExpect(jsonPath("$.message").value("Access Denied"));
   }
 
   @Test
@@ -69,7 +72,10 @@ class OAuth2EndpointAuthorizationTest {
   void scopeMappingRejectsMissingScope() throws Exception {
     mockMvc.perform(get("/resource1/requires-scope")
             .header(HttpHeaders.AUTHORIZATION, "Bearer role-group1"))
-        .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+        .andExpect(status().is(HttpStatus.FORBIDDEN.value()))
+        .andExpect(jsonPath("$.code").value(HttpStatus.FORBIDDEN.value()))
+        .andExpect(jsonPath("$.status").value("FORBIDDEN"))
+        .andExpect(jsonPath("$.message").value("Access Denied"));
   }
 
   @Test
