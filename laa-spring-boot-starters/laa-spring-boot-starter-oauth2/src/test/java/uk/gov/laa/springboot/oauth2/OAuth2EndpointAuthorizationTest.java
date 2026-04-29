@@ -18,6 +18,7 @@ import uk.gov.laa.springboot.oauth2.testsupport.StubJwtToken;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -31,7 +32,10 @@ class OAuth2EndpointAuthorizationTest {
   @Test
   void protectedEndpointWithoutTokenIsUnauthorized() throws Exception {
     mockMvc.perform(get("/resource1/requires-group1-role"))
-        .andExpect(status().is(HttpStatus.UNAUTHORIZED.value()));
+        .andExpect(status().is(HttpStatus.UNAUTHORIZED.value()))
+        .andExpect(jsonPath("$.code").value(HttpStatus.UNAUTHORIZED.value()))
+        .andExpect(jsonPath("$.status").value("UNAUTHORIZED"))
+        .andExpect(jsonPath("$.message").value("No API access token provided."));
   }
 
   @Test

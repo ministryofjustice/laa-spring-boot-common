@@ -63,7 +63,8 @@ public class SecurityFilterChainAutoConfiguration {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity,
                                                  EndpointAccessManager endpointAccessManager,
-                                                 JwtAuthenticationConverter jwtConverter)
+                                                 JwtAuthenticationConverter jwtConverter,
+                                                 ObjectMapper objectMapper)
       throws Exception {
     httpSecurity
         .csrf(AbstractHttpConfigurer::disable)
@@ -78,6 +79,9 @@ public class SecurityFilterChainAutoConfiguration {
               new AuthorizationDecision(
                   isAuthorized(authentication.get(), endpointAccessManager, context.getRequest())));
         })
+        .exceptionHandling(exceptionHandling ->
+            exceptionHandling.authenticationEntryPoint(
+                new Oauth2AuthenticationEntryPoint(objectMapper)))
         .oauth2ResourceServer(oauth2 ->
             oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)));
 
