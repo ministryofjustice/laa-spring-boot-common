@@ -1,14 +1,19 @@
 package uk.gov.laa.springboot.oauth2;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
+import org.springframework.security.authentication.AuthenticationManagerResolver;
 import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -57,6 +62,7 @@ public class SecurityFilterChainAutoConfiguration {
    * @param httpSecurity HTTP security builder
    * @param endpointAccessManager endpoint role/scope access manager
    * @param jwtConverter JWT converter for authorities
+   * @param authenticationManagerResolver optional JWT authentication manager resolver
    * @return configured filter chain
    * @throws Exception when security chain cannot be built
    */
@@ -64,6 +70,10 @@ public class SecurityFilterChainAutoConfiguration {
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity,
                                                  EndpointAccessManager endpointAccessManager,
                                                  JwtAuthenticationConverter jwtConverter,
+                                                 ObjectProvider<
+                                                         AuthenticationManagerResolver<
+                                                             HttpServletRequest>>
+                                                         authenticationManagerResolver,
                                                  ObjectMapper objectMapper)
       throws Exception {
     httpSecurity
@@ -83,10 +93,22 @@ public class SecurityFilterChainAutoConfiguration {
             exceptionHandling
                 .authenticationEntryPoint(new Oauth2AuthenticationEntryPoint(objectMapper))
                 .accessDeniedHandler(new Oauth2AccessDeniedHandler(objectMapper)))
-        .oauth2ResourceServer(oauth2 ->
-            oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)));
+        .oauth2ResourceServer(resourceServerConfigurer(
+            authenticationManagerResolver.getIfAvailable(), jwtConverter));
 
     return httpSecurity.build();
+  }
+
+  private Customizer<OAuth2ResourceServerConfigurer<HttpSecurity>> resourceServerConfigurer(
+      AuthenticationManagerResolver<HttpServletRequest> authenticationManagerResolver,
+      JwtAuthenticationConverter jwtConverter) {
+    return oauth2 -> {
+      if (authenticationManagerResolver != null) {
+        oauth2.authenticationManagerResolver(authenticationManagerResolver);
+      } else {
+        oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter));
+      }
+    };
   }
 
   private boolean isAuthorized(Authentication authentication,

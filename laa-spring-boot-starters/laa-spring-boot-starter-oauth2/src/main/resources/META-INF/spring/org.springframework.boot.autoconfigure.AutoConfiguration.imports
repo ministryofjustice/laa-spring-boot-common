@@ -1,3 +1,3 @@
-uk.gov.laa.springboot.oauth2.MultiTenantJwtDecoderAutoConfiguration
+uk.gov.laa.springboot.oauth2.MultiTenantJwtAuthenticationManagerResolverAutoConfiguration
 uk.gov.laa.springboot.oauth2.SecurityFilterChainAutoConfiguration
 uk.gov.laa.springboot.oauth2.config.OpenApiConfiguration

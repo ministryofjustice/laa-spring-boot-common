@@ -11,18 +11,8 @@ dependencies {
 }
 ```
 
-Configure JWT validation using standard Spring properties:
-
-```yaml
-spring:
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: https://issuer.example
-```
-
-Or configure the starter to accept JWTs from multiple trusted tenants:
+Configure the starter to accept JWTs from trusted tenants. Use the same `tenants` list for both
+single-tenant and multi-tenant services:
 
 ```yaml
 laa:
@@ -38,6 +28,13 @@ laa:
               audiences:
                 - api://example-audience
 ```
+
+The starter uses Spring Security's servlet `JwtIssuerAuthenticationManagerResolver` to select the
+tenant by JWT issuer, then validates the tenant's issuer, signature and accepted audiences.
+
+Services can still provide standard Spring resource-server configuration or a custom `JwtDecoder`
+when they need to override the starter's tenant resolver, but the starter-owned tenant config is the
+recommended path.
 
 Configure endpoint authorization mappings:
 
@@ -64,6 +61,16 @@ laa.springboot.starter.oauth2:
   ]'
   unprotected-uris: ["/actuator/**"]
 ```
+
+Any configured roles and scopes must also be defined on the corresponding Microsoft Entra app
+registration. The starter authorizes requests from the `roles` and scope claims in the access token;
+Entra will only include those claims when the app registration exposes the roles/scopes and the
+calling application has been assigned or granted them.
+
+Keep the roles and scopes configured in each application's YAML or AWS Secrets Manager values in
+line with the roles and scopes created in Entra. If Entra issues a valid token containing a role or
+scope that is not configured for the requested endpoint, the token can still authenticate
+successfully, but endpoint authorization will fail with access denied.
 
 ## Mocking auth in tests
 
