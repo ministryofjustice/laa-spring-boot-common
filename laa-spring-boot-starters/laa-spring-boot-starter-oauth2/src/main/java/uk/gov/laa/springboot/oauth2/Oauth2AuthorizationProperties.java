@@ -19,4 +19,12 @@ public class Oauth2AuthorizationProperties {
   private String scopesClaimPath = "scope";
   private String roleAuthorityPrefix = "ROLE_";
   private String scopeAuthorityPrefix = "SCOPE_";
+  private Resourceserver resourceserver = new Resourceserver();
+
+  /** OAuth2 resource-server properties managed by the starter. */
+  @Getter
+  @Setter
+  public static class Resourceserver {
+    private MultiTenantJwtProperties jwt = new MultiTenantJwtProperties();
+  }
 }

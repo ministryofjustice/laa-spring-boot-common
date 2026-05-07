@@ -22,6 +22,23 @@ spring:
           issuer-uri: https://issuer.example
 ```
 
+Or configure the starter to accept JWTs from multiple trusted tenants:
+
+```yaml
+laa:
+  springboot.starter:
+    oauth2:
+      resourceserver:
+        jwt:
+          tenants:
+            - issuer-uri: https://issuer-one.example
+              audiences:
+                - api://example-audience
+            - issuer-uri: https://issuer-two.example
+              audiences:
+                - api://example-audience
+```
+
 Configure endpoint authorization mappings:
 
 ```yaml
