@@ -5,19 +5,21 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
  * Controller for Cookie consent.
  */
-@RequiredArgsConstructor
 @Component
 public class CookieConsentInterceptor implements HandlerInterceptor {
   private final CookieConsentProperties properties;
 
-  @Override
+    public CookieConsentInterceptor(CookieConsentProperties properties) {
+        this.properties = properties;
+    }
+
+    @Override
   public boolean preHandle(HttpServletRequest request,
                              HttpServletResponse response,
                              Object handler) {
