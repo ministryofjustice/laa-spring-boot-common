@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
- * Controller for Cookie consent.
+ * Controller responsible for managing cookie consent preferences
+ * and rendering the cookie preferences page.
  */
 @Controller
 public class CookieConsentController {
@@ -23,7 +24,13 @@ public class CookieConsentController {
   }
 
   /**
-   * Controller for Cookie consent.
+   * Saves cookie consent preferences submitted from the cookie banner
+   * and redirects the user back to the originating page.
+   *
+   * @param analytics indicates whether the user accepted analytics cookies
+   * @param response the current HTTP response
+   * @param request the current HTTP request
+   * @return redirect to the originating page
    */
   @PostMapping("/cookies/consent")
   public String handleCookieConsent(
@@ -48,7 +55,11 @@ public class CookieConsentController {
   }
 
   /**
-   * Controller for Cookie consent.
+   * Hides the cookie banner for the current user by storing a preference cookie.
+   *
+   * @param request the current HTTP request
+   * @param response the current HTTP response
+   * @return redirect to the originating page
    */
   @PostMapping("/cookies/hide")
   public String hideCookieMessage(
@@ -67,7 +78,13 @@ public class CookieConsentController {
   }
 
   /**
-   * Controller for Cookie consent.
+   * Displays the cookies preferences page.
+   *
+   * @param success indicates whether cookie preferences were
+   *                successfully updated.
+   * @param model the Spring MVC model
+   * @param request the current HTTP request
+   * @return the cookie preferences page view
    */
   @GetMapping("/cookies")
   public String cookiesPage(HttpServletRequest request, Model model,
@@ -80,7 +97,11 @@ public class CookieConsentController {
   }
 
   /**
-   * Controller for Cookie consent.
+   * Saves the user's cookie preferences and stores them in a browser cookie.
+   *
+   * @param analytics indicates whether the user accepted analytics cookies
+   * @param response the current HTTP response
+   * @return redirect to the originating page
    */
   @PostMapping("/cookies/preferences")
   public String saveCookiePreferences(

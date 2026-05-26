@@ -5,7 +5,7 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Controller for Cookie consent.
+ * Configuration properties for Cookie consent.
  */
 @Getter
 @Setter
