@@ -3,6 +3,12 @@
 Provides OAuth2 resource-server authentication with endpoint authorization driven by
 role and scope mappings.
 
+## Prerequisites
+
+Before implementing this starter, make sure the required Microsoft Entra app registrations, app
+roles and delegated scopes have already been created. The starter can only validate and authorize
+roles and scopes that Entra is configured to issue in access tokens.
+
 ## Usage
 
 ```groovy
