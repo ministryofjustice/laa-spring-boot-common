@@ -18,11 +18,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class CookieConsentController {
   private final CookieConsentProperties properties;
 
-    public CookieConsentController(CookieConsentProperties properties) {
-        this.properties = properties;
-    }
+  public CookieConsentController(CookieConsentProperties properties) {
+    this.properties = properties;
+  }
 
-    /**
+  /**
    * Controller for Cookie consent.
    */
   @PostMapping("/cookies/consent")
@@ -71,7 +71,7 @@ public class CookieConsentController {
    */
   @GetMapping("/cookies")
   public String cookiesPage(HttpServletRequest request, Model model,
-                            @RequestParam(required = false) Boolean success) {
+                            @RequestParam(value = "success", required = false) Boolean success) {
     Boolean analyticsConsented = (Boolean) request.getAttribute("analyticsConsented");
     model.addAttribute("analyticsCookiesEnabled", analyticsConsented != null && analyticsConsented);
     model.addAttribute("showSuccessBanner", success != null && success);

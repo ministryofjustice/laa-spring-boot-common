@@ -9,17 +9,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
- * Controller for Cookie consent.
+ * Interceptor for Cookie consent.
  */
 @Component
 public class CookieConsentInterceptor implements HandlerInterceptor {
   private final CookieConsentProperties properties;
 
-    public CookieConsentInterceptor(CookieConsentProperties properties) {
-        this.properties = properties;
-    }
+  public CookieConsentInterceptor(CookieConsentProperties properties) {
+    this.properties = properties;
+  }
 
-    @Override
+  @Override
   public boolean preHandle(HttpServletRequest request,
                              HttpServletResponse response,
                              Object handler) {

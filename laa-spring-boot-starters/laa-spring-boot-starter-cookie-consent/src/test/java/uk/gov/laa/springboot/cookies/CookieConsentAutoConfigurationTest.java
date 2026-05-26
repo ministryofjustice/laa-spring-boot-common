@@ -2,12 +2,11 @@ package uk.gov.laa.springboot.cookies;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CookiesConsentAutoConfigurationTest {
+public class CookieConsentAutoConfigurationTest {
     private final WebApplicationContextRunner contextRunner =
             new WebApplicationContextRunner()
                     .withConfiguration(AutoConfigurations.of(CookieConsentAutoConfiguration.class));
