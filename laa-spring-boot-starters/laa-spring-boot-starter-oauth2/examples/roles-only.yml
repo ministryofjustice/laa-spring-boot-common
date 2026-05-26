@@ -1,0 +1,27 @@
+laa.springboot.starter.oauth2:
+  resourceserver:
+    jwt:
+      tenants:
+        - issuer-uri: https://login.microsoftonline.com/<external_tenant_id>/v2.0
+          audiences:
+            - <entra_app_reg_client_id>
+  authorized-roles: '[
+    {
+      "name": "library-catalogue-service",
+      "uris": [
+        {"method":["GET","POST","PATCH"],"uri":"/api/v*/books/**"},
+        {"method":["GET","POST"],"uri":"/api/v*/authors/**"},
+        {"method":["GET"],"uri":"/api/v*/libraries/**"}
+      ]
+    },
+    {
+      "name": "library-notifications-service",
+      "uris": [
+        {"method":["GET"],"uri":"/api/v*/libraries/*/books/**"},
+        {"method":["GET"],"uri":"/api/v*/authors/*"}
+      ]
+    }
+  ]'
+  unprotected-uris: [ "/actuator/**", "/swagger-ui.html",
+                      "/swagger-ui/**", "/v3/api-docs/**", "/favicon.ico",
+                      "/open-api-specification.yml" ]
