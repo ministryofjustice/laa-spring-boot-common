@@ -39,10 +39,10 @@ public class CookieConsentInterceptor implements HandlerInterceptor {
         }
       }
     }
-    boolean showCookieBanner = !bannerSeen && !bannerHidden;
+
     request.setAttribute("analyticsConsented", analyticsConsented);
-    request.setAttribute("showCookieBanner", showCookieBanner);
-    request.setAttribute("bannerSeen", bannerSeen);
+    request.setAttribute("showCookieBanner", !bannerSeen);
+    request.setAttribute("bannerSeen", bannerSeen && !bannerHidden);
     request.setAttribute("isCookiesPage", request.getRequestURI().equals("/cookies"));
     return true;
   }
