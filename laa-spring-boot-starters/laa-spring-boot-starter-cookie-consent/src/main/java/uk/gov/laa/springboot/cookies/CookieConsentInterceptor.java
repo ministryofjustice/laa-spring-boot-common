@@ -11,6 +11,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 /**
  * Interceptor for Cookie consent.
  */
+@Component
 public class CookieConsentInterceptor implements HandlerInterceptor {
   private final CookieConsentProperties properties;
 
