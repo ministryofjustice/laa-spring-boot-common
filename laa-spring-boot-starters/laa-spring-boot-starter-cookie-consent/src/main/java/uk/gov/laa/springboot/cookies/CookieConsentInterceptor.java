@@ -23,10 +23,6 @@ public class CookieConsentInterceptor implements HandlerInterceptor {
   public boolean preHandle(HttpServletRequest request,
                              HttpServletResponse response,
                              Object handler) {
-    request.setAttribute("analyticsConsented", false);
-    request.setAttribute("showCookieBanner", true);
-    request.setAttribute("bannerSeen", false);
-    request.setAttribute("isCookiesPage", false);
     boolean analyticsConsented = false;
     boolean bannerSeen = false;
     boolean bannerHidden = false;
@@ -44,10 +40,9 @@ public class CookieConsentInterceptor implements HandlerInterceptor {
       }
     }
     boolean showCookieBanner = !bannerSeen && !bannerHidden;
-    boolean showPreferenceMessage = bannerSeen && !bannerHidden;
     request.setAttribute("analyticsConsented", analyticsConsented);
     request.setAttribute("showCookieBanner", showCookieBanner);
-    request.setAttribute("bannerSeen", showPreferenceMessage);
+    request.setAttribute("bannerSeen", bannerSeen);
     request.setAttribute("isCookiesPage", request.getRequestURI().equals("/cookies"));
     return true;
   }
