@@ -23,12 +23,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 )
 public class CookieConsentAutoConfiguration implements WebMvcConfigurer {
   private final CookieConsentProperties properties;
-  private final CookieConsentInterceptor interceptor;
 
-  public CookieConsentAutoConfiguration(CookieConsentProperties properties,
-                                        CookieConsentInterceptor interceptor) {
+  public CookieConsentAutoConfiguration(CookieConsentProperties properties) {
     this.properties = properties;
-    this.interceptor = interceptor;
   }
 
   @Bean
@@ -45,6 +42,6 @@ public class CookieConsentAutoConfiguration implements WebMvcConfigurer {
 
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(interceptor).addPathPatterns("/**");
+    registry.addInterceptor(cookieConsentInterceptor()).addPathPatterns("/**");
   }
 }
