@@ -40,13 +40,16 @@ public class CookieConsentAutoConfiguration {
     return new CookieConsentController(properties);
   }
 
+  /**
+   * MVC Configurer for Cookie starter.
+   */
   @Bean
   public WebMvcConfigurer cookieConsentWebMvcConfigurer(CookieConsentInterceptor interceptor) {
-      return new WebMvcConfigurer() {
-          @Override
-          public void addInterceptors(InterceptorRegistry registry){
-              registry.addInterceptor(interceptor).addPathPatterns("/**");
-          }
-      };
-    }
+    return new WebMvcConfigurer() {
+      @Override
+        public void addInterceptors(InterceptorRegistry registry) {
+          registry.addInterceptor(interceptor).addPathPatterns("/**");
+      }
+    };
+  }
 }
