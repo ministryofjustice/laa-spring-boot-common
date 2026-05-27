@@ -7,7 +7,7 @@
 
     <!-- Initial cookie banner -->
     <div class="govuk-cookie-banner__message govuk-width-container"
-         th:if="${showCookieBanner}">
+         th:if="${true}">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <h2 class="govuk-cookie-banner__heading govuk-heading-m">
@@ -23,36 +23,6 @@
                     </p>
                 </div>
 
-<!--                <form method="post" th:action="@{/cookies/consent}">-->
-<!--                    <div class="govuk-button-group">-->
-<!--                        &lt;!&ndash; Accept &ndash;&gt;-->
-
-<!--                        <input name="analytics"-->
-<!--                               type="hidden"-->
-<!--                               value="yes"/>-->
-<!--                        <button class="govuk-button"-->
-<!--                                data-module="govuk-button"-->
-<!--                                type="submit">-->
-<!--                            Accept additional cookies-->
-<!--                        </button>-->
-
-<!--                        &lt;!&ndash; Reject &ndash;&gt;-->
-<!--                        <input name="analytics"-->
-<!--                               type="hidden"-->
-<!--                               value="no"/>-->
-<!--                        <button class="govuk-button"-->
-<!--                                data-module="govuk-button"-->
-<!--                                type="submit">-->
-<!--                            Reject additional cookies-->
-<!--                        </button>-->
-
-<!--                        &lt;!&ndash; View cookies&ndash;&gt;-->
-<!--                        <a class="govuk-link"-->
-<!--                           th:href="@{/cookies}">-->
-<!--                            View cookies-->
-<!--                        </a>-->
-<!--                    </div>-->
-<!--                </form>-->
             </div>
         </div>
     </div>
