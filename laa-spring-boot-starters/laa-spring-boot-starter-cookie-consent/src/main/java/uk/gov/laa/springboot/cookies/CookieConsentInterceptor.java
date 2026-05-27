@@ -23,7 +23,6 @@ public class CookieConsentInterceptor implements HandlerInterceptor {
   public boolean preHandle(HttpServletRequest request,
                              HttpServletResponse response,
                              Object handler) {
-    log.info("INTERCEPTOR LOGIC");
     boolean analyticsConsented = false;
     boolean bannerSeen = false;
     boolean bannerHidden = false;
