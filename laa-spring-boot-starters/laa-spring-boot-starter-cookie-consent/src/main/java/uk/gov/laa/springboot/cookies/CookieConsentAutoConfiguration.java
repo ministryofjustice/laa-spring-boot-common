@@ -22,13 +22,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
         havingValue = "true",
         matchIfMissing = true
 )
-public class CookieConsentAutoConfiguration implements WebMvcConfigurer{
+public class CookieConsentAutoConfiguration implements WebMvcConfigurer {
   private final CookieConsentProperties properties;
   private final CookieConsentInterceptor interceptor;
 
-  public CookieConsentAutoConfiguration(CookieConsentProperties properties, CookieConsentInterceptor interceptor) {
+  public CookieConsentAutoConfiguration(CookieConsentProperties properties,
+                                        CookieConsentInterceptor interceptor) {
     this.properties = properties;
-      this.interceptor = interceptor;
+    this.interceptor = interceptor;
   }
 
   @Bean
