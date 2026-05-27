@@ -64,58 +64,58 @@
 
 
     <!-- Accepted cookies message -->
-    <div class="govuk-cookie-banner__message govuk-width-container"
-         th:if="${#bools.isTrue(bannerSeen) and #bools.isTrue(analyticsConsented)}">
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <div class="govuk-cookie-banner__content">
-                    <p class="govuk-body">
-                        You’ve accepted additional cookies.
-                        You can
-                        <a class="govuk-link" th:href="@{/cookies}">
-                            change your cookie settings
-                        </a>
-                        at any time.
-                    </p>
-                </div>
-                <div class="govuk-button-group">
-                    <form method="post" th:action="@{/cookies/hide}">
-                        <button class="govuk-button"
-                                data-module="govuk-button"
-                                type="submit">
-                            Hide cookie message
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+<!--    <div class="govuk-cookie-banner__message govuk-width-container"-->
+<!--         th:if="${#bools.isTrue(bannerSeen) and #bools.isTrue(analyticsConsented)}">-->
+<!--        <div class="govuk-grid-row">-->
+<!--            <div class="govuk-grid-column-two-thirds">-->
+<!--                <div class="govuk-cookie-banner__content">-->
+<!--                    <p class="govuk-body">-->
+<!--                        You’ve accepted additional cookies.-->
+<!--                        You can-->
+<!--                        <a class="govuk-link" th:href="@{/cookies}">-->
+<!--                            change your cookie settings-->
+<!--                        </a>-->
+<!--                        at any time.-->
+<!--                    </p>-->
+<!--                </div>-->
+<!--                <div class="govuk-button-group">-->
+<!--                    <form method="post" th:action="@{/cookies/hide}">-->
+<!--                        <button class="govuk-button"-->
+<!--                                data-module="govuk-button"-->
+<!--                                type="submit">-->
+<!--                            Hide cookie message-->
+<!--                        </button>-->
+<!--                    </form>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
 
     <!-- Rejected cookies message-->
-    <div class="govuk-cookie-banner__message govuk-width-container"
-         th:if="${#bools.isTrue(bannerSeen) and !#bools.isTrue(analyticsConsented)}">
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <div class="govuk-cookie-banner__content">
-                    <p class="govuk-body">
-                        You’ve rejected additional cookies.
-                        You can
-                        <a class="govuk-link" th:href="@{/cookies}">
-                            change your cookie settings
-                        </a>
-                        at any time.
-                    </p>
-                </div>
-                <div class="govuk-button-group">
-                    <form method="post" th:action="@{/cookies/hide}">
-                        <button class="govuk-button"
-                                data-module="govuk-button"
-                                type="submit">
-                            Hide cookie message
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+<!--    <div class="govuk-cookie-banner__message govuk-width-container"-->
+<!--         th:if="${#bools.isTrue(bannerSeen) and !#bools.isTrue(analyticsConsented)}">-->
+<!--        <div class="govuk-grid-row">-->
+<!--            <div class="govuk-grid-column-two-thirds">-->
+<!--                <div class="govuk-cookie-banner__content">-->
+<!--                    <p class="govuk-body">-->
+<!--                        You’ve rejected additional cookies.-->
+<!--                        You can-->
+<!--                        <a class="govuk-link" th:href="@{/cookies}">-->
+<!--                            change your cookie settings-->
+<!--                        </a>-->
+<!--                        at any time.-->
+<!--                    </p>-->
+<!--                </div>-->
+<!--                <div class="govuk-button-group">-->
+<!--                    <form method="post" th:action="@{/cookies/hide}">-->
+<!--                        <button class="govuk-button"-->
+<!--                                data-module="govuk-button"-->
+<!--                                type="submit">-->
+<!--                            Hide cookie message-->
+<!--                        </button>-->
+<!--                    </form>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
 </div>
