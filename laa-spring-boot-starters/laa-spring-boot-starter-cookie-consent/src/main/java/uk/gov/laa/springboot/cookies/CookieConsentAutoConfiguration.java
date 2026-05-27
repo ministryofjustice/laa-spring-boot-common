@@ -22,7 +22,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
         havingValue = "true",
         matchIfMissing = true
 )
-public class CookieConsentAutoConfiguration{
+public class CookieConsentAutoConfiguration {
   private final CookieConsentProperties properties;
 
   public CookieConsentAutoConfiguration(CookieConsentProperties properties) {
@@ -31,17 +31,18 @@ public class CookieConsentAutoConfiguration{
 
   @Configuration
   static class CookieConsentMvcConfiguration implements WebMvcConfigurer {
-      private final CookieConsentInterceptor interceptor;
-      CookieConsentMvcConfiguration(CookieConsentInterceptor interceptor) {
-          this.interceptor = interceptor;
-      }
+    private final CookieConsentInterceptor interceptor;
 
-      @Override
-      public void addInterceptors(InterceptorRegistry registry) {
-          registry.addInterceptor(interceptor).addPathPatterns("/**");
-      }
+    CookieConsentMvcConfiguration(CookieConsentInterceptor interceptor) {
+      this.interceptor = interceptor;
+    }
 
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+      registry.addInterceptor(interceptor).addPathPatterns("/**");
+    }
   }
+
   @Bean
   @ConditionalOnMissingBean
   public CookieConsentInterceptor cookieConsentInterceptor() {
