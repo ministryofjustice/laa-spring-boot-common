@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -12,6 +14,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
  * Interceptor for Cookie consent.
  */
 
+@Slf4j
 public class CookieConsentInterceptor implements HandlerInterceptor {
   private final CookieConsentProperties properties;
 
@@ -23,6 +26,7 @@ public class CookieConsentInterceptor implements HandlerInterceptor {
   public boolean preHandle(HttpServletRequest request,
                              HttpServletResponse response,
                              Object handler) {
+      log.info("INTERCEPTOR LOGIC");
     boolean analyticsConsented = false;
     boolean bannerSeen = false;
     boolean bannerHidden = false;

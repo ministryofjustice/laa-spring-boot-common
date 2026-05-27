@@ -46,6 +46,6 @@ public class CookieConsentAutoConfiguration implements WebMvcConfigurer {
 
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(interceptor).addPathPatterns("/**");
+    registry.addInterceptor(interceptor).addPathPatterns("/**").excludePathPatterns("/css/**", "/js/**", "/images/**", "/webjars/**", "favicon.ico");
   }
 }
