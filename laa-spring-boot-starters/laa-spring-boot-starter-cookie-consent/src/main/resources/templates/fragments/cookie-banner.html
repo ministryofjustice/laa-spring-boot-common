@@ -65,7 +65,7 @@
 
     <!-- Accepted cookies message -->
     <div class="govuk-cookie-banner__message govuk-width-container"
-         th:if="${bannerSeen and analyticsConsented}">
+         th:if="${#bools.isTrue(bannerSeen) and #bools.isTrue(analyticsConsented)}">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <div class="govuk-cookie-banner__content">
@@ -93,7 +93,7 @@
 
     <!-- Rejected cookies message-->
     <div class="govuk-cookie-banner__message govuk-width-container"
-         th:if="${bannerSeen and !analyticsConsented}">
+         th:if="${#bools.isTrue(bannerSeen) and !#bools.isTrue(analyticsConsented)}">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <div class="govuk-cookie-banner__content">
