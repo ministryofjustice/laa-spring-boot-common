@@ -92,7 +92,7 @@ public class CookieConsentController {
    * @param request the current HTTP request
    * @return the cookie preferences page view
    */
-  @GetMapping("/cookies")
+  @GetMapping("/test-mapping")
   public String cookiesPage(HttpServletRequest request, Model model,
                             @RequestParam(value = "success", required = false) Boolean success) {
     Boolean analyticsConsented = (Boolean) request.getAttribute("analyticsConsented");

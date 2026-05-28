@@ -11,7 +11,7 @@ import org.springframework.context.annotation.ComponentScan;
  */
 @AutoConfiguration
 @ConditionalOnWebApplication
-@ComponentScan(basePackageClasses = {CookieConsentController.class, CookieBannerModelAdvice.class})
+@ComponentScan("uk.gov.laa.springboot.cookies")
 @EnableConfigurationProperties(CookieConsentProperties.class)
 @ConditionalOnProperty(
         prefix = "laa.springboot.starter.cookie-consent",

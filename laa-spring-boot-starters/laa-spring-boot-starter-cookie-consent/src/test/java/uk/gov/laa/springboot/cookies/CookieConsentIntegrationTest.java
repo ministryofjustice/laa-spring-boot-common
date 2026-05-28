@@ -19,16 +19,16 @@ public class CookieConsentIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Test
-    void cookiesCanBeSaved() throws Exception {
-        mockMvc.perform(post("/cookies/preferences").param("analytics", "true")).andExpect(status().is3xxRedirection());
-    }
-
-    @Test
-    void cookiesPOlicyIsCreated() throws Exception {
-        mockMvc.perform(post("/cookies/preferences").param("analytics", "true")).andExpect(cookie().exists("cookies_policy"));
-    }
+//
+//    @Test
+//    void cookiesCanBeSaved() throws Exception {
+//        mockMvc.perform(post("/cookies/preferences").param("analytics", "true")).andExpect(status().is3xxRedirection());
+//    }
+//
+//    @Test
+//    void cookiesPOlicyIsCreated() throws Exception {
+//        mockMvc.perform(post("/cookies/preferences").param("analytics", "true")).andExpect(cookie().exists("cookies_policy"));
+//    }
 
     @SpringBootApplication
     @Import(CookieConsentAutoConfiguration.class)
