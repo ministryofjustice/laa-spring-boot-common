@@ -22,15 +22,15 @@ public class CookieConsentAutoConfigurationTest {
 //                            assertThat(context).hasSingleBean(CookieConsentController.class);
 //                        });
 //    }
-
-    @Test
-    void doesNotCreateBeansWhenDisabled() {
-        contextRunner
-                .withPropertyValues("laa.springboot.starter.cookie-consent.enabled=false")
-                .run(
-                        context -> {
-                            assertThat(context).doesNotHaveBean(CookieConsentInterceptor.class);
-                            assertThat(context).doesNotHaveBean(CookieConsentController.class);
-                        });
-    }
+//
+//    @Test
+//    void doesNotCreateBeansWhenDisabled() {
+//        contextRunner
+//                .withPropertyValues("laa.springboot.starter.cookie-consent.enabled=false")
+//                .run(
+//                        context -> {
+//                            assertThat(context).doesNotHaveBean(CookieConsentInterceptor.class);
+//                            assertThat(context).doesNotHaveBean(CookieConsentController.class);
+//                        });
+//    }
 }

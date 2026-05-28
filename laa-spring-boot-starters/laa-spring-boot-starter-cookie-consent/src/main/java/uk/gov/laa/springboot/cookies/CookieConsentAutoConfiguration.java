@@ -14,42 +14,25 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @AutoConfiguration
 @ConditionalOnWebApplication
-@EnableConfigurationProperties(CookieConsentProperties.class)
-@ConditionalOnProperty(
-        prefix = "laa.springboot.starter.cookie-consent",
-        name = "enabled",
-        havingValue = "true",
-        matchIfMissing = true
-)
-public class CookieConsentAutoConfiguration {
-  private final CookieConsentProperties properties;
+//@EnableConfigurationProperties(CookieConsentProperties.class)
+//@ConditionalOnProperty(
+//        prefix = "laa.springboot.starter.cookie-consent",
+//        name = "enabled",
+//        havingValue = "true",
+//        matchIfMissing = true
+//)
+public class CookieConsentAutoConfiguration implements WebMvcConfigurer {
+  private final CookieConsentInterceptor cookieConsentInterceptor;
 
-  public CookieConsentAutoConfiguration(CookieConsentProperties properties) {
-    this.properties = properties;
-  }
-
-  @Bean
-  @ConditionalOnMissingBean
-  public CookieConsentInterceptor cookieConsentInterceptor() {
-    return new CookieConsentInterceptor(properties);
-  }
-
-  @Bean
-  @ConditionalOnMissingBean
-  public CookieConsentController cookieConsentController() {
-    return new CookieConsentController(properties);
+  public CookieConsentAutoConfiguration(CookieConsentInterceptor cookieConsentInterceptor) {
+    this.cookieConsentInterceptor = cookieConsentInterceptor;
   }
 
   /**
    * Auto-configuration for Cookie starter.
    */
-  @Bean
-  public WebMvcConfigurer myWebMvcConfigurer(CookieConsentInterceptor interceptor) {
-    return new WebMvcConfigurer() {
-      @Override
-      public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(interceptor).addPathPatterns("/**");
-      }
-    };
+  @Override
+  public void addInterceptors(InterceptorRegistry registry) {
+    registry.addInterceptor(cookieConsentInterceptor);
   }
 }
