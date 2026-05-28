@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 
 /**
@@ -13,7 +14,7 @@ import org.springframework.context.annotation.Import;
  */
 @AutoConfiguration
 @ConditionalOnWebApplication
-@Import({CookieConsentController.class, CookieBannerModelAdvice.class})
+@ComponentScan(basePackageClasses = {CookieConsentController.class, CookieBannerModelAdvice.class})
 @EnableConfigurationProperties(CookieConsentProperties.class)
 @ConditionalOnProperty(
         prefix = "laa.springboot.starter.cookie-consent",
