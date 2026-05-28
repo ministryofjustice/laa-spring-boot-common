@@ -1,5 +1,6 @@
 package uk.gov.laa.springboot.cookies;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,6 +24,10 @@ public class CookieConsentController {
     this.properties = properties;
   }
 
+  @PostConstruct
+  public void init() {
+    throw new RuntimeException("COOKIE CTRLER LOADED");
+  }
   /**
    * Saves cookie consent preferences submitted from the cookie banner
    * and redirects the user back to the originating page.
