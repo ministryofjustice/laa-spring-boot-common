@@ -6,8 +6,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * Auto-configuration for Cookie starter.
@@ -21,7 +19,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
         havingValue = "true",
         matchIfMissing = true
 )
-public class CookieConsentAutoConfiguration implements WebMvcConfigurer {
+public class CookieConsentAutoConfiguration {
   private final CookieConsentProperties properties;
 
   public CookieConsentAutoConfiguration(CookieConsentProperties properties) {
@@ -30,18 +28,13 @@ public class CookieConsentAutoConfiguration implements WebMvcConfigurer {
 
   @Bean
   @ConditionalOnMissingBean
-  public CookieConsentInterceptor cookieConsentInterceptor() {
-    return new CookieConsentInterceptor(properties);
-  }
-
-  @Bean
-  @ConditionalOnMissingBean
   public CookieConsentController cookieConsentController() {
     return new CookieConsentController(properties);
   }
 
-  @Override
-  public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(cookieConsentInterceptor());
+  @Bean
+  @ConditionalOnMissingBean
+  public CookieBannerModelAdvice cookieBannerModelAdvice(CookieConsentProperties properties) {
+    return new CookieBannerModelAdvice(properties);
   }
 }

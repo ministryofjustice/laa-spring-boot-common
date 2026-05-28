@@ -18,7 +18,7 @@ public class CookieConsentAutoConfigurationTest {
                         "laa.springboot.starter.cookie-consent.enabled=true")
                 .run(
                         context -> {
-                            assertThat(context).hasSingleBean(CookieConsentInterceptor.class);
+                            assertThat(context).hasSingleBean(CookieBannerModelAdvice.class);
                             assertThat(context).hasSingleBean(CookieConsentController.class);
                         });
     }
@@ -29,7 +29,7 @@ public class CookieConsentAutoConfigurationTest {
                 .withPropertyValues("laa.springboot.starter.cookie-consent.enabled=false")
                 .run(
                         context -> {
-                            assertThat(context).doesNotHaveBean(CookieConsentInterceptor.class);
+                            assertThat(context).doesNotHaveBean(CookieBannerModelAdvice.class);
                             assertThat(context).doesNotHaveBean(CookieConsentController.class);
                         });
     }
