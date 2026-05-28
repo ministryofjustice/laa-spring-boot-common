@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
@@ -67,6 +68,7 @@ public class SecurityFilterChainAutoConfiguration {
    * @throws Exception when security chain cannot be built
    */
   @Bean
+  @ConditionalOnMissingBean(SecurityFilterChain.class)
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity,
                                                  EndpointAccessManager endpointAccessManager,
                                                  JwtAuthenticationConverter jwtConverter,
