@@ -6,34 +6,42 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * Auto-configuration for Cookie starter.
  */
-@Configuration
+@AutoConfiguration
 @ConditionalOnWebApplication
-//@EnableConfigurationProperties(CookieConsentProperties.class)
-//@ConditionalOnProperty(
-//        prefix = "laa.springboot.starter.cookie-consent",
-//        name = "enabled",
-//        havingValue = "true",
-//        matchIfMissing = true
-//)
+@EnableConfigurationProperties(CookieConsentProperties.class)
+@ConditionalOnProperty(
+        prefix = "laa.springboot.starter.cookie-consent",
+        name = "enabled",
+        havingValue = "true",
+        matchIfMissing = true
+)
 public class CookieConsentAutoConfiguration implements WebMvcConfigurer {
-  private final CookieConsentInterceptor cookieConsentInterceptor;
+  private final CookieConsentProperties properties;
 
-  public CookieConsentAutoConfiguration(CookieConsentInterceptor cookieConsentInterceptor) {
-    this.cookieConsentInterceptor = cookieConsentInterceptor;
+  public CookieConsentAutoConfiguration(CookieConsentProperties properties) {
+    this.properties = properties;
   }
 
-  /**
-   * Auto-configuration for Cookie starter.
-   */
+  @Bean
+  @ConditionalOnMissingBean
+  public CookieConsentInterceptor cookieConsentInterceptor() {
+    return new CookieConsentInterceptor(properties);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public CookieConsentController cookieConsentController() {
+    return new CookieConsentController(properties);
+  }
+
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(cookieConsentInterceptor);
+    registry.addInterceptor(cookieConsentInterceptor());
   }
 }

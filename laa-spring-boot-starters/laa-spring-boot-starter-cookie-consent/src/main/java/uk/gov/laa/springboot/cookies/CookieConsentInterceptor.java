@@ -11,13 +11,11 @@ import org.springframework.web.servlet.HandlerInterceptor;
 /**
  * Interceptor for Cookie consent.
  */
-@Component
 public class CookieConsentInterceptor implements HandlerInterceptor {
   private final CookieConsentProperties properties;
 
   public CookieConsentInterceptor(CookieConsentProperties properties) {
     this.properties = properties;
-    throw new RuntimeException("Pre-handle is getting called");
   }
 
   @Override
