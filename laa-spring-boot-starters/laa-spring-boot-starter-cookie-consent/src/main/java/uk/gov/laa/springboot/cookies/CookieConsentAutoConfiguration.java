@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Import;
  */
 @AutoConfiguration
 @ConditionalOnWebApplication
-@Import(CookieBannerModelAdvice.class)
+@Import({CookieConsentController.class, CookieBannerModelAdvice.class})
 @EnableConfigurationProperties(CookieConsentProperties.class)
 @ConditionalOnProperty(
         prefix = "laa.springboot.starter.cookie-consent",
@@ -27,11 +27,4 @@ public class CookieConsentAutoConfiguration {
   public CookieConsentAutoConfiguration(CookieConsentProperties properties) {
     this.properties = properties;
   }
-
-  @Bean
-  @ConditionalOnMissingBean
-  public CookieConsentController cookieConsentController() {
-    return new CookieConsentController(properties);
-  }
-
 }
