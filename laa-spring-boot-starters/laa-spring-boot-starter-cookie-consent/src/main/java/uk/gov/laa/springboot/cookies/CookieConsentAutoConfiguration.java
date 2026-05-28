@@ -21,10 +21,25 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
         havingValue = "true",
         matchIfMissing = true
 )
-public class CookieConsentAutoConfiguration {
-  /**
-   * Auto-configuration for Cookie starter.
-   */
+public class CookieConsentAutoConfiguration{
+  private final CookieConsentProperties properties;
+
+  public CookieConsentAutoConfiguration(CookieConsentProperties properties) {
+    this.properties = properties;
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public CookieConsentInterceptor cookieConsentInterceptor() {
+    return new CookieConsentInterceptor(properties);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public CookieConsentController cookieConsentController() {
+    return new CookieConsentController(properties);
+  }
+
   @Bean
   public WebMvcConfigurer myWebMvcConfigurer(CookieConsentInterceptor interceptor) {
     return new WebMvcConfigurer() {
