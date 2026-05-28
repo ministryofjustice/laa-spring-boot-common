@@ -4,12 +4,13 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 
 /**
  * Auto-configuration for Cookie starter.
  */
-@AutoConfiguration
+@AutoConfiguration(before = WebMvcAutoConfiguration.class)
 @ConditionalOnWebApplication
 @ComponentScan("uk.gov.laa.springboot.cookies")
 @EnableConfigurationProperties(CookieConsentProperties.class)
