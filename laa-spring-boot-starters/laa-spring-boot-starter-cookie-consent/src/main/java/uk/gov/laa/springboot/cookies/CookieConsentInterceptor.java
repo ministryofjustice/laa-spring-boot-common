@@ -17,6 +17,7 @@ public class CookieConsentInterceptor implements HandlerInterceptor {
 
   public CookieConsentInterceptor(CookieConsentProperties properties) {
     this.properties = properties;
+    throw new RuntimeException("Pre-handle is getting called");
   }
 
   @Override
