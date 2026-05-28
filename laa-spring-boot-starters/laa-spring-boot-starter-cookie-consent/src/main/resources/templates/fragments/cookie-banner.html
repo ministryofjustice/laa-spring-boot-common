@@ -1,4 +1,9 @@
-
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+</head>
+<body>
 <div aria-label="Cookies on this service"
      class="govuk-cookie-banner"
      data-nosnippet
@@ -7,7 +12,7 @@
 
     <!-- Initial cookie banner -->
     <div class="govuk-cookie-banner__message govuk-width-container"
-         th:if="${true}">
+         th:if="${showCookieBanner}">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <h2 class="govuk-cookie-banner__heading govuk-heading-m">
@@ -21,39 +26,95 @@
                         We’d like to set additional cookies so we can remember your settings, understand how people use
                         the service and make improvements.
                     </p>
-                    <p th:text="${showCookieBanner}"></p>
                 </div>
 
-<!--                <form method="post" th:action="@{/cookies/consent}">-->
-<!--                    <div class="govuk-button-group">-->
-<!--                        &lt;!&ndash; Accept &ndash;&gt;-->
+                <form method="post" th:action="@{/cookies/consent}">
+                    <div class="govuk-button-group">
+                        <!-- Accept -->
 
-<!--                        <input name="analytics"-->
-<!--                               type="hidden"-->
-<!--                               value="yes"/>-->
-<!--                        <button class="govuk-button"-->
-<!--                                data-module="govuk-button"-->
-<!--                                type="submit">-->
-<!--                            Accept additional cookies-->
-<!--                        </button>-->
+                        <input name="analytics"
+                               type="hidden"
+                               value="yes"/>
+                        <button class="govuk-button"
+                                data-module="govuk-button"
+                                type="submit">
+                            Accept additional cookies
+                        </button>
 
-<!--                        &lt;!&ndash; Reject &ndash;&gt;-->
-<!--                        <input name="analytics"-->
-<!--                               type="hidden"-->
-<!--                               value="no"/>-->
-<!--                        <button class="govuk-button"-->
-<!--                                data-module="govuk-button"-->
-<!--                                type="submit">-->
-<!--                            Reject additional cookies-->
-<!--                        </button>-->
+                        <!-- Reject -->
+                        <input name="analytics"
+                               type="hidden"
+                               value="no"/>
+                        <button class="govuk-button"
+                                data-module="govuk-button"
+                                type="submit">
+                            Reject additional cookies
+                        </button>
 
-<!--                        &lt;!&ndash; View cookies&ndash;&gt;-->
-<!--                        <a class="govuk-link"-->
-<!--                           th:href="@{/cookies}">-->
-<!--                            View cookies-->
-<!--                        </a>-->
-<!--                    </div>-->
-<!--                </form>-->
+                        <!-- View cookies-->
+                        <a class="govuk-link"
+                           th:href="@{/cookies}">
+                            View cookies
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Accepted cookies message -->
+    <div class="govuk-cookie-banner__message govuk-width-container"
+         th:if="${bannerSeen and analyticsConsented}">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <div class="govuk-cookie-banner__content">
+                    <p class="govuk-body">
+                        You’ve accepted additional cookies.
+                        You can
+                        <a class="govuk-link" th:href="@{/cookies}">
+                            change your cookie settings
+                        </a>
+                        at any time.
+                    </p>
+                </div>
+                <div class="govuk-button-group">
+                    <form method="post" th:action="@{/cookies/hide}">
+                        <button class="govuk-button"
+                                data-module="govuk-button"
+                                type="submit">
+                            Hide cookie message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejected cookies message-->
+    <div class="govuk-cookie-banner__message govuk-width-container"
+         th:if="${bannerSeen and !analyticsConsented}">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <div class="govuk-cookie-banner__content">
+                    <p class="govuk-body">
+                        You’ve rejected additional cookies.
+                        You can
+                        <a class="govuk-link" th:href="@{/cookies}">
+                            change your cookie settings
+                        </a>
+                        at any time.
+                    </p>
+                </div>
+                <div class="govuk-button-group">
+                    <form method="post" th:action="@{/cookies/hide}">
+                        <button class="govuk-button"
+                                data-module="govuk-button"
+                                type="submit">
+                            Hide cookie message
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

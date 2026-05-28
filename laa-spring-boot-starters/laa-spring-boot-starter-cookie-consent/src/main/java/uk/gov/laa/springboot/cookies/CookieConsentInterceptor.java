@@ -5,13 +5,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
  * Interceptor for Cookie consent.
  */
-@Slf4j
 public class CookieConsentInterceptor implements HandlerInterceptor {
   private final CookieConsentProperties properties;
 
@@ -26,7 +25,6 @@ public class CookieConsentInterceptor implements HandlerInterceptor {
     boolean analyticsConsented = false;
     boolean bannerSeen = false;
     boolean bannerHidden = false;
-
     if (request.getCookies() != null) {
       for (Cookie cookie : request.getCookies()) {
         if (properties.getCookieName().equals(cookie.getName())) {
@@ -39,9 +37,8 @@ public class CookieConsentInterceptor implements HandlerInterceptor {
         }
       }
     }
-
     request.setAttribute("analyticsConsented", analyticsConsented);
-    request.setAttribute("showCookieBanner", true);
+    request.setAttribute("showCookieBanner", !bannerSeen);
     request.setAttribute("bannerSeen", bannerSeen && !bannerHidden);
     request.setAttribute("isCookiesPage", request.getRequestURI().equals("/cookies"));
     return true;
