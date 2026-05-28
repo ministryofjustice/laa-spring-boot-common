@@ -25,21 +25,22 @@ public class CookieConsentAutoConfiguration implements WebMvcConfigurer {
   private final CookieConsentProperties properties;
   private final CookieConsentInterceptor interceptor;
 
-  public CookieConsentAutoConfiguration(CookieConsentProperties properties, CookieConsentInterceptor interceptor) {
+  public CookieConsentAutoConfiguration(CookieConsentProperties properties,
+                                        CookieConsentInterceptor interceptor) {
     this.properties = properties;
-      this.interceptor = interceptor;
+    this.interceptor = interceptor;
   }
 
-    @Bean
-    public WebMvcConfigurer myWebMvcConfigurer(CookieConsentInterceptor interceptor) {
-        System.out.println("✅ WebMvcConfigurer bean created");
-
-        return new WebMvcConfigurer() {
-            @Override
-            public void addInterceptors(InterceptorRegistry registry) {
-                System.out.println("✅ Adding interceptor");
-                registry.addInterceptor(interceptor).addPathPatterns("/**");
-            }
-        };
-    }
+  /**
+   * Auto-configuration for Cookie starter.
+   */
+  @Bean
+  public WebMvcConfigurer myWebMvcConfigurer(CookieConsentInterceptor interceptor) {
+    return new WebMvcConfigurer() {
+      @Override
+      public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(interceptor).addPathPatterns("/**");
+      }
+    };
+  }
 }
