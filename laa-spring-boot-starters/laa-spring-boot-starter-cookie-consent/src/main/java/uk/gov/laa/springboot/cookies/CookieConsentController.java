@@ -28,6 +28,7 @@ public class CookieConsentController {
   public void init() {
     throw new RuntimeException("COOKIE CTRLER LOADED");
   }
+
   /**
    * Saves cookie consent preferences submitted from the cookie banner
    * and redirects the user back to the originating page.
