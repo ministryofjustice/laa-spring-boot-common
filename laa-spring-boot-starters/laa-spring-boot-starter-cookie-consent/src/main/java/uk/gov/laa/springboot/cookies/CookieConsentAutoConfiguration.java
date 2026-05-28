@@ -13,7 +13,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * Auto-configuration for Cookie starter.
  */
 @AutoConfiguration
-@ConditionalOnWebApplication
 @EnableConfigurationProperties(CookieConsentProperties.class)
 @ConditionalOnProperty(
         prefix = "laa.springboot.starter.cookie-consent",
