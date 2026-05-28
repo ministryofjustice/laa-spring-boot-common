@@ -20,16 +20,16 @@ public class CookieConsentControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(consentController).build();
     }
 
-//    @Test
-//    void cookiesPageLoads() throws Exception {
-//        mockMvc.perform(get("/cookies")).andExpect(status().isOk()).andExpect(view().name("pages/cookies"));
-//    }
-//
-//
-//    @Test
-//    void cookiesPageLoadsWithSuccessParam() throws Exception {
-//        mockMvc.perform(get("/cookies").param("analytics", "true")).andExpect(status().isOk()).andExpect(view().name("pages/cookies"));
-//    }
+    @Test
+    void cookiesPageLoads() throws Exception {
+        mockMvc.perform(get("/cookies")).andExpect(status().isOk()).andExpect(view().name("pages/cookies"));
+    }
+
+
+    @Test
+    void cookiesPageLoadsWithSuccessParam() throws Exception {
+        mockMvc.perform(get("/cookies").param("analytics", "true")).andExpect(status().isOk()).andExpect(view().name("pages/cookies"));
+    }
 
     @Test
     void rejectAnalyticsCookies() throws Exception {

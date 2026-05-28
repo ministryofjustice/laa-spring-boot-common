@@ -1,6 +1,5 @@
 package uk.gov.laa.springboot.cookies;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,11 +21,6 @@ public class CookieConsentController {
 
   public CookieConsentController(CookieConsentProperties properties) {
     this.properties = properties;
-  }
-
-  @PostConstruct
-  public void init() {
-    throw new RuntimeException("COOKIE CTRLER LOADED");
   }
 
   /**
@@ -92,7 +86,7 @@ public class CookieConsentController {
    * @param request the current HTTP request
    * @return the cookie preferences page view
    */
-  @GetMapping("/test-mapping")
+  @GetMapping("/cookies")
   public String cookiesPage(HttpServletRequest request, Model model,
                             @RequestParam(value = "success", required = false) Boolean success) {
     Boolean analyticsConsented = (Boolean) request.getAttribute("analyticsConsented");
