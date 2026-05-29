@@ -49,10 +49,10 @@ public class CookieConsentController {
 
     // Must be readable by JS for GA4 consentCookie.setSecure(true);
     String cookieHeader = String.format(
-      "%s=%s; Max-Age=%d; Path=/; Secure; SameSite=Lax",
-      consentCookie.getName(),
-      consentCookie.getValue(),
-      consentCookie.getMaxAge()
+        "%s=%s; Max-Age=%d; Path=/; Secure; SameSite=Lax",
+        consentCookie.getName(),
+        consentCookie.getValue(),
+        consentCookie.getMaxAge()
     );
     response.setHeader("Set-Cookie", cookieHeader);
 
@@ -132,10 +132,10 @@ public class CookieConsentController {
 
     // Must be readable by JS for GA4 consentCookie.setSecure(true);
     String cookieHeader = String.format(
-      "%s=%s; Max-Age=%d; Path=/; Secure; SameSite=Lax",
-      consentCookie.getName(),
-      consentCookie.getValue(),
-      consentCookie.getMaxAge()
+        "%s=%s; Max-Age=%d; Path=/; Secure; SameSite=Lax",
+        consentCookie.getName(),
+        consentCookie.getValue(),
+        consentCookie.getMaxAge()
     );
     response.setHeader("Set-Cookie", cookieHeader);
 
