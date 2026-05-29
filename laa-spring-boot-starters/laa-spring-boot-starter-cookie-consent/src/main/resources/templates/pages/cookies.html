@@ -64,10 +64,20 @@
                 </thead>
 
                 <tbody class="govuk-table__body">
-                <tr th:each="cookie : ${analyticsCookies}">
-                    <td th:text="${cookie.name}"></td>
-                    <td th:text="${cookie.purpose}"></td>
-                    <td th:text="${cookie.expires}"></td>
+                <tr class="govuk-table__row">
+                    <td class="govuk-table__cell">SESSION</td>
+                    <td class="govuk-table__cell">Maintains your session while using the service</td>
+                    <td class="govuk-table__cell">Session</td>
+                </tr>
+                <tr class="govuk-table__row">
+                    <td class="govuk-table__cell">cookies_policy</td>
+                    <td class="govuk-table__cell">Saves your cookie consent settings</td>
+                    <td class="govuk-table__cell">1 year</td>
+                </tr>
+                <tr class="govuk-table__row">
+                    <td class="govuk-table__cell">cookies_banner_hidden</td>
+                    <td class="govuk-table__cell">Remembers when the cookie banner has been hidden</td>
+                    <td class="govuk-table__cell">1 year</td>
                 </tr>
                 </tbody>
             </table>
@@ -82,6 +92,27 @@
             <p class="govuk-body">
                 This helps us improve the service and understand user needs.
             </p>
+
+            <table class="govuk-table">
+                <caption class="govuk-table__caption govuk-table__caption--s">
+                    Analytics cookies we use
+                </caption>
+                <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                    <th class="govuk-table__header">Name</th>
+                    <th class="govuk-table__header">Purpose</th>
+                    <th class="govuk-table__header">Expires</th>
+                </tr>
+                </thead>
+
+                <tbody class="govuk-table__body">
+                <tr th:each="cookie : ${analyticsCookies}">
+                    <td th:text="${cookie.name}"></td>
+                    <td th:text="${cookie.purpose}"></td>
+                    <td th:text="${cookie.expires}"></td>
+                </tr>
+                </tbody>
+            </table>
 
             <!-- Preferences form -->
             <form
