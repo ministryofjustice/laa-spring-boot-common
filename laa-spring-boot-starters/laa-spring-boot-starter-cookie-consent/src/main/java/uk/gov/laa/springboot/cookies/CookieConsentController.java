@@ -48,7 +48,21 @@ public class CookieConsentController {
     consentCookie.setMaxAge(365 * 24 * 60 * 60);
 
     // Must be readable by JS for GA4 consentCookie.setSecure(true);
-    response.addCookie(consentCookie);
+    String cookieHeader = String.format(
+      "%s=%s; Max-Age=%d; Path=/; Secure; SameSite=Lax",
+      consentCookie.getName(),
+      consentCookie.getValue(),
+      consentCookie.getMaxAge()
+    );
+    response.setHeader("Set-Cookie", cookieHeader);
+
+    Cookie hiddenCookie = new Cookie("cookies_banner_hidden", "");
+    hiddenCookie.setPath("/");
+    hiddenCookie.setMaxAge(0);
+    hiddenCookie.setHttpOnly(false);
+    hiddenCookie.setSecure(properties.isSecure());
+    response.addCookie(hiddenCookie);
+
     // Redirect back to where the user came from
     String referer = request.getHeader("Referer");
     return "redirect:" + (referer != null ? referer : "/");
@@ -117,7 +131,21 @@ public class CookieConsentController {
     consentCookie.setMaxAge(properties.getMaxAge() * 24 * 60 * 60);
 
     // Must be readable by JS for GA4 consentCookie.setSecure(true);
-    response.addCookie(consentCookie);
+    String cookieHeader = String.format(
+      "%s=%s; Max-Age=%d; Path=/; Secure; SameSite=Lax",
+      consentCookie.getName(),
+      consentCookie.getValue(),
+      consentCookie.getMaxAge()
+    );
+    response.setHeader("Set-Cookie", cookieHeader);
+
+    Cookie hiddenCookie = new Cookie("cookies_banner_hidden", "");
+    hiddenCookie.setPath("/");
+    hiddenCookie.setMaxAge(0);
+    hiddenCookie.setHttpOnly(false);
+    hiddenCookie.setSecure(properties.isSecure());
+    response.addCookie(hiddenCookie);
+
     // Redirect back to where the user came from
     return "redirect:/cookies?success=true";
   }
