@@ -1,7 +1,10 @@
 package uk.gov.laa.springboot.oauth2.testsupport;
 
 import java.util.Map;
+import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -33,8 +36,8 @@ public class StubJwtDecoder implements JwtDecoder {
         .collect(Collectors.toUnmodifiableMap(StubJwtToken::token, StubJwtToken::toJwt));
   }
 
-  private java.util.stream.Stream<StubJwtToken> toStream(Iterable<StubJwtToken> iterable) {
-    return java.util.stream.StreamSupport.stream(iterable.spliterator(), false);
+  private Stream<StubJwtToken> toStream(Iterable<StubJwtToken> iterable) {
+    return StreamSupport.stream(iterable.spliterator(), false);
   }
 
   /**
@@ -44,6 +47,6 @@ public class StubJwtDecoder implements JwtDecoder {
    * @return decoder instance
    */
   public static StubJwtDecoder of(StubJwtToken... tokens) {
-    return new StubJwtDecoder(java.util.List.of(tokens));
+    return new StubJwtDecoder(List.of(tokens));
   }
 }
