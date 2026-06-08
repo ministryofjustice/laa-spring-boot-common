@@ -16,7 +16,7 @@ class OpenApiConfigurationTest {
       .withPropertyValues("laa.springboot.starter.auth.authentication-header=Authorization");
 
   private static final String OPEN_API_CONFIGURATION_BEAN = "openApiConfiguration";
-  private static final String OPEN_API_BEAN = "openApi";
+  private static final String OPEN_API_BEAN = "apiKeyOpenApi";
   private static final String SECURITY_SCHEME_NAME = "ApiKeyAuth";
 
   @Test
@@ -43,6 +43,18 @@ class OpenApiConfigurationTest {
       assertThat(context).doesNotHaveBean(OPEN_API_CONFIGURATION_BEAN);
       assertThat(context).doesNotHaveBean(OPEN_API_BEAN);
     });
+  }
+
+  @Test
+  void testOpenApiBeanBacksOffWhenOneAlreadyExists() {
+    OpenAPI existingOpenApi = new OpenAPI();
+
+    contextRunner.withBean("existingOpenApi", OpenAPI.class, () -> existingOpenApi)
+        .run(context -> {
+          assertThat(context).hasSingleBean(OpenAPI.class);
+          assertThat(context).doesNotHaveBean(OPEN_API_BEAN);
+          assertThat(context.getBean(OpenAPI.class)).isSameAs(existingOpenApi);
+        });
   }
 
   private void assertSecuritySchemeApplied(AssertableApplicationContext context) {
