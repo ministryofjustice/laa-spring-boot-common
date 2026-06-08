@@ -1,0 +1,173 @@
+<!DOCTYPE HTML>
+<html class="govuk-template" lang="en" th:replace="~{layout/main-layout :: layout(~{::title},~{::section},~{},~{})}"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>
+        Cookies
+    </title>
+</head>
+<section>
+    <!-- Success banner-->
+    <div
+            aria-labelledby="govuk-notification-banner-title"
+            class="govuk-notification-banner govuk-notification-banner--success"
+            data-module="govuk-notification-banner"
+            role="alert"
+            th:if="${showSuccessBanner}">
+        <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title"
+                id="govuk-notification-banner-title">
+                Success
+            </h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+            <h3 class="govuk-notification-banner__heading">
+                Your cookie preferences have been saved.
+            </h3>
+        </div>
+    </div>
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <h1 class="govuk-heading-l">
+                Cookies
+            </h1>
+
+            <p class="govuk-body">
+                Cookies are small files saved on your phone, tablet or computer when you visit this service.
+            </p>
+            <p class="govuk-body">
+                We use cookies to keep the service secure and to understand how people use the service so we can improve
+                it.
+            </p>
+
+            <!-- Essential cookies-->
+            <h2 class="govuk-heading-m">
+                Essential cookies
+            </h2>
+
+            <p class="govuk-body">
+                Essential cookies are required for the service to work properly. They remember your session and your
+                cookie preferences.
+            </p>
+
+            <table class="govuk-table">
+                <caption class="govuk-table__caption govuk-table__caption--s">
+                    Essential cookies we use
+                </caption>
+                <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                    <th class="govuk-table__header">Name</th>
+                    <th class="govuk-table__header">Purpose</th>
+                    <th class="govuk-table__header">Expires</th>
+                </tr>
+                </thead>
+
+                <tbody class="govuk-table__body">
+                <tr class="govuk-table__row">
+                    <td class="govuk-table__cell">SESSION</td>
+                    <td class="govuk-table__cell">Maintains your session while using the service</td>
+                    <td class="govuk-table__cell">Session</td>
+                </tr>
+                <tr class="govuk-table__row">
+                    <td class="govuk-table__cell">cookies_policy</td>
+                    <td class="govuk-table__cell">Saves your cookie consent settings</td>
+                    <td class="govuk-table__cell">1 year</td>
+                </tr>
+                <tr class="govuk-table__row">
+                    <td class="govuk-table__cell">cookies_banner_hidden</td>
+                    <td class="govuk-table__cell">Remembers when the cookie banner has been hidden</td>
+                    <td class="govuk-table__cell">1 year</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <!-- Analytics cookies -->
+            <h2 class="govuk-heading-m">
+                Analytics cookies
+            </h2>
+            <p class="govuk-body">
+                With your permission, we use analytics cookies to collect information about how you use this service.
+            </p>
+            <p class="govuk-body">
+                This helps us improve the service and understand user needs.
+            </p>
+
+            <table class="govuk-table">
+                <caption class="govuk-table__caption govuk-table__caption--s">
+                    Analytics cookies we use
+                </caption>
+                <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                    <th class="govuk-table__header">Name</th>
+                    <th class="govuk-table__header">Purpose</th>
+                    <th class="govuk-table__header">Expires</th>
+                </tr>
+                </thead>
+
+                <tbody class="govuk-table__body">
+                <tr class="govuk-table__row"
+                    th:each="cookie : ${analyticsCookies}">
+                    <td class="govuk-table__cell" th:text="${cookie.name}"></td>
+                    <td class="govuk-table__cell" th:text="${cookie.purpose}"></td>
+                    <td class="govuk-table__cell" th:text="${cookie.expires}"></td>
+                </tr>
+                </tbody>
+            </table>
+
+            <!-- Preferences form -->
+            <form
+                    method="post"
+                    th:action="@{/cookies/preferences}">
+                <div class="govuk-form-group">
+                    <fieldset class="govuk-fieldset">
+                        <legend class="govuk-fieldset__legend govuk-fieldset__legend-m">
+                            Do you want to accept analytics cookies?
+                        </legend>
+                        <div class="govuk-radios">
+                            <!-- YES -->
+                            <div class="govuk-radios__item">
+                                <input
+                                        class="govuk-radios__input"
+                                        id="analytics-yes"
+                                        name="analytics"
+                                        th:checked="${analyticsCookiesEnabled}"
+                                        type="radio"
+                                        value="yes"/>
+                                <label
+                                        class="govuk-label govuk-radios__label"
+                                        for="analytics-yes">
+                                    Yes
+                                </label>
+                            </div>
+
+                            <!-- NO -->
+                            <div class="govuk-radios__item">
+                                <input
+                                        class="govuk-radios__input"
+                                        id="analytics-no"
+                                        name="analytics"
+                                        th:checked="${!analyticsCookiesEnabled}"
+                                        type="radio"
+                                        value="no"/>
+                                <label
+                                        class="govuk-label govuk-radios__label"
+                                        for="analytics-no">
+                                    No
+                                </label>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+
+                <button
+                        class="govuk-button"
+                        data-module="govuk-button"
+                        type="submit">
+                    Save cookie settings
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+</html>
