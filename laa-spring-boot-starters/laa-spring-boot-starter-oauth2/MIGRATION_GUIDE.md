@@ -5,18 +5,23 @@ authentication to `laa-spring-boot-starter-oauth2`.
 
 ## Recommended approach
 
-Use a versioned endpoint migration:
+Use a shared-endpoint migration:
 
-- keep existing API key endpoints under `/api/v1/**`
-- add OAuth2 endpoints under `/api/v2/**`
-- migrate consumers from v1 to v2
-- remove v1 and the API key starter once all consumers use OAuth2
+- keep the existing endpoint paths
+- add the OAuth2 starter alongside the API key starter
+- configure the same endpoint paths under both starters during migration
+- migrate consumers from API keys to bearer tokens
+- remove the API key starter and API key configuration once all consumers use OAuth2
 
-The version numbers are examples. If an application is currently on `/api/v5/**`, the same approach
-can be used by keeping v5 on API keys and introducing OAuth2 on `/api/v6/**`.
+When both starters are present, the starters route requests by the shape of the configured
+authentication header:
 
-This keeps the authentication boundary explicit and avoids trying to secure the same endpoint with
-two different starter-managed security chains.
+- `Authorization: Bearer <jwt>` uses OAuth2 resource-server authentication
+- `Authorization: <api-key>` uses API key authentication
+
+This means applications do not need to create duplicate endpoint versions purely to migrate
+authentication. Versioned endpoint migration is still valid when the API contract itself is also
+changing.
 
 ## Before starting
 
@@ -47,15 +52,20 @@ Do not rely on `unprotected-uris` in one starter to pass requests to the other s
 Unprotected URIs are permitted within the selected Spring Security chain; they do not cause Spring
 Security to try another chain.
 
-If both starters are present during migration, the application should define path-specific
-`SecurityFilterChain` beans so that `/api/v1/**` uses API key authentication and `/api/v2/**` uses
-OAuth2 authentication. The starters' default security chains back off when the application provides
-its own `SecurityFilterChain` bean.
+The starters provide ordered security chains for the migration case. The OAuth2 chain runs first
+and matches bearer-token requests. The API key chain runs after it and matches non-bearer requests.
+
+Applications can still provide their own `SecurityFilterChain` beans for unusual routing needs. To
+replace a starter-managed chain, define a bean with the relevant starter bean name:
+
+- `oauth2SecurityFilterChain`
+- `apiKeySecurityFilterChain`
 
 ## Example configuration shape
 
-Use explicit versions in authorization mappings during migration. Avoid `/api/v*/**` because it can
-accidentally authorize both old and new endpoints.
+Configure the same endpoint paths in both starters while consumers are migrating. Keep the API key
+role/client mapping for existing callers, and add OAuth2 role or scope mappings for migrated
+callers.
 
 ```yaml
 laa:
@@ -73,7 +83,8 @@ laa:
         {
           "name": "ALL",
           "uris": [
-            "/api/v1/**"
+            "/api/v1/books/**",
+            "/api/v1/authors/**"
           ]
         }
       ]'
@@ -97,8 +108,8 @@ laa:
         {
           "name": "library-catalogue-service",
           "uris": [
-            {"method":["GET","POST","PATCH"],"uri":"/api/v2/books/**"},
-            {"method":["GET","POST"],"uri":"/api/v2/authors/**"}
+            {"method":["GET","POST","PATCH"],"uri":"/api/v1/books/**"},
+            {"method":["GET","POST"],"uri":"/api/v1/authors/**"}
           ]
         }
       ]'
@@ -106,9 +117,9 @@ laa:
         {
           "name": "books.read",
           "uris": [
-            {"method":["GET"],"uri":"/api/v2/books"},
-            {"method":["GET"],"uri":"/api/v2/books/**"},
-            {"method":["GET"],"uri":"/api/v2/authors/**"}
+            {"method":["GET"],"uri":"/api/v1/books"},
+            {"method":["GET"],"uri":"/api/v1/books/**"},
+            {"method":["GET"],"uri":"/api/v1/authors/**"}
           ]
         }
       ]'
@@ -120,6 +131,18 @@ laa:
         "/favicon.ico",
         "/open-api-specification.yml"
       ]
+```
+
+Existing API key callers continue to send:
+
+```http
+Authorization: <api_key_token>
+```
+
+Migrated OAuth2 callers send:
+
+```http
+Authorization: Bearer <jwt>
 ```
 
 ## Business-level authorization

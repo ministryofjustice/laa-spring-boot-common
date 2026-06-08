@@ -65,7 +65,9 @@ The `examples` directory contains starter configurations for the common migratio
 ## Migrating from auth to oauth2 starter
 
 See the [migration guide](MIGRATION_GUIDE.md) for guidance on migrating an existing API from
-`laa-spring-boot-starter-auth` API key authentication to OAuth2.
+`laa-spring-boot-starter-auth` API key authentication to OAuth2. During migration, both starters can
+protect the same endpoint paths. Bearer-token requests are handled by the OAuth2 starter, and
+non-bearer authentication-header values continue to be handled by the API key starter.
 
 Configure endpoint authorization mappings:
 
