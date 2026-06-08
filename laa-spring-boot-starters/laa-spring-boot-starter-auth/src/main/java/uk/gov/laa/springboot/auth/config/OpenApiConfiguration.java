@@ -21,6 +21,8 @@ import org.springframework.context.annotation.Configuration;
     matchIfMissing = true)
 public class OpenApiConfiguration {
 
+  private static final String SECURITY_SCHEME_NAME = "ApiKeyAuth";
+
   @Value("${laa.springboot.starter.auth.authentication-header}")
   String authenticationHeader;
 
@@ -32,19 +34,18 @@ public class OpenApiConfiguration {
   @Bean("apiKeyOpenApi")
   @ConditionalOnMissingBean(OpenAPI.class)
   public OpenAPI apiKeyOpenApi() {
-    String securitySchemeName = "ApiKeyAuth";
     OpenAPI openApiSpec =
         new OpenAPI()
             .components(
                 new Components()
                     .addSecuritySchemes(
-                        securitySchemeName,
+                        SECURITY_SCHEME_NAME,
                         new SecurityScheme()
                             .type(SecurityScheme.Type.APIKEY)
                             .in(SecurityScheme.In.HEADER)
                             .name(authenticationHeader)))
-            .addSecurityItem(new SecurityRequirement().addList(securitySchemeName));
-    log.info("OpenAPI Security Scheme '{}' added for all endpoints.", securitySchemeName);
+            .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME));
+    log.info("OpenAPI Security Scheme '{}' added for all endpoints.", SECURITY_SCHEME_NAME);
     return openApiSpec;
   }
 }

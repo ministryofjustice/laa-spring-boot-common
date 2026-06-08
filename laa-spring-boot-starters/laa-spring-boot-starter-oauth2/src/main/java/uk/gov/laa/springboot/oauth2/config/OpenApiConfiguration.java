@@ -20,6 +20,10 @@ import org.springframework.context.annotation.Configuration;
     matchIfMissing = true)
 public class OpenApiConfiguration {
 
+  private static final String SECURITY_SCHEME_NAME = "BearerAuth";
+  private static final String BEARER_SCHEME = "bearer";
+  private static final String BEARER_FORMAT = "JWT";
+
   /**
    * Configures the OpenAPI spec with a bearer security scheme for all endpoints.
    *
@@ -28,19 +32,18 @@ public class OpenApiConfiguration {
   @Bean("bearerOpenApi")
   @ConditionalOnMissingBean(OpenAPI.class)
   public OpenAPI bearerOpenApi() {
-    String securitySchemeName = "BearerAuth";
     OpenAPI openApiSpec =
         new OpenAPI()
             .components(
                 new Components()
                     .addSecuritySchemes(
-                        securitySchemeName,
+                        SECURITY_SCHEME_NAME,
                         new SecurityScheme()
                             .type(SecurityScheme.Type.HTTP)
-                            .scheme("bearer")
-                            .bearerFormat("JWT")))
-            .addSecurityItem(new SecurityRequirement().addList(securitySchemeName));
-    log.info("OpenAPI Security Scheme '{}' added for all endpoints.", securitySchemeName);
+                            .scheme(BEARER_SCHEME)
+                            .bearerFormat(BEARER_FORMAT)))
+            .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME));
+    log.info("OpenAPI Security Scheme '{}' added for all endpoints.", SECURITY_SCHEME_NAME);
     return openApiSpec;
   }
 }

@@ -15,6 +15,10 @@ import tools.jackson.databind.exc.InvalidFormatException;
  */
 public class AuthorizedRoleUriDeserializer extends StdDeserializer<AuthorizedRoleUri> {
 
+  private static final String URI_FIELD = "uri";
+  private static final String METHOD_FIELD = "method";
+  private static final String METHODS_FIELD = "methods";
+
   protected AuthorizedRoleUriDeserializer() {
     super(AuthorizedRoleUri.class);
   }
@@ -30,19 +34,19 @@ public class AuthorizedRoleUriDeserializer extends StdDeserializer<AuthorizedRol
 
     if (token == JsonToken.START_OBJECT) {
       JsonNode node = parser.readValueAsTree();
-      JsonNode uriNode = getCaseInsensitiveField(node, "uri");
+      JsonNode uriNode = getCaseInsensitiveField(node, URI_FIELD);
       if (uriNode == null || uriNode.isNull() || uriNode.asString().isBlank()) {
         throw InvalidFormatException.from(
             parser,
-            "Authorized role uri entries must include a non-empty 'uri' field.",
+            "Authorized role uri entries must include a non-empty '" + URI_FIELD + "' field.",
             node,
             AuthorizedRoleUri.class);
       }
       String uri = uriNode.asString();
 
-      JsonNode methodsNode = getCaseInsensitiveField(node, "method");
+      JsonNode methodsNode = getCaseInsensitiveField(node, METHOD_FIELD);
       if (methodsNode == null) {
-        methodsNode = getCaseInsensitiveField(node, "methods");
+        methodsNode = getCaseInsensitiveField(node, METHODS_FIELD);
       }
       String[] methods = null;
       if (methodsNode != null && !methodsNode.isNull()) {
