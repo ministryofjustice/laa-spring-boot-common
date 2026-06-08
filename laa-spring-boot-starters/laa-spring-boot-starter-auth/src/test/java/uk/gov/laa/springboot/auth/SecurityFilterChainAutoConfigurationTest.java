@@ -14,7 +14,7 @@ class SecurityFilterChainAutoConfigurationTest {
 
   private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
       .withConfiguration(AutoConfigurations.of(SecurityFilterChainAutoConfiguration.class))
-      .withBean("customSecurityFilterChain", SecurityFilterChain.class,
+      .withBean("apiKeySecurityFilterChain", SecurityFilterChain.class,
           TestSecurityFilterChain::new)
       .withPropertyValues(
           "laa.springboot.starter.auth.authentication-header=Authorization",
@@ -25,10 +25,10 @@ class SecurityFilterChainAutoConfigurationTest {
           "laa.springboot.starter.auth.unprotected-uris[0]=/actuator/**");
 
   @Test
-  void backsOffDefaultSecurityFilterChainWhenApplicationDefinesOne() {
+  void backsOffDefaultSecurityFilterChainWhenApplicationDefinesOneWithStarterBeanName() {
     contextRunner.run(context -> {
       assertThat(context).hasSingleBean(SecurityFilterChain.class);
-      assertThat(context).hasBean("customSecurityFilterChain");
+      assertThat(context).hasBean("apiKeySecurityFilterChain");
       assertThat(context).hasSingleBean(TokenDetailsManager.class);
       assertThat(context).hasSingleBean(ApiAuthenticationProvider.class);
     });

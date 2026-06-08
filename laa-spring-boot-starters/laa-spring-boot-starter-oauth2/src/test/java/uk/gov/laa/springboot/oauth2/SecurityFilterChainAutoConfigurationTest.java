@@ -17,7 +17,7 @@ class SecurityFilterChainAutoConfigurationTest {
   private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
       .withConfiguration(AutoConfigurations.of(SecurityFilterChainAutoConfiguration.class))
       .withBean(ObjectMapper.class, ObjectMapper::new)
-      .withBean("customSecurityFilterChain", SecurityFilterChain.class,
+      .withBean("oauth2SecurityFilterChain", SecurityFilterChain.class,
           TestSecurityFilterChain::new)
       .withPropertyValues(
           "laa.springboot.starter.oauth2.authorized-roles=["
@@ -25,10 +25,10 @@ class SecurityFilterChainAutoConfigurationTest {
               + "\"uris\":[\"/api/v1/books/**\"]}]");
 
   @Test
-  void backsOffDefaultSecurityFilterChainWhenApplicationDefinesOne() {
+  void backsOffDefaultSecurityFilterChainWhenApplicationDefinesOneWithStarterBeanName() {
     contextRunner.run(context -> {
       assertThat(context).hasSingleBean(SecurityFilterChain.class);
-      assertThat(context).hasBean("customSecurityFilterChain");
+      assertThat(context).hasBean("oauth2SecurityFilterChain");
       assertThat(context).hasSingleBean(EndpointAccessManager.class);
       assertThat(context).hasSingleBean(JwtAuthenticationConverter.class);
     });
