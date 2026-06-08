@@ -21,9 +21,8 @@ public record AuthorizedRoleUri(String uri, String[] methods) {
     if (methods != null) {
       methods = Arrays.stream(methods)
           .filter(Objects::nonNull)
-          .map(String::trim)
+          .map(AuthorizedRoleUri::normalizeMethod)
           .filter(method -> !method.isEmpty())
-          .map(method -> method.toUpperCase(Locale.ROOT))
           .toArray(String[]::new);
       if (methods.length == 0) {
         methods = null;
@@ -44,7 +43,11 @@ public record AuthorizedRoleUri(String uri, String[] methods) {
     if (requestMethod == null) {
       return false;
     }
-    String normalizedMethod = requestMethod.toUpperCase(Locale.ROOT);
+    String normalizedMethod = normalizeMethod(requestMethod);
     return Arrays.stream(methods).anyMatch(method -> method.equals(normalizedMethod));
+  }
+
+  private static String normalizeMethod(String method) {
+    return method.trim().toUpperCase(Locale.ROOT);
   }
 }

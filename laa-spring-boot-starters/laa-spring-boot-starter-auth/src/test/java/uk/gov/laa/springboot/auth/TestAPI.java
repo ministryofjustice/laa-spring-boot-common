@@ -10,95 +10,114 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+/**
+ * Test application used by API key authentication endpoint tests.
+ */
 @SpringBootApplication
-public class TestAPI {
+class TestApi {
 
-    @RestController
-    @RequestMapping(value = "/resource1")
-    public class TestResource1Controller {
+  /**
+   * Test controller for resource1 endpoints.
+   */
+  @RestController
+  @RequestMapping(value = "/resource1")
+  public class TestResource1Controller {
 
-        @GetMapping(path = "/unrestricted")
-        public ResponseEntity<?> returnUnrestricted() {
-            return noContent();
-        }
-
-        @GetMapping(path = "/restricted")
-        public ResponseEntity<?> returnRestricted() {
-            return noContent();
-        }
-
-        @GetMapping(path = "/requires-group1-role")
-        public ResponseEntity<?> returnGroup1RoleRestricted() {
-            return noContent();
-        }
-
-        @PostMapping(path = "/requires-group1-role")
-        public ResponseEntity<?> returnGroup1RoleRestrictedPost() {
-            return noContent();
-        }
-
-        @GetMapping(path = "/requires-group2-role")
-        public ResponseEntity<?> returnGroup2RoleRestricted() {
-            return noContent();
-        }
-
-        @GetMapping(path = "/method-specific")
-        public ResponseEntity<?> returnMethodSpecificGet() {
-            return noContent();
-        }
-
-        @PostMapping(path = "/method-specific")
-        public ResponseEntity<?> returnMethodSpecificPost() {
-            return noContent();
-        }
-
-        @GetMapping(path = "/method-array")
-        public ResponseEntity<?> returnMethodArrayGet() {
-            return noContent();
-        }
-
-        @PostMapping(path = "/method-array")
-        public ResponseEntity<?> returnMethodArrayPost() {
-            return noContent();
-        }
-
-        @PatchMapping(path = "/method-array")
-        public ResponseEntity<?> returnMethodArrayPatch() {
-            return noContent();
-        }
-
-        @GetMapping(path = "/stream-requires-group1-role", produces = "text/plain")
-        public ResponseEntity<StreamingResponseBody> streamGroup1RoleRestricted() {
-            StreamingResponseBody body =
-                outputStream -> outputStream.write("stream-ok".getBytes(StandardCharsets.UTF_8));
-            return ResponseEntity.ok(body);
-        }
-
+    @GetMapping(path = "/unrestricted")
+    public ResponseEntity<?> returnUnrestricted() {
+      return noContent();
     }
 
-    @RestController
-    @RequestMapping(value = "/resource2")
-    public class TestResource2Controller {
-
-        @GetMapping(path = "/requires-group2-role")
-        public ResponseEntity<?> returnGroup2RoleRestricted() {
-            return noContent();
-        }
-
+    @GetMapping(path = "/restricted")
+    public ResponseEntity<?> returnRestricted() {
+      return noContent();
     }
 
-    @RestController
-    @RequestMapping(value = "/resource3")
-    public class TestResource3Controller {
-
-        @GetMapping(path = "/specific")
-        public ResponseEntity<?> returnSpecificRoleRestricted() {
-            return noContent();
-        }
-
+    @GetMapping(path = "/requires-group1-role")
+    public ResponseEntity<?> returnGroup1RoleRestricted() {
+      return noContent();
     }
 
-    private ResponseEntity<?> noContent() {
-        return ResponseEntity.noContent().build();
+    @PostMapping(path = "/requires-group1-role")
+    public ResponseEntity<?> returnGroup1RoleRestrictedPost() {
+      return noContent();
     }
+
+    @GetMapping(path = "/requires-group2-role")
+    public ResponseEntity<?> returnGroup2RoleRestricted() {
+      return noContent();
+    }
+
+    @GetMapping(path = "/method-specific")
+    public ResponseEntity<?> returnMethodSpecificGet() {
+      return noContent();
+    }
+
+    @PostMapping(path = "/method-specific")
+    public ResponseEntity<?> returnMethodSpecificPost() {
+      return noContent();
+    }
+
+    @GetMapping(path = "/method-array")
+    public ResponseEntity<?> returnMethodArrayGet() {
+      return noContent();
+    }
+
+    @PostMapping(path = "/method-array")
+    public ResponseEntity<?> returnMethodArrayPost() {
+      return noContent();
+    }
+
+    @PatchMapping(path = "/method-array")
+    public ResponseEntity<?> returnMethodArrayPatch() {
+      return noContent();
+    }
+
+    /**
+     * Stream response requiring the GROUP1 role.
+     *
+     * @return streaming response body
+     */
+    @GetMapping(path = "/stream-requires-group1-role", produces = "text/plain")
+    public ResponseEntity<StreamingResponseBody> streamGroup1RoleRestricted() {
+      StreamingResponseBody body =
+          outputStream -> outputStream.write("stream-ok".getBytes(StandardCharsets.UTF_8));
+      return ResponseEntity.ok(body);
+    }
+  }
+
+  /**
+   * Test controller for resource2 endpoints.
+   */
+  @RestController
+  @RequestMapping(value = "/resource2")
+  public class TestResource2Controller {
+
+    @GetMapping(path = "/requires-group2-role")
+    public ResponseEntity<?> returnGroup2RoleRestricted() {
+      return noContent();
+    }
+  }
+
+  /**
+   * Test controller for resource3 endpoints.
+   */
+  @RestController
+  @RequestMapping(value = "/resource3")
+  public class TestResource3Controller {
+
+    @GetMapping(path = "/specific")
+    public ResponseEntity<?> returnSpecificRoleRestricted() {
+      return noContent();
+    }
+  }
+
+  /**
+   * Builds an empty response for test endpoints.
+   *
+   * @return no-content response
+   */
+  private ResponseEntity<?> noContent() {
+    return ResponseEntity.noContent().build();
+  }
 }

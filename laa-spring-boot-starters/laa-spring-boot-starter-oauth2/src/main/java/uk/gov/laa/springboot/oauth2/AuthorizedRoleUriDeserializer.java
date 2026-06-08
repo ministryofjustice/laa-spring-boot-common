@@ -34,6 +34,13 @@ public class AuthorizedRoleUriDeserializer extends StdDeserializer<AuthorizedRol
 
     if (token == JsonToken.START_OBJECT) {
       JsonNode node = parser.readValueAsTree();
+      if (node == null || node.isNull()) {
+        throw InvalidFormatException.from(
+            parser,
+            "Authorized URI entries must be valid JSON objects.",
+            node,
+            AuthorizedRoleUri.class);
+      }
       JsonNode uriNode = getCaseInsensitiveField(node, URI_FIELD);
       if (uriNode == null || uriNode.isNull() || uriNode.asString().isBlank()) {
         throw InvalidFormatException.from(

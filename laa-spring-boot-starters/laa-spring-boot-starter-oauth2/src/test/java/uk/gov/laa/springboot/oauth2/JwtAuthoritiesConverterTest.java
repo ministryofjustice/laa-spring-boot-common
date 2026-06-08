@@ -1,12 +1,12 @@
 package uk.gov.laa.springboot.oauth2;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.time.Instant;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.jwt.Jwt;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class JwtAuthoritiesConverterTest {
 

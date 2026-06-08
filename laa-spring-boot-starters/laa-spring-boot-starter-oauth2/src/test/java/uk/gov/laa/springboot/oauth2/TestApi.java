@@ -8,9 +8,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Test application used by OAuth2 endpoint authorization tests.
+ */
 @SpringBootApplication
 public class TestApi {
 
+  /**
+   * Test controller for resource1 endpoints.
+   */
   @RestController
   @RequestMapping("/resource1")
   public class Resource1Controller {

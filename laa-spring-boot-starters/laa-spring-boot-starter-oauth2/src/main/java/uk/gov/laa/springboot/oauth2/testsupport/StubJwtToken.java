@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.security.oauth2.jwt.Jwt;
+import uk.gov.laa.springboot.oauth2.Oauth2AuthorizationProperties;
 
 /**
  * Simple token fixture for tests that need a mock auth service/JWT decoder.
@@ -21,6 +22,11 @@ public record StubJwtToken(
     String[] scopes,
     Map<String, Object> additionalClaims) {
 
+  private static final String SUBJECT_CLAIM = "sub";
+  private static final String ALGORITHM_HEADER = "alg";
+  private static final String NONE_ALGORITHM = "none";
+  private static final long TOKEN_LIFETIME_SECONDS = 3600;
+
   /**
    * Builds a Spring Security JWT from this fixture.
    *
@@ -28,15 +34,22 @@ public record StubJwtToken(
    */
   public Jwt toJwt() {
     Map<String, Object> claims = new HashMap<>();
-    claims.put("sub", subject);
-    claims.put("roles", roles);
+    claims.put(SUBJECT_CLAIM, subject);
+    claims.put(Oauth2AuthorizationProperties.DEFAULT_ROLES_CLAIM_PATH, roles);
     if (scopes != null && scopes.length > 0) {
-      claims.put("scope", String.join(" ", scopes));
+      claims.put(
+          Oauth2AuthorizationProperties.DEFAULT_SCOPES_CLAIM_PATH,
+          String.join(" ", scopes));
     }
     if (additionalClaims != null) {
       claims.putAll(additionalClaims);
     }
     Instant issuedAt = Instant.now();
-    return new Jwt(token, issuedAt, issuedAt.plusSeconds(3600), Map.of("alg", "none"), claims);
+    return new Jwt(
+        token,
+        issuedAt,
+        issuedAt.plusSeconds(TOKEN_LIFETIME_SECONDS),
+        Map.of(ALGORITHM_HEADER, NONE_ALGORITHM),
+        claims);
   }
 }

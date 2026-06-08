@@ -19,9 +19,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationManagerResolver;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 
 class MultiTenantJwtAuthenticationManagerResolverAutoConfigurationTest {
@@ -40,7 +40,8 @@ class MultiTenantJwtAuthenticationManagerResolverAutoConfigurationTest {
     TestAutoConfiguration configuration = new TestAutoConfiguration();
 
     AuthenticationManagerResolver<HttpServletRequest> resolver =
-        configuration.jwtAuthenticationManagerResolver(properties(), new JwtAuthenticationConverter());
+        configuration.jwtAuthenticationManagerResolver(
+            properties(), new JwtAuthenticationConverter());
 
     assertThat(configuration.authenticationManagerCreations).hasValue(0);
 
@@ -60,13 +61,15 @@ class MultiTenantJwtAuthenticationManagerResolverAutoConfigurationTest {
   void rejectsUntrustedIssuers() {
     TestAutoConfiguration configuration = new TestAutoConfiguration();
     AuthenticationManagerResolver<HttpServletRequest> resolver =
-        configuration.jwtAuthenticationManagerResolver(properties(), new JwtAuthenticationConverter());
+        configuration.jwtAuthenticationManagerResolver(
+            properties(), new JwtAuthenticationConverter());
 
     assertThatThrownBy(
             () ->
                 resolver
                     .resolve(new MockHttpServletRequest())
-                    .authenticate(new BearerTokenAuthenticationToken(tokenForIssuer(UNTRUSTED_ISSUER))))
+                    .authenticate(
+                        new BearerTokenAuthenticationToken(tokenForIssuer(UNTRUSTED_ISSUER))))
         .isInstanceOf(InvalidBearerTokenException.class);
 
     assertThat(configuration.authenticationManagerCreations).hasValue(0);
@@ -81,7 +84,8 @@ class MultiTenantJwtAuthenticationManagerResolverAutoConfigurationTest {
   void rejectsSignedTokensFromUntrustedIssuers() throws Exception {
     TestAutoConfiguration configuration = new TestAutoConfiguration();
     AuthenticationManagerResolver<HttpServletRequest> resolver =
-        configuration.jwtAuthenticationManagerResolver(properties(), new JwtAuthenticationConverter());
+        configuration.jwtAuthenticationManagerResolver(
+            properties(), new JwtAuthenticationConverter());
 
     assertThatThrownBy(
             () ->
@@ -156,7 +160,9 @@ class MultiTenantJwtAuthenticationManagerResolverAutoConfigurationTest {
 
     @Override
     AuthenticationManager authenticationManager(
-        String issuer, List<String> audiences, JwtAuthenticationConverter jwtAuthenticationConverter) {
+        String issuer,
+        List<String> audiences,
+        JwtAuthenticationConverter jwtAuthenticationConverter) {
       authenticationManagerCreations.incrementAndGet();
       return authentication -> authentication;
     }
