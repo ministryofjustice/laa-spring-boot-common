@@ -43,7 +43,9 @@ For example, an application using Google Analytics can configure its analytics c
 
 ```yaml
 laa:
-  cookie-consent:
+  springboot:
+    starter:
+      cookie-consent:
         default-redirect-path: /start
         cookies-policy: myapp_cookies_preferences
         banner-hidden-cookies: myapp_banner_hidden
