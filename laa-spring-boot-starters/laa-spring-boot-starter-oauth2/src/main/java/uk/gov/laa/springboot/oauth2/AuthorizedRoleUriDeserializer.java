@@ -54,11 +54,17 @@ public class AuthorizedRoleUriDeserializer extends StdDeserializer<AuthorizedRol
         if (methodsNode.isArray()) {
           List<String> values = new ArrayList<>();
           for (JsonNode methodNode : methodsNode) {
-            values.add(methodNode.asString());
+            addMethodValue(values, methodNode);
           }
-          methods = values.toArray(new String[0]);
+          if (!values.isEmpty()) {
+            methods = values.toArray(new String[0]);
+          }
         } else {
-          methods = new String[] {methodsNode.asString()};
+          List<String> values = new ArrayList<>();
+          addMethodValue(values, methodsNode);
+          if (!values.isEmpty()) {
+            methods = values.toArray(new String[0]);
+          }
         }
       }
 
@@ -69,6 +75,9 @@ public class AuthorizedRoleUriDeserializer extends StdDeserializer<AuthorizedRol
   }
 
   private JsonNode getCaseInsensitiveField(JsonNode node, String fieldName) {
+    if (node == null || fieldName == null) {
+      return null;
+    }
     JsonNode direct = node.get(fieldName);
     if (direct != null) {
       return direct;
@@ -79,5 +88,15 @@ public class AuthorizedRoleUriDeserializer extends StdDeserializer<AuthorizedRol
       }
     }
     return null;
+  }
+
+  private void addMethodValue(List<String> values, JsonNode methodNode) {
+    if (methodNode == null || methodNode.isNull()) {
+      return;
+    }
+    String method = methodNode.asString();
+    if (method != null && !method.isBlank()) {
+      values.add(method);
+    }
   }
 }

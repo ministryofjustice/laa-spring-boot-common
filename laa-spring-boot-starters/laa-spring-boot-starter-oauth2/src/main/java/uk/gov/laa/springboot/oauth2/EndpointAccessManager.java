@@ -45,10 +45,14 @@ public class EndpointAccessManager {
   @PostConstruct
   private void initialize() {
     unprotectedUris = properties.getUnprotectedUris();
-    authorizedRoles = parseMappings(properties.getAuthorizedRoles(), "authorizedRoles");
-    authorizedScopes = parseMappings(properties.getAuthorizedScopes(), "authorizedScopes");
-    logRegisteredMappings("Authorized Role Registered: '{}'", authorizedRoles);
-    logRegisteredMappings("Authorized Scope Registered: '{}'", authorizedScopes);
+    authorizedRoles = parseMappings(
+        properties.getAuthorizedRoles(),
+        "authorizedRoles",
+        "Authorized Role Registered: '{}'");
+    authorizedScopes = parseMappings(
+        properties.getAuthorizedScopes(),
+        "authorizedScopes",
+        "Authorized Scope Registered: '{}'");
     if (authorizedRoles.isEmpty() && authorizedScopes.isEmpty()) {
       throw new InvalidPropertyException(
           Oauth2AuthorizationProperties.class,
@@ -57,7 +61,8 @@ public class EndpointAccessManager {
     }
   }
 
-  private Set<AuthorizedAuthority> parseMappings(String mappings, String propertyName) {
+  private Set<AuthorizedAuthority> parseMappings(
+      String mappings, String propertyName, String logMessagePattern) {
     if (mappings == null || mappings.isBlank()) {
       return Collections.emptySet();
     }
@@ -66,7 +71,9 @@ public class EndpointAccessManager {
           mappings,
           new TypeReference<>() {
           });
-      return entries == null ? Collections.emptySet() : entries;
+      Set<AuthorizedAuthority> parsedEntries = entries == null ? Collections.emptySet() : entries;
+      logRegisteredMappings(logMessagePattern, parsedEntries);
+      return parsedEntries;
     } catch (JacksonException ex) {
       throw new InvalidPropertyException(
           Oauth2AuthorizationProperties.class,
