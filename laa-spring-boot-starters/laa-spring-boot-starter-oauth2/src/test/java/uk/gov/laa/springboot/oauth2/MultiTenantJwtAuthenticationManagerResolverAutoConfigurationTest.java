@@ -10,14 +10,18 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationManagerResolver;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 
 class MultiTenantJwtAuthenticationManagerResolverAutoConfigurationTest {
@@ -90,6 +94,29 @@ class MultiTenantJwtAuthenticationManagerResolverAutoConfigurationTest {
     assertThat(configuration.authenticationManagerCreations).hasValue(0);
   }
 
+  @Test
+  void rejectsTokensFromTrustedIssuerWithUntrustedAudience() {
+    TestAutoConfiguration configuration = new TestAutoConfiguration();
+    OAuth2TokenValidator<Jwt> validator = configuration.audienceValidator(List.of(AUDIENCE));
+
+    OAuth2TokenValidatorResult result = validator.validate(jwtWithAudience("api://another-app"));
+
+    assertThat(result.hasErrors()).isTrue();
+    assertThat(result.getErrors())
+        .anySatisfy(error ->
+            assertThat(error.getDescription()).isEqualTo("JWT audience is not trusted"));
+  }
+
+  @Test
+  void acceptsTokensFromTrustedIssuerWithTrustedAudience() {
+    TestAutoConfiguration configuration = new TestAutoConfiguration();
+    OAuth2TokenValidator<Jwt> validator = configuration.audienceValidator(List.of(AUDIENCE));
+
+    OAuth2TokenValidatorResult result = validator.validate(jwtWithAudience(AUDIENCE));
+
+    assertThat(result.hasErrors()).isFalse();
+  }
+
   private static Oauth2AuthorizationProperties properties() {
     MultiTenantJwtProperties.Tenant tenant = new MultiTenantJwtProperties.Tenant();
     tenant.setIssuerUri(TRUSTED_ISSUER);
@@ -111,6 +138,16 @@ class MultiTenantJwtAuthenticationManagerResolverAutoConfigurationTest {
             new JWTClaimsSet.Builder().issuer(issuer).build());
     jwt.sign(new MACSigner("01234567890123456789012345678901"));
     return jwt.serialize();
+  }
+
+  private static Jwt jwtWithAudience(String audience) {
+    return Jwt.withTokenValue("token")
+        .header("alg", "none")
+        .issuer(TRUSTED_ISSUER)
+        .audience(List.of(audience))
+        .issuedAt(Instant.now())
+        .expiresAt(Instant.now().plusSeconds(60))
+        .build();
   }
 
   private static class TestAutoConfiguration

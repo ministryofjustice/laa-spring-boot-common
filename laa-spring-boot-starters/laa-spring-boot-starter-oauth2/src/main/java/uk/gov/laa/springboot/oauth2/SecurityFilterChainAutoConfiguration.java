@@ -5,9 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManagerResolver;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.Customizer;
@@ -18,6 +21,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.util.ClassUtils;
 import tools.jackson.databind.ObjectMapper;
 
 /**
@@ -28,6 +33,10 @@ import tools.jackson.databind.ObjectMapper;
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 @EnableConfigurationProperties(Oauth2AuthorizationProperties.class)
 public class SecurityFilterChainAutoConfiguration {
+
+  private static final String BEARER_PREFIX = "Bearer ";
+  private static final String API_KEY_SECURITY_CONFIGURATION_CLASS =
+      "uk.gov.laa.springboot.auth.SecurityFilterChainAutoConfiguration";
 
   /**
    * Creates the endpoint access manager used for role/scope URI checks.
@@ -66,16 +75,21 @@ public class SecurityFilterChainAutoConfiguration {
    * @return configured filter chain
    * @throws Exception when security chain cannot be built
    */
-  @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity,
-                                                 EndpointAccessManager endpointAccessManager,
-                                                 JwtAuthenticationConverter jwtConverter,
-                                                 ObjectProvider<
-                                                         AuthenticationManagerResolver<
-                                                             HttpServletRequest>>
-                                                         authenticationManagerResolver,
-                                                 ObjectMapper objectMapper)
+  @Bean("oauth2SecurityFilterChain")
+  @Order(Ordered.HIGHEST_PRECEDENCE)
+  @ConditionalOnMissingBean(name = "oauth2SecurityFilterChain")
+  public SecurityFilterChain oauth2SecurityFilterChain(
+      HttpSecurity httpSecurity,
+      EndpointAccessManager endpointAccessManager,
+      JwtAuthenticationConverter jwtConverter,
+      ObjectProvider<AuthenticationManagerResolver<HttpServletRequest>>
+          authenticationManagerResolver,
+      ObjectMapper objectMapper)
       throws Exception {
+    if (isApiKeyStarterPresent()) {
+      httpSecurity.securityMatcher(bearerRequestMatcher());
+    }
+
     httpSecurity
         .csrf(AbstractHttpConfigurer::disable)
         .httpBasic(AbstractHttpConfigurer::disable)
@@ -117,5 +131,17 @@ public class SecurityFilterChainAutoConfiguration {
     return authentication != null
         && authentication.isAuthenticated()
         && endpointAccessManager.isRequestAuthorized(authentication.getAuthorities(), request);
+  }
+
+  private RequestMatcher bearerRequestMatcher() {
+    return request -> {
+      String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+      return authorizationHeader != null && authorizationHeader.startsWith(BEARER_PREFIX);
+    };
+  }
+
+  private boolean isApiKeyStarterPresent() {
+    return ClassUtils.isPresent(
+        API_KEY_SECURITY_CONFIGURATION_CLASS, getClass().getClassLoader());
   }
 }

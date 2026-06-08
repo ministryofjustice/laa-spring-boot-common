@@ -25,6 +25,8 @@ import tools.jackson.databind.ObjectMapper;
 @Slf4j
 public class ApiAuthenticationFilter extends OncePerRequestFilter {
 
+  private static final String BEARER_PREFIX = "Bearer ";
+
   private final AuthenticationManager authenticationManager;
 
   private final ObjectMapper objectMapper;
@@ -87,12 +89,17 @@ public class ApiAuthenticationFilter extends OncePerRequestFilter {
 
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
-    // Skip if URI is in tokenDetailsManager.getUnprotectedUris()
-    return Arrays.stream(tokenDetailsManager.getUnprotectedUris())
+    return isBearerAuthenticationRequest(request)
+        || Arrays.stream(tokenDetailsManager.getUnprotectedUris())
         .anyMatch(
             uri -> PathPatternRequestMatcher
                 .withDefaults()
                 .matcher(uri)
                 .matches(request));
+  }
+
+  private boolean isBearerAuthenticationRequest(HttpServletRequest request) {
+    String accessToken = request.getHeader(tokenDetailsManager.getAuthenticationHeader());
+    return accessToken != null && accessToken.startsWith(BEARER_PREFIX);
   }
 }

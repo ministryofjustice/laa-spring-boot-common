@@ -97,7 +97,7 @@ public class MultiTenantJwtAuthenticationManagerResolverAutoConfiguration {
     return decoder;
   }
 
-  private OAuth2TokenValidator<Jwt> audienceValidator(List<String> allowedAudiences) {
+  OAuth2TokenValidator<Jwt> audienceValidator(List<String> allowedAudiences) {
     return jwt -> {
       if (jwt.getAudience().stream().anyMatch(allowedAudiences::contains)) {
         return OAuth2TokenValidatorResult.success();

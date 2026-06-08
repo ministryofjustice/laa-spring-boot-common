@@ -5,6 +5,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,8 +25,9 @@ public class OpenApiConfiguration {
    *
    * @return configured OpenAPI object
    */
-  @Bean
-  public OpenAPI openApi() {
+  @Bean("bearerOpenApi")
+  @ConditionalOnMissingBean(OpenAPI.class)
+  public OpenAPI bearerOpenApi() {
     String securitySchemeName = "BearerAuth";
     OpenAPI openApiSpec =
         new OpenAPI()
