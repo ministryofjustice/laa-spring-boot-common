@@ -33,9 +33,9 @@ class OAuth2EndpointAuthorizationTest {
   void protectedEndpointWithoutTokenIsUnauthorized() throws Exception {
     mockMvc.perform(get("/resource1/requires-group1-role"))
         .andExpect(status().is(HttpStatus.UNAUTHORIZED.value()))
-        .andExpect(jsonPath("$.code").value(HttpStatus.UNAUTHORIZED.value()))
-        .andExpect(jsonPath("$.status").value("UNAUTHORIZED"))
-        .andExpect(jsonPath("$.message").value("No API access token provided."));
+        .andExpect(jsonPath("$.status").value(HttpStatus.UNAUTHORIZED.value()))
+        .andExpect(jsonPath("$.title").value(HttpStatus.UNAUTHORIZED.getReasonPhrase()))
+        .andExpect(jsonPath("$.detail").value("Unauthorized"));
   }
 
   @Test
@@ -56,9 +56,9 @@ class OAuth2EndpointAuthorizationTest {
     mockMvc.perform(get("/resource1/requires-group1-role")
             .header(HttpHeaders.AUTHORIZATION, "Bearer scope-read"))
         .andExpect(status().is(HttpStatus.FORBIDDEN.value()))
-        .andExpect(jsonPath("$.code").value(HttpStatus.FORBIDDEN.value()))
-        .andExpect(jsonPath("$.status").value("FORBIDDEN"))
-        .andExpect(jsonPath("$.message").value("Access Denied"));
+        .andExpect(jsonPath("$.status").value(HttpStatus.FORBIDDEN.value()))
+        .andExpect(jsonPath("$.title").value(HttpStatus.FORBIDDEN.getReasonPhrase()))
+        .andExpect(jsonPath("$.detail").value("Access Denied"));
   }
 
   @Test
@@ -73,9 +73,9 @@ class OAuth2EndpointAuthorizationTest {
     mockMvc.perform(get("/resource1/requires-scope")
             .header(HttpHeaders.AUTHORIZATION, "Bearer role-group1"))
         .andExpect(status().is(HttpStatus.FORBIDDEN.value()))
-        .andExpect(jsonPath("$.code").value(HttpStatus.FORBIDDEN.value()))
-        .andExpect(jsonPath("$.status").value("FORBIDDEN"))
-        .andExpect(jsonPath("$.message").value("Access Denied"));
+        .andExpect(jsonPath("$.status").value(HttpStatus.FORBIDDEN.value()))
+        .andExpect(jsonPath("$.title").value(HttpStatus.FORBIDDEN.getReasonPhrase()))
+        .andExpect(jsonPath("$.detail").value("Access Denied"));
   }
 
   @Test

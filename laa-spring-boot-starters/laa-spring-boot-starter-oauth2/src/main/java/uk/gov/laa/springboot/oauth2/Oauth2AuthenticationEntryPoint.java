@@ -4,11 +4,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.util.StringUtils;
 import tools.jackson.databind.ObjectMapper;
 
 /**
@@ -16,6 +16,8 @@ import tools.jackson.databind.ObjectMapper;
  */
 @Slf4j
 public class Oauth2AuthenticationEntryPoint implements AuthenticationEntryPoint {
+
+  private static final String UNAUTHORIZED_MESSAGE = "Unauthorized";
 
   private final ObjectMapper objectMapper;
 
@@ -26,26 +28,18 @@ public class Oauth2AuthenticationEntryPoint implements AuthenticationEntryPoint 
   @Override
   public void commence(HttpServletRequest request, HttpServletResponse response,
                        AuthenticationException authException) throws IOException {
-    int code = HttpServletResponse.SC_UNAUTHORIZED;
-    response.setStatus(code);
-    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    HttpStatus status = HttpStatus.UNAUTHORIZED;
+    response.setStatus(status.value());
+    response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
 
-    String message = resolveMessage(request, authException);
-    ErrorResponse errorResponse = new ErrorResponse(code, "UNAUTHORIZED", message);
-    response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(status, UNAUTHORIZED_MESSAGE);
+    problemDetail.setTitle(status.getReasonPhrase());
+    response.getWriter().write(objectMapper.writeValueAsString(problemDetail));
 
     log.info(
         "Request rejected for endpoint '{} {}': {}",
         request.getMethod(),
         request.getRequestURI(),
-        message);
-  }
-
-  private String resolveMessage(HttpServletRequest request, AuthenticationException authException) {
-    String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-    if (!StringUtils.hasText(authorizationHeader)) {
-      return "No API access token provided.";
-    }
-    return authException.getMessage();
+        authException.getMessage());
   }
 }
