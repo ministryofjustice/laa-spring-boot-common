@@ -11,7 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "laa.cookie-consent")
+@ConfigurationProperties(prefix = "laa.springboot.starter.cookie-consent")
 public class CookieConsentProperties {
   private boolean enabled = true;
   private String cookiesPolicy = "cookies_policy";
