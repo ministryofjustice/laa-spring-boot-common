@@ -1,0 +1,39 @@
+laa.springboot.starter.oauth2:
+  authorized-roles: '[
+      {
+          "name": "GROUP1",
+          "uris": [
+              "/resource1/requires-group1-role/**"
+          ]
+      }
+  ]'
+  authorized-scopes: '[
+      {
+          "name": "claims:read",
+          "uris": [
+              "/resource1/requires-scope/**"
+          ]
+      },
+      {
+          "name": "claims:method",
+          "uris": [
+              {
+                  "method": [
+                      "GET",
+                      "POST"
+                  ],
+                  "uri": "/resource1/method-scope/**"
+              }
+          ]
+      }
+  ]'
+  unprotected-uris: ["/actuator/**", "/resource1/unrestricted/**"]
+  roles-claim-path: "roles"
+  scopes-claim-path: "scope"
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "https://example.test.local/issuer"

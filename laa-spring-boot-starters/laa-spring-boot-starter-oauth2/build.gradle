@@ -1,0 +1,43 @@
+plugins {
+    id 'spring-boot-starter-conventions'
+    id 'checkstyle'
+    id 'io.freefair.lombok' version '9.4.0'
+}
+
+dependencies {
+
+    implementation(project(':laa-java-gradle-plugin')) {
+        transitive = false
+    }
+
+    implementation 'io.swagger.core.v3:swagger-models:2.2.48'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-jackson'
+
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
+    testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+checkstyle {
+    maxWarnings = 0
+    toolVersion = checkstyleVersion
+    sourceSets = sourceSets.main as SourceSetContainer
+    showViolations = true
+}
+
+publishing.publications {
+    library(MavenPublication) {
+        from components.java
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

@@ -82,6 +82,17 @@ laa.springboot.starter.auth:
 
 Authentication of endpoints will behave as follows.
 
+### Migrating to OAuth2
+
+This starter can run alongside `laa-spring-boot-starter-oauth2` during migration. When both starters
+are present, bearer-token requests such as `Authorization: Bearer <jwt>` are handled by the OAuth2
+starter, while non-bearer API key values on the configured authentication header continue to be
+handled by this starter.
+
+Configure the same endpoint paths in both starters while consumers migrate. Once all consumers use
+OAuth2, remove this starter and its API key configuration. See the OAuth2 starter migration guide for
+the full migration shape.
+
 ### Unprotected URIs
 
 Unprotected URIs will not require any authentication. Authentication headers will be ignored.

@@ -1,4 +1,4 @@
-package uk.gov.laa.springboot.auth;
+package uk.gov.laa.springboot.oauth2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ import tools.jackson.databind.deser.std.StdDeserializer;
 import tools.jackson.databind.exc.InvalidFormatException;
 
 /**
- * Deserializes authorized role uri entries, supporting both string and object formats.
+ * Deserializes authorized role/scope URI entries from string or object forms.
  */
 public class AuthorizedRoleUriDeserializer extends StdDeserializer<AuthorizedRoleUri> {
 
@@ -34,11 +34,18 @@ public class AuthorizedRoleUriDeserializer extends StdDeserializer<AuthorizedRol
 
     if (token == JsonToken.START_OBJECT) {
       JsonNode node = parser.readValueAsTree();
+      if (node == null || node.isNull()) {
+        throw InvalidFormatException.from(
+            parser,
+            "Authorized URI entries must be valid JSON objects.",
+            node,
+            AuthorizedRoleUri.class);
+      }
       JsonNode uriNode = getCaseInsensitiveField(node, URI_FIELD);
       if (uriNode == null || uriNode.isNull() || uriNode.asString().isBlank()) {
         throw InvalidFormatException.from(
             parser,
-            "Authorized role uri entries must include a non-empty '" + URI_FIELD + "' field.",
+            "Authorized URI entries must include a non-empty '" + URI_FIELD + "' field.",
             node,
             AuthorizedRoleUri.class);
       }
@@ -48,6 +55,7 @@ public class AuthorizedRoleUriDeserializer extends StdDeserializer<AuthorizedRol
       if (methodsNode == null) {
         methodsNode = getCaseInsensitiveField(node, METHODS_FIELD);
       }
+
       String[] methods = null;
       if (methodsNode != null && !methodsNode.isNull()) {
         if (methodsNode.isArray()) {

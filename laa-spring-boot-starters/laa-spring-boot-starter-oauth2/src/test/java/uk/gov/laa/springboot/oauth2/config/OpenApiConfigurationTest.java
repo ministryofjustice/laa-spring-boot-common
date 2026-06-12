@@ -1,4 +1,4 @@
-package uk.gov.laa.springboot.auth.config;
+package uk.gov.laa.springboot.oauth2.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,16 +11,15 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 class OpenApiConfigurationTest {
 
-  private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-      .withBean(OpenApiConfiguration.class)
-      .withPropertyValues("laa.springboot.starter.auth.authentication-header=Authorization");
+  private final ApplicationContextRunner contextRunner =
+      new ApplicationContextRunner().withBean(OpenApiConfiguration.class);
 
   private static final String OPEN_API_CONFIGURATION_BEAN = "openApiConfiguration";
-  private static final String OPEN_API_BEAN = "apiKeyOpenApi";
-  private static final String SECURITY_SCHEME_NAME = "ApiKeyAuth";
+  private static final String OPEN_API_BEAN = "bearerOpenApi";
+  private static final String SECURITY_SCHEME_NAME = "BearerAuth";
 
   @Test
-  void testOpenApiBeanIsCreatedWhenApplicationPropertyOmitted() {
+  void openApiBeanCreatedWhenPropertyOmitted() {
     contextRunner.run(context -> {
       assertThat(context).hasBean(OPEN_API_CONFIGURATION_BEAN);
       assertSecuritySchemeApplied(context);
@@ -28,7 +27,7 @@ class OpenApiConfigurationTest {
   }
 
   @Test
-  void testOpenApiBeanIsCreatedWhenApplicationPropertyEnabled() {
+  void openApiBeanCreatedWhenPropertyEnabled() {
     contextRunner
         .withPropertyValues("laa.springboot.starter.open-api.security-scheme.enabled=true")
         .run(context -> {
@@ -38,7 +37,7 @@ class OpenApiConfigurationTest {
   }
 
   @Test
-  void testNoOpenApiBeanIsCreatedWhenApplicationPropertyDisabled() {
+  void noOpenApiBeanWhenPropertyDisabled() {
     contextRunner
         .withPropertyValues("laa.springboot.starter.open-api.security-scheme.enabled=false")
         .run(context -> {
@@ -48,7 +47,7 @@ class OpenApiConfigurationTest {
   }
 
   @Test
-  void testOpenApiBeanBacksOffWhenOneAlreadyExists() {
+  void openApiBeanBacksOffWhenOneAlreadyExists() {
     OpenAPI existingOpenApi = new OpenAPI();
 
     contextRunner.withBean("existingOpenApi", OpenAPI.class, () -> existingOpenApi)
@@ -62,14 +61,13 @@ class OpenApiConfigurationTest {
   private void assertSecuritySchemeApplied(AssertableApplicationContext context) {
     OpenAPI openApiSpec = context.getBean(OPEN_API_BEAN, OpenAPI.class);
     assertThat(openApiSpec.getComponents().getSecuritySchemes()).isEqualTo(
-        Map.of(SECURITY_SCHEME_NAME, getSecurityScheme()));
+        Map.of(SECURITY_SCHEME_NAME, expectedSecurityScheme()));
   }
 
-  private SecurityScheme getSecurityScheme() {
+  private SecurityScheme expectedSecurityScheme() {
     return new SecurityScheme()
-        .type(SecurityScheme.Type.APIKEY)
-        .in(SecurityScheme.In.HEADER)
-        .name("Authorization");
+        .type(SecurityScheme.Type.HTTP)
+        .scheme("bearer")
+        .bearerFormat("JWT");
   }
-
 }
