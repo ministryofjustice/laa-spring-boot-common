@@ -18,7 +18,6 @@ jobs:
     permissions:
       contents: write
       packages: write
-      id-token: write
     with:
       java_version: '25'
       java_distribution: 'corretto'
