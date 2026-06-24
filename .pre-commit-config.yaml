@@ -3,3 +3,45 @@ repos:
     rev: v1.3.0
     hooks:
       - id: baseline
+        stages: [commit, push]
+        exclude: |
+          (?x)^(
+            build/|
+            .gradle/|
+            .idea/|
+            .git/|
+            reports/|
+            gradle/
+          )
+
+  - repo: local
+    hooks:
+      - id: commit-msg-validation
+        name: Commit message validation
+        entry: |
+          bash -c '
+          MSG=$(head -n 1 "$1")
+          [[ "$MSG" =~ ^Merge\ branch ]] && exit 0
+          [[ "$MSG" =~ ^Revert ]] && exit 0
+          [[ "$MSG" =~ ^(feat|fix|chore|refactor|test|spike|docs|ci|infra)(\(|:|!|\s) ]] && exit 0
+          echo "⛔ Invalid commit message. Must start with: feat|fix|chore|refactor|test|spike|docs|ci|infra"
+          exit 1
+          ' --
+        language: system
+        stages: [commit-msg]
+        always_run: true
+
+      - id: commit-signing-config
+        name: Commit signing configured
+        entry: |
+          bash -c '
+          KEY="$(git config --get user.signingkey || true)"
+          SIGN="$(git config --get commit.gpgsign || true)"
+          FORMAT="$(git config --get gpg.format || echo openpgp)"
+          [ -n "$KEY" ] && [ "$SIGN" = "true" ] && { [ "$FORMAT" = "openpgp" ] || [ "$FORMAT" = "ssh" ]; } && exit 0
+          echo "⛔ Git commit signing is likely not configured correctly. Check user.signingkey, commit.gpgsign, and gpg.format"
+          exit 1'
+        language: system
+        stages: [commit]
+        always_run: true
+        pass_filenames: false
