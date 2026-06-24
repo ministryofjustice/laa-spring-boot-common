@@ -45,6 +45,8 @@ jobs:
           if git rev-parse -q --verify "$PREV_GTAG" >/dev/null 2>&1; then COMMITS="${PREV_GTAG}..HEAD"; else COMMITS="HEAD"; fi
 
           BUMP="none"
+          # Conventional commit patterns — keep in sync with build-feature.yml compute-snapshot-version job.
+          # Both will be replaced by a shared composite action in laa-ccms-common-workflows.
           if ${{ github.event_name == 'workflow_dispatch' && inputs.reltype != 'auto' }}; then
             BUMP="${{ inputs.reltype }}"
           elif (git log --no-merges --format=%s "$COMMITS" | grep -Eqm1 '^[a-z]+(\([^)]+\))?!: ');   then BUMP="major"

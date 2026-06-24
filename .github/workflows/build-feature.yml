@@ -31,6 +31,8 @@ jobs:
 
           if git rev-parse -q --verify "$PREV_TAG" >/dev/null 2>&1; then COMMITS="${PREV_TAG}..HEAD"; else COMMITS="HEAD"; fi
 
+          # Conventional commit patterns — keep in sync with build-main.yml plan job.
+          # Both will be replaced by a shared composite action in laa-ccms-common-workflows.
           BUMP="patch"  # default: always at least patch for a snapshot
           if   (git log --no-merges --format=%s "$COMMITS" | grep -Eqm1 '^[a-z]+(\([^)]+\))?!: ');   then BUMP="major"
           elif (git log --no-merges --format=%B "$COMMITS" | grep -Eqm1 'BREAKING[ -]CHANGE:');       then BUMP="major"
