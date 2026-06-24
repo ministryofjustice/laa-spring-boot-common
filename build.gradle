@@ -1,5 +1,4 @@
 plugins {
-    id 'net.researchgate.release'
     id 'checkstyle'
     id 'com.adarshr.test-logger' version '4.0.0'
 }
@@ -48,10 +47,6 @@ subprojects {
         }
     }
 
-    release {
-        tagTemplate = '$name-$version'
-    }
-
     tasks.withType(AbstractPublishToMaven).tap {
         configureEach {
             doLast {
@@ -62,17 +57,3 @@ subprojects {
     }
 }
 
-tasks.register('updateSnapshotVersion') {
-    doLast {
-        def gitHash = "git rev-parse --short HEAD".execute().text.trim()
-        def propertiesFile = file('gradle.properties')
-        def properties = new Properties()
-        properties.load(new FileInputStream(propertiesFile))
-
-        def currentVersion = properties.getProperty('version')
-        def newVersion = currentVersion.replace('-SNAPSHOT', "-${gitHash}-SNAPSHOT")
-        properties.setProperty('version', newVersion)
-
-        properties.store(propertiesFile.newWriter(), null)
-    }
-}

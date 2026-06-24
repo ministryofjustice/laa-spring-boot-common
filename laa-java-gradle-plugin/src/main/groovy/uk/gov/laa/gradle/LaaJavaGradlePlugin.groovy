@@ -162,23 +162,5 @@ class LaaJavaGradlePlugin implements Plugin<Project> {
                         "${publication.groupId}:${publication.artifactId}:${publication.version}")
             }
         }
-
-        // Used for deploying snapshot packages
-        if (target.rootProject.tasks.findByName('updateSnapshotVersion') == null) {
-            target.rootProject.tasks.register("updateSnapshotVersion") {
-                doLast(task -> {
-                    def gitHash = "git rev-parse --short HEAD".execute().text.trim()
-                    def propertiesFile = target.rootProject.file('gradle.properties')
-                    def properties = new Properties()
-                    properties.load(new FileInputStream(propertiesFile))
-
-                    def currentVersion = properties.getProperty('version')
-                    def newVersion = currentVersion.replace('-SNAPSHOT', "-${gitHash}-SNAPSHOT")
-                    properties.setProperty('version', newVersion)
-                    properties.store(propertiesFile.newWriter(), null)
-                }
-                )
-            }
-        }
     }
 }
