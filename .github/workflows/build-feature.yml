@@ -6,49 +6,15 @@ on:
       - main
 
 jobs:
-  compute-snapshot-version:
-    runs-on: ubuntu-latest
-    outputs:
-      snapshot_version: ${{ steps.version.outputs.snapshot_version }}
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          fetch-depth: 0
-          fetch-tags: true
-      - name: Compute version
-        id: compute
-        uses: ministryofjustice/laa-ccms-common-workflows/.github/actions/compute-version@chore/LJCP-27_release_plugin # TODO: pin to SHA on merge
-
-      - name: Compute snapshot version
-        id: version
-        shell: bash
-        env:
-          BUMP_TYPE: ${{ steps.compute.outputs.bump_type }}
-          MAJOR:     ${{ steps.compute.outputs.major }}
-          MINOR:     ${{ steps.compute.outputs.minor }}
-          PATCH:     ${{ steps.compute.outputs.patch }}
-        run: |
-          set -eu
-          BUMP="${BUMP_TYPE:-none}"
-          M="${MAJOR:-0}"; N="${MINOR:-0}"; P="${PATCH:-0}"
-          # For snapshots, always bump at least patch when no conventional commit found.
-          if [[ "$BUMP" == "none" ]]; then P=$((P+1)); fi
-          HASH=$(git rev-parse --short HEAD)
-          VERSION="${M}.${N}.${P}-${HASH}-SNAPSHOT"
-          echo "snapshot_version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "Computed snapshot version: ${VERSION} (bump: ${BUMP}, prev: ${{ steps.compute.outputs.prev_tag }})"
-
   build-and-publish-snapshot:
-    needs: compute-snapshot-version
-    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@a5b870c152d0bc4a7f67a23f2c226868f94d7041 # v2.2.2
+    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@chore/LJCP-27_release_plugin # TODO: pin to SHA on merge
     permissions:
       contents: write
       packages: write
     with:
       java_version: '25'
       java_distribution: 'corretto'
-      publish_package: 'true'
-      override_version: ${{ needs.compute-snapshot-version.outputs.snapshot_version }}
+      reltype: 'snapshot'
       junit_results: 'false'
       junit_report: 'false'
       checkstyle_report: 'false'
