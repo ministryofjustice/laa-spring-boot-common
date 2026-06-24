@@ -1,28 +1,190 @@
-name: Build main and spring3
+name: Pipeline: main
 
 on:
-  pull_request:
-    branches: [ main, spring3 ]
-    types: [ closed ]
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      reltype:
+        type: choice
+        required: true
+        default: "auto"
+        description: "Release type"
+        options: [ "auto", "none", "patch", "minor", "major" ]
 
 jobs:
-  build-and-publish-release:
-    if: ${{ github.event.pull_request.merged == true }}
-    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@a5b870c152d0bc4a7f67a23f2c226868f94d7041 # v2.2.2
+  plan:
+    name: "Plan"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      reltype: ${{ steps.vars.outputs.reltype }}
+      gtag:    ${{ steps.vars.outputs.gtag }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Determine release plan
+        id: vars
+        shell: bash
+        run: |
+          set -eu
+          REPO_NAME="$(basename "$(git rev-parse --show-toplevel)")"
+
+          # Prefer v-prefix tags (new scheme); fall back to {repo-name}-{version} (old Gradle Release Plugin scheme)
+          # The fallback can be removed once all repositories have at least one v-prefix Release Tag.
+          PREV_GTAG="$(git describe --tags --abbrev=0 --match "v[0-9]*" 2>/dev/null || true)"
+          if [ -z "$PREV_GTAG" ]; then
+            OLD_TAG="$(git describe --tags --abbrev=0 --match "${REPO_NAME}-[0-9]*" 2>/dev/null || true)"
+            if [ -n "$OLD_TAG" ]; then PREV_GTAG="v${OLD_TAG#${REPO_NAME}-}"; fi
+          fi
+          PREV_GTAG="${PREV_GTAG:-v0.0.0}"
+
+          if git rev-parse -q --verify "$PREV_GTAG" >/dev/null 2>&1; then COMMITS="${PREV_GTAG}..HEAD"; else COMMITS="HEAD"; fi
+
+          BUMP="none"
+          if ${{ github.event_name == 'workflow_dispatch' && inputs.reltype != 'auto' }}; then
+            BUMP="${{ inputs.reltype }}"
+          elif (git log --no-merges --format=%s "$COMMITS" | grep -Eqm1 '^[a-z]+(\([^)]+\))?!: ');   then BUMP="major"
+          elif (git log --no-merges --format=%B "$COMMITS" | grep -Eqm1 'BREAKING[ -]CHANGE:');       then BUMP="major"
+          elif (git log --no-merges --format=%s "$COMMITS" | grep -Eqm1 '^feat(\([^)]+\))?: ');       then BUMP="minor"
+          elif (git log --no-merges --format=%s "$COMMITS" | grep -Eqm1 '^(fix|chore|refactor)(\([^)]+\))?: '); then BUMP="patch"
+          fi
+
+          if [[ "$PREV_GTAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            MAJOR=${BASH_REMATCH[1]}; MINOR=${BASH_REMATCH[2]}; PATCH=${BASH_REMATCH[3]}
+          else
+            MAJOR=0; MINOR=0; PATCH=0
+          fi
+          case "$BUMP" in
+            major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR+1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH+1)) ;;
+            none)  ;;
+          esac
+
+          NEXT_GTAG=""
+          if [[ "$BUMP" != "none" ]]; then NEXT_GTAG="v${MAJOR}.${MINOR}.${PATCH}"; fi
+
+          echo "- PREV_GTAG=${PREV_GTAG}; MAJOR=${MAJOR}; MINOR=${MINOR}; PATCH=${PATCH}"
+          echo "- github.event_name=${{ github.event_name }}"
+          echo "- github.ref_name=${{ github.ref_name }}"
+          echo "- outputs.gtag=${NEXT_GTAG}"
+          echo "- outputs.reltype=${BUMP}"
+          echo "gtag=${NEXT_GTAG}"    >> "$GITHUB_OUTPUT"
+          echo "reltype=${BUMP}"      >> "$GITHUB_OUTPUT"
+
+  build:
+    name: "Build"
+    needs: [ plan ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Set up JDK 25
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: '25'
+          distribution: 'corretto'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0
+      - name: Build
+        run: ./gradlew build
+
+  create-tag:
+    name: "Create Git tag ${{ needs.plan.outputs.gtag }}"
+    if: needs.plan.outputs.gtag != '' && needs.plan.outputs.reltype != 'none'
+    needs: [ plan, build ]
+    runs-on: ubuntu-latest
     permissions:
       contents: write
+    steps:
+      - name: Get app token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ vars.LAA_CCMS_CAAB_SERVICE_APP_ID }}
+          private-key: ${{ secrets.LAA_CCMS_CAAB_SERVICE_KEY }}
+          owner: ministryofjustice
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+      - name: Create Git tag
+        env:
+          GTAG: ${{ needs.plan.outputs.gtag }}
+        run: |
+          test -n "$GTAG"
+          git config user.name  "laa-ccms-caab-service[bot]"
+          git config user.email "laa-ccms-caab-service[bot]@users.noreply.github.com"
+          if git ls-remote --tags origin | grep -q "refs/tags/${GTAG}$"; then
+            echo "Tag ${GTAG} already exists on remote. Skipping."
+            exit 0
+          fi
+          echo "Creating Git tag [${GTAG}]"
+          git tag -a "$GTAG" -m "Release ${GTAG}"
+          git push origin "$GTAG" || {
+            EXIT=$?
+            if git ls-remote --tags origin | grep -q "refs/tags/${GTAG}$"; then
+              echo "Tag ${GTAG} was already pushed (race condition). Skipping."
+            else
+              echo "::error::Failed to push tag ${GTAG} (exit ${EXIT})" >&2
+              exit $EXIT
+            fi
+          }
+
+  publish:
+    name: "Publish ${{ needs.plan.outputs.gtag }}"
+    if: needs.plan.outputs.gtag != '' && needs.plan.outputs.reltype != 'none'
+    needs: [ plan, create-tag ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
       packages: write
-    with:
-      java_version: '25'
-      java_distribution: 'corretto'
-      create_tag: 'true'
-      junit_results: 'false'
-      junit_report: 'false'
-      checkstyle_report: 'false'
-      jacoco_coverage_report: 'false'
-      github_bot_username: 'laa-ccms-caab-service'
-    secrets:
-      gh_token: ${{ secrets.GITHUB_TOKEN }}
-      github_app_id: ${{ vars.LAA_CCMS_CAAB_SERVICE_APP_ID }}
-      github_app_private_key: ${{ secrets.LAA_CCMS_CAAB_SERVICE_KEY }}
-      github_app_organisation: 'ministryofjustice'
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_ACTOR: ${{ github.actor }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Set up JDK 25
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: '25'
+          distribution: 'corretto'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0
+      - name: Publish Maven artifact
+        env:
+          VERSION: ${{ needs.plan.outputs.gtag }}
+        run: ./gradlew publish -Pversion="${VERSION#v}"
+
+  create-release:
+    name: "GitHub Release ${{ needs.plan.outputs.gtag }}"
+    if: needs.plan.outputs.gtag != '' && needs.plan.outputs.reltype != 'none'
+    needs: [ plan, publish ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GTAG: ${{ needs.plan.outputs.gtag }}
+        run: |
+          test -n "$GTAG"
+          if gh release view "$GTAG" >/dev/null 2>&1; then
+            echo "Release ${GTAG} already exists. Skipping."
+            exit 0
+          fi
+          echo "Creating GitHub Release [${GTAG}]"
+          gh release create "$GTAG" --verify-tag --title "$GTAG" --generate-notes
+
