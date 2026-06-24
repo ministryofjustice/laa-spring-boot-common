@@ -19,64 +19,29 @@ jobs:
     permissions:
       contents: read
     outputs:
-      reltype: ${{ steps.vars.outputs.reltype }}
-      gtag:    ${{ steps.vars.outputs.gtag }}
+      reltype: ${{ steps.compute.outputs.bump_type }}
+      gtag:    ${{ steps.compute.outputs.next_version }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
           fetch-tags: true
-      - name: Determine release plan
+      - name: Determine dispatch reltype
         id: vars
         shell: bash
         run: |
           set -eu
-          REPO_NAME="$(basename "$(git rev-parse --show-toplevel)")"
-
-          # Prefer v-prefix tags (new scheme); fall back to {repo-name}-{version} (old Gradle Release Plugin scheme)
-          # The fallback can be removed once all repositories have at least one v-prefix Release Tag.
-          PREV_GTAG="$(git describe --tags --abbrev=0 --match "v[0-9]*" 2>/dev/null || true)"
-          if [ -z "$PREV_GTAG" ]; then
-            OLD_TAG="$(git describe --tags --abbrev=0 --match "${REPO_NAME}-[0-9]*" 2>/dev/null || true)"
-            if [ -n "$OLD_TAG" ]; then PREV_GTAG="v${OLD_TAG#${REPO_NAME}-}"; fi
-          fi
-          PREV_GTAG="${PREV_GTAG:-v0.0.0}"
-
-          if git rev-parse -q --verify "$PREV_GTAG" >/dev/null 2>&1; then COMMITS="${PREV_GTAG}..HEAD"; else COMMITS="HEAD"; fi
-
-          BUMP="none"
-          # Conventional commit patterns — keep in sync with build-feature.yml compute-snapshot-version job.
-          # Both will be replaced by a shared composite action in laa-ccms-common-workflows.
+          DISPATCH_RELTYPE=""
           if ${{ github.event_name == 'workflow_dispatch' && inputs.reltype != 'auto' }}; then
-            BUMP="${{ inputs.reltype }}"
-          elif (git log --no-merges --format=%s "$COMMITS" | grep -Eqm1 '^[a-z]+(\([^)]+\))?!: ');   then BUMP="major"
-          elif (git log --no-merges --format=%B "$COMMITS" | grep -Eqm1 'BREAKING[ -]CHANGE:');       then BUMP="major"
-          elif (git log --no-merges --format=%s "$COMMITS" | grep -Eqm1 '^feat(\([^)]+\))?: ');       then BUMP="minor"
-          elif (git log --no-merges --format=%s "$COMMITS" | grep -Eqm1 '^(fix|chore|refactor)(\([^)]+\))?: '); then BUMP="patch"
+            DISPATCH_RELTYPE="${{ inputs.reltype }}"
           fi
+          echo "dispatch_reltype=${DISPATCH_RELTYPE}" >> "$GITHUB_OUTPUT"
 
-          if [[ "$PREV_GTAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-            MAJOR=${BASH_REMATCH[1]}; MINOR=${BASH_REMATCH[2]}; PATCH=${BASH_REMATCH[3]}
-          else
-            MAJOR=0; MINOR=0; PATCH=0
-          fi
-          case "$BUMP" in
-            major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0 ;;
-            minor) MINOR=$((MINOR+1)); PATCH=0 ;;
-            patch) PATCH=$((PATCH+1)) ;;
-            none)  ;;
-          esac
-
-          NEXT_GTAG=""
-          if [[ "$BUMP" != "none" ]]; then NEXT_GTAG="v${MAJOR}.${MINOR}.${PATCH}"; fi
-
-          echo "- PREV_GTAG=${PREV_GTAG}; MAJOR=${MAJOR}; MINOR=${MINOR}; PATCH=${PATCH}"
-          echo "- github.event_name=${{ github.event_name }}"
-          echo "- github.ref_name=${{ github.ref_name }}"
-          echo "- outputs.gtag=${NEXT_GTAG}"
-          echo "- outputs.reltype=${BUMP}"
-          echo "gtag=${NEXT_GTAG}"    >> "$GITHUB_OUTPUT"
-          echo "reltype=${BUMP}"      >> "$GITHUB_OUTPUT"
+      - name: Compute version
+        id: compute
+        uses: ministryofjustice/laa-ccms-common-workflows/.github/actions/compute-version@chore/LJCP-27_release_plugin # TODO: pin to SHA on merge
+        with:
+          bump: ${{ steps.vars.outputs.dispatch_reltype }}
 
   build:
     name: "Build"

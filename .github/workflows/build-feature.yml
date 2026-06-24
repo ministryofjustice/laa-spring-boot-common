@@ -15,46 +15,28 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
+      - name: Compute version
+        id: compute
+        uses: ministryofjustice/laa-ccms-common-workflows/.github/actions/compute-version@chore/LJCP-27_release_plugin # TODO: pin to SHA on merge
+
       - name: Compute snapshot version
         id: version
+        shell: bash
+        env:
+          BUMP_TYPE: ${{ steps.compute.outputs.bump_type }}
+          MAJOR:     ${{ steps.compute.outputs.major }}
+          MINOR:     ${{ steps.compute.outputs.minor }}
+          PATCH:     ${{ steps.compute.outputs.patch }}
         run: |
-          REPO_NAME="$(basename "$(git rev-parse --show-toplevel)")"
-
-          # Prefer v-prefix tags (new scheme); fall back to {repo-name}-{version} (old Gradle Release Plugin scheme)
-          # The fallback can be removed once all repositories have at least one v-prefix Release Tag.
-          PREV_TAG="$(git describe --tags --abbrev=0 --match "v[0-9]*" 2>/dev/null || true)"
-          if [ -z "$PREV_TAG" ]; then
-            OLD_TAG="$(git describe --tags --abbrev=0 --match "${REPO_NAME}-[0-9]*" 2>/dev/null || true)"
-            if [ -n "$OLD_TAG" ]; then PREV_TAG="v${OLD_TAG#${REPO_NAME}-}"; fi
-          fi
-          PREV_TAG="${PREV_TAG:-v0.0.0}"
-
-          if git rev-parse -q --verify "$PREV_TAG" >/dev/null 2>&1; then COMMITS="${PREV_TAG}..HEAD"; else COMMITS="HEAD"; fi
-
-          # Conventional commit patterns — keep in sync with build-main.yml plan job.
-          # Both will be replaced by a shared composite action in laa-ccms-common-workflows.
-          BUMP="patch"  # default: always at least patch for a snapshot
-          if   (git log --no-merges --format=%s "$COMMITS" | grep -Eqm1 '^[a-z]+(\([^)]+\))?!: ');   then BUMP="major"
-          elif (git log --no-merges --format=%B "$COMMITS" | grep -Eqm1 'BREAKING[ -]CHANGE:');       then BUMP="major"
-          elif (git log --no-merges --format=%s "$COMMITS" | grep -Eqm1 '^feat(\([^)]+\))?: ');       then BUMP="minor"
-          elif (git log --no-merges --format=%s "$COMMITS" | grep -Eqm1 '^(fix|chore|refactor)(\([^)]+\))?: '); then BUMP="patch"
-          fi
-
-          if [[ "$PREV_TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-            MAJOR=${BASH_REMATCH[1]}; MINOR=${BASH_REMATCH[2]}; PATCH=${BASH_REMATCH[3]}
-          else
-            MAJOR=0; MINOR=0; PATCH=0
-          fi
-          case "$BUMP" in
-            major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0 ;;
-            minor) MINOR=$((MINOR+1)); PATCH=0 ;;
-            patch) PATCH=$((PATCH+1)) ;;
-          esac
-
+          set -eu
+          BUMP="${BUMP_TYPE:-none}"
+          M="${MAJOR:-0}"; N="${MINOR:-0}"; P="${PATCH:-0}"
+          # For snapshots, always bump at least patch when no conventional commit found.
+          if [[ "$BUMP" == "none" ]]; then P=$((P+1)); fi
           HASH=$(git rev-parse --short HEAD)
-          VERSION="${MAJOR}.${MINOR}.${PATCH}-${HASH}-SNAPSHOT"
+          VERSION="${M}.${N}.${P}-${HASH}-SNAPSHOT"
           echo "snapshot_version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "Computed snapshot version: ${VERSION} (bump: ${BUMP}, prev: ${PREV_TAG})"
+          echo "Computed snapshot version: ${VERSION} (bump: ${BUMP}, prev: ${{ steps.compute.outputs.prev_tag }})"
 
   build-and-publish-snapshot:
     needs: compute-snapshot-version
