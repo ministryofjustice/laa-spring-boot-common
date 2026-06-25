@@ -14,7 +14,7 @@ jobs:
     with:
       java_version: '25'
       java_distribution: 'corretto'
-      reltype: 'snapshot'
+      release_type: 'snapshot'
       junit_results: 'false'
       junit_report: 'false'
       checkstyle_report: 'false'

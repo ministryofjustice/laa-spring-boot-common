@@ -5,7 +5,7 @@ on:
     branches: [ main ]
   workflow_dispatch:
     inputs:
-      reltype:
+      release_type:
         type: choice
         required: true
         default: "auto"
@@ -22,7 +22,7 @@ jobs:
       java_version: '25'
       java_distribution: 'corretto'
       # 'auto' = empty string → shared workflow auto-detects from conventional commits
-      reltype: ${{ inputs.reltype != 'auto' && inputs.reltype || '' }}
+      release_type: ${{ inputs.release_type != 'auto' && inputs.release_type || '' }}
       junit_results: 'false'
       junit_report: 'false'
       checkstyle_report: 'false'
