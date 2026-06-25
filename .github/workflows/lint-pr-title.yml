@@ -8,6 +8,7 @@ on:
 jobs:
   lint-pr-title:
     runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]'
     permissions:
       pull-requests: read
     steps:
