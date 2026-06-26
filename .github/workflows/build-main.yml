@@ -1,4 +1,4 @@
-name: Pipeline: main
+name: Build main
 
 on:
   push:
