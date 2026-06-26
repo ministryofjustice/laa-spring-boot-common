@@ -7,4 +7,4 @@ on:
 
 jobs:
   lint-pr-title:
-    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/lint-pr-title.yml@chore/LJCP-27_release_plugin # TODO: pin to SHA on merge
+    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/lint-pr-title.yml@4daa796eff475c7a107e17daf4e4882b8a1b949b
