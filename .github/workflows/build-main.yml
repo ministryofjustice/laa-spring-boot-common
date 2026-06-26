@@ -1,28 +1,34 @@
-name: Build main and spring3
+name: Pipeline: main
 
 on:
-  pull_request:
-    branches: [ main, spring3 ]
-    types: [ closed ]
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      release_type:
+        type: choice
+        required: true
+        default: "auto"
+        description: "Release type"
+        options: [ "auto", "none", "patch", "minor", "major" ]
 
 jobs:
-  build-and-publish-release:
-    if: ${{ github.event.pull_request.merged == true }}
-    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@a5b870c152d0bc4a7f67a23f2c226868f94d7041 # v2.2.2
+  release:
+    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@4daa796eff475c7a107e17daf4e4882b8a1b949b # v2.3.0
     permissions:
       contents: write
       packages: write
     with:
       java_version: '25'
       java_distribution: 'corretto'
-      create_tag: 'true'
+      # 'auto' = empty string → shared workflow auto-detects from conventional commits
+      release_type: ${{ inputs.release_type != 'auto' && inputs.release_type || '' }}
       junit_results: 'false'
       junit_report: 'false'
       checkstyle_report: 'false'
       jacoco_coverage_report: 'false'
-      github_bot_username: 'laa-ccms-caab-service'
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}
       github_app_id: ${{ vars.LAA_CCMS_CAAB_SERVICE_APP_ID }}
       github_app_private_key: ${{ secrets.LAA_CCMS_CAAB_SERVICE_KEY }}
-      github_app_organisation: 'ministryofjustice'
+      github_app_organisation: ministryofjustice

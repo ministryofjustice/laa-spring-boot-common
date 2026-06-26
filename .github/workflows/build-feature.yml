@@ -7,15 +7,14 @@ on:
 
 jobs:
   build-and-publish-snapshot:
-    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@a5b870c152d0bc4a7f67a23f2c226868f94d7041 # v2.2.2
+    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@4daa796eff475c7a107e17daf4e4882b8a1b949b # v2.3.0
     permissions:
       contents: write
       packages: write
     with:
       java_version: '25'
       java_distribution: 'corretto'
-      publish_package: 'true'
-      is_snapshot: 'true'
+      release_type: 'snapshot'
       junit_results: 'false'
       junit_report: 'false'
       checkstyle_report: 'false'
