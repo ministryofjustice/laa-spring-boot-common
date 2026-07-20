@@ -48,6 +48,38 @@ ext.sonatypeCredentialsPresent = providers.provider {
     (findProperty("sonatypeUsername") ?: System.getenv("SONATYPE_USERNAME")) &&
             (findProperty("sonatypePassword") ?: System.getenv("SONATYPE_PASSWORD"))
 }
+ext.isPluginMarkerPublication = { publication ->
+    publication.name.endsWith("PluginMarkerMaven")
+}
+
+def verifySonatypePublications = tasks.register("verifySonatypePublications") {
+    group = "publishing"
+    description = "Checks that every Sonatype publication is in the verified Maven Central namespace."
+
+    doLast {
+        def invalidPublications = subprojects.collectMany { subproject ->
+            def publishing = subproject.extensions.findByType(PublishingExtension)
+            if (publishing == null) {
+                return []
+            }
+
+            publishing.publications.withType(MavenPublication)
+                    .findAll { !rootProject.ext.isPluginMarkerPublication(it) }
+                    .findAll {
+                        it.groupId != rootProject.ext.mavenCentralGroup &&
+                                !it.groupId.startsWith("${rootProject.ext.mavenCentralGroup}.")
+                    }
+                    .collect { "${subproject.path}:${it.name} (${it.groupId}:${it.artifactId})" }
+        }
+
+        if (!invalidPublications.isEmpty()) {
+            throw new GradleException(
+                    "Publications outside the verified Maven Central namespace:\n" +
+                            invalidPublications.collect { " - ${it}" }.join("\n")
+            )
+        }
+    }
+}
 
 subprojects {
     group = rootProject.ext.mavenCentralGroup
@@ -122,7 +154,16 @@ subprojects {
 
     tasks.withType(PublishToMavenRepository).configureEach {
         onlyIf {
-            repository.name != "sonatype" || rootProject.ext.sonatypeCredentialsPresent.get()
+            if (repository.name != "sonatype") {
+                return true
+            }
+
+            // Gradle marker publications use the plugin ID as their group ID. The existing
+            // uk.gov.laa.* plugin IDs are outside our verified Maven Central namespace, so
+            // publishing those markers is forbidden by Sonatype. Consumers resolve the
+            // implementation modules through pluginManagement.useModule (see README.md).
+            !rootProject.ext.isPluginMarkerPublication(publication) &&
+                    rootProject.ext.sonatypeCredentialsPresent.get()
         }
     }
 
@@ -131,5 +172,9 @@ subprojects {
             logger.lifecycle("Published Maven artifact: " +
                     "${publication.groupId}:${publication.artifactId}:${publication.version}")
         }
+    }
+
+    tasks.matching { it.name == "publishToSonatype" }.configureEach {
+        dependsOn(verifySonatypePublications)
     }
 }

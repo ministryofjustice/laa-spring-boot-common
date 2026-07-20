@@ -1,9 +1,8 @@
 name: Build feature
 
 on:
-  push:
-    branches-ignore:
-      - main
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build-and-publish-snapshot:
