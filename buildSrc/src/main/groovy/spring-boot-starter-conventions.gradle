@@ -2,8 +2,6 @@ plugins {
     id 'java-library'
 }
 
-group = 'uk.gov.laa.springboot'
-
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(javaVersion))
 }

@@ -2,8 +2,6 @@ plugins {
     id 'java-platform'
 }
 
-group = 'uk.gov.laa.springboot'
-
 javaPlatform {
     allowDependencies()
 }
