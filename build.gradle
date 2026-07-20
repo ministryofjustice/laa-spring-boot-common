@@ -39,6 +39,16 @@ nexusPublishing {
     })
 }
 
+// Whether Sonatype credentials are actually available in this build's environment.
+// The shared laa-ccms-common-workflows pipeline runs a generic './gradlew publish' step
+// (for build/versioning purposes) without these credentials; only our dedicated
+// publish-maven-central(-snapshot) CI job supplies them. Everywhere else, publishing to
+// Sonatype (and signing, which only Sonatype needs) should be a silent no-op, not a failure.
+ext.sonatypeCredentialsPresent = providers.provider {
+    (findProperty("sonatypeUsername") ?: System.getenv("SONATYPE_USERNAME")) &&
+            (findProperty("sonatypePassword") ?: System.getenv("SONATYPE_PASSWORD"))
+}
+
 subprojects {
     group = rootProject.ext.mavenCentralGroup
 
@@ -104,6 +114,16 @@ subprojects {
 
         useInMemoryPgpKeys(signingKey, signingPassword)
         sign publishing.publications
+
+        // Only require (and error on missing) a signatory when we're actually publishing to
+        // Sonatype; otherwise skip signing silently (see sonatypeCredentialsPresent above).
+        required = { rootProject.ext.sonatypeCredentialsPresent.get() }
+    }
+
+    tasks.withType(PublishToMavenRepository).configureEach {
+        onlyIf {
+            repository.name != "sonatype" || rootProject.ext.sonatypeCredentialsPresent.get()
+        }
     }
 
     tasks.withType(AbstractPublishToMaven).configureEach {
