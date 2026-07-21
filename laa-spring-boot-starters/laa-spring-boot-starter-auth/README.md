@@ -12,7 +12,7 @@ To enable this in your application, declare the following:
 
 ```groovy
 dependencies {
-    implementation 'uk.gov.laa.springboot:laa-spring-boot-starter-auth'
+    implementation 'uk.gov.justice.service.laa:laa-spring-boot-starter-auth'
 }
 ```
 

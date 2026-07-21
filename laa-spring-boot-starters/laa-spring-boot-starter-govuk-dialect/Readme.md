@@ -13,7 +13,7 @@ reducing repetitive boilerplate code and ensuring consistency.
 To use this custom Thymeleaf dialect, add the following dependency to your `build.gradle` file:
 
 ```groovy
-implementation 'uk.gov.laa.springboot:laa-spring-boot-starter-govuk-dialect'
+implementation 'uk.gov.justice.service.laa:laa-spring-boot-starter-govuk-dialect'
 ```
 
 ---
@@ -142,4 +142,3 @@ Add the `moj:datepicker` tag to your Thymeleaf template with the required parame
     dataMaxDate="2025-12-31"
     value="2024-01-01">
 </moj:datepicker>
-

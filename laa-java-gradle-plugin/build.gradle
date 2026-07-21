@@ -10,8 +10,8 @@ dependencies {
 
 gradlePlugin {
     plugins {
-        simplePlugin {
-            id = 'uk.gov.laa.java.laa-java-gradle-plugin'
+        laaJavaPlugin {
+            id = 'uk.gov.justice.service.laa.laa-java-gradle-plugin'
             implementationClass = 'uk.gov.laa.gradle.LaaJavaGradlePlugin'
         }
     }

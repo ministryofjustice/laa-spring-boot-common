@@ -9,7 +9,7 @@ and a set of starters that provide individual pieces of common functionality.
 
 - `main`: Spring Boot 4.x / Jackson 3 line; use releases from this branch if your service is on Boot 4.
 - `spring3`: Spring Boot 3.x / Jackson 2 line; pin plugin and starter versions from releases built off this branch if you have not upgraded yet.
-- Avoid mixing artifacts across the two lines; pick the branch that matches your Spring Boot major version when selecting versions from GitHub Packages.
+- Avoid mixing artifacts across the two lines; pick the release line from Maven Central that matches your Spring Boot major version.
 
 ## Available Plugins
 
@@ -29,7 +29,7 @@ In addition to this an `integrationTest` gradle task will be provided, that will
 
 ```groovy
 plugins {
-    id 'uk.gov.laa.java.laa-java-gradle-plugin' version '<latest>'
+    id 'uk.gov.justice.service.laa.laa-java-gradle-plugin' version '<latest>'
 }
 ```
 
@@ -43,7 +43,7 @@ A SpringBoot convention plugin for LAA projects. All of the above + SpringBoot d
 
 ```groovy
 plugins {
-    id 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin' version '<latest>'
+    id 'uk.gov.justice.service.laa.laa-spring-boot-gradle-plugin' version '<latest>'
 }
 ```
 
@@ -54,7 +54,7 @@ Use this if you want both SQL and controller generation explicitly.
 
 ```groovy
 plugins {
-    id 'uk.gov.laa.springboot.laa-spring-boot-starter-export-codegen-gradle-plugin' version '<latest>'
+    id 'uk.gov.justice.service.laa.laa-spring-boot-starter-export-codegen-gradle-plugin' version '<latest>'
 }
 ```
 
@@ -71,25 +71,20 @@ To configure the plugin repository, add this **to the top** your project's `sett
 
 ```groovy
 pluginManagement {
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id == 'uk.gov.laa.java.laa-java-gradle-plugin') {
-                useModule("uk.gov.justice.service.laa:laa-java-gradle-plugin:${requested.version}")
-            }
-            if (requested.id.id == 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin' ||
-                    requested.id.id == 'uk.gov.laa.springboot.laa-spring-boot-starter-export-codegen-gradle-plugin') {
-                useModule("uk.gov.justice.service.laa:laa-spring-boot-gradle-plugin:${requested.version}")
+    repositories {
+        maven {
+            url = uri('https://central.sonatype.com/repository/maven-snapshots/')
+            mavenContent {
+                snapshotsOnly()
             }
         }
-    }
-    repositories {
         mavenCentral()
         gradlePluginPortal()
     }
 }
 ```
 
-This tells Gradle where to search for plugins. The plugin IDs are unchanged, but the implementation artifacts are published under the Maven Central group `uk.gov.justice.service.laa`.
+The Sonatype snapshots repository is only required for snapshot versions. Releases resolve from Maven Central.
 
 ### Applying the Plugin
 
@@ -97,7 +92,7 @@ In your (root) `build.gradle`, add the plugin dependency via the Gradle Plugin D
 
 ```groovy
 plugins {
-    id 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin' version '<LATEST>' apply false
+    id 'uk.gov.justice.service.laa.laa-spring-boot-gradle-plugin' version '<LATEST>' apply false
 }
 ```
 
@@ -106,7 +101,7 @@ Where `<LATEST>` is the latest **release** version published for `uk.gov.justice
 If this is not a multi-project build, you can remove `apply false` to apply the plugin at the root level. Otherwise, in your subprojects where the plugin is required you will need to apply the plugin:
 
 ```groovy
-apply plugin: 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin'
+apply plugin: 'uk.gov.justice.service.laa.laa-spring-boot-gradle-plugin'
 ```
 
 ## Available Starters
@@ -127,7 +122,7 @@ Follow the [contribution guide](./CONTRIBUTING.md) to make code changes.
 ## Downstream bump automation
 
 This repository includes a workflow that opens downstream PRs to bump:
-`uk.gov.laa.springboot.laa-spring-boot-gradle-plugin`
+`uk.gov.justice.service.laa.laa-spring-boot-gradle-plugin`
 
 The update step scans Gradle build files recursively in the downstream repository,
 including nested module paths such as `some-module/build.gradle` and Kotlin DSL variants (`*.gradle.kts`).

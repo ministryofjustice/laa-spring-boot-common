@@ -13,7 +13,7 @@ types (e.g., `java.util.UUID`) to avoid illegal reflection.
 
 ```groovy
 dependencies {
-    implementation "uk.gov.laa.springboot:laa-spring-boot-starter-sql-scanner"
+    implementation "uk.gov.justice.service.laa:laa-spring-boot-starter-sql-scanner"
     implementation "org.springframework.boot:spring-boot-starter-aop" // required for aspects
 }
 ```

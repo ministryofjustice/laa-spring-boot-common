@@ -28,12 +28,12 @@ test {
 
 gradlePlugin {
     plugins {
-        simplePlugin {
-            id = 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin'
+        laaSpringBootPlugin {
+            id = 'uk.gov.justice.service.laa.laa-spring-boot-gradle-plugin'
             implementationClass = 'uk.gov.laa.gradle.springboot.LaaSpringBootGradlePlugin'
         }
         exportCodegenPlugin {
-            id = 'uk.gov.laa.springboot.laa-spring-boot-starter-export-codegen-gradle-plugin'
+            id = 'uk.gov.justice.service.laa.laa-spring-boot-starter-export-codegen-gradle-plugin'
             implementationClass = 'uk.gov.laa.gradle.springboot.starter.export.LaaSpringBootStarterExportCodegenGradlePlugin'
         }
     }
