@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-and-publish-snapshot:
-    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@f57fa385713ae14a4bf0b7f613d13953d8637e2e
+    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@3064a59ebe41513997eb533f466acdc6e99d5c1b
     permissions:
       contents: write
       packages: write
