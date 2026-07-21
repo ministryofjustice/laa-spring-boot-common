@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-and-publish-snapshot:
-    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@4daa796eff475c7a107e17daf4e4882b8a1b949b # v2.3.0
+    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@f57fa385713ae14a4bf0b7f613d13953d8637e2e
     permissions:
       contents: write
       packages: write
@@ -20,41 +20,7 @@ jobs:
       jacoco_coverage_report: 'false'
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}
-
-  publish-maven-central-snapshot:
-    needs: build-and-publish-snapshot
-    if: ${{ needs.build-and-publish-snapshot.outputs.published_artifact_version != '' && contains(needs.build-and-publish-snapshot.outputs.published_artifact_version, 'SNAPSHOT') }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    env:
-      VERSION: ${{ needs.build-and-publish-snapshot.outputs.published_artifact_version }}
-      SONATYPE_USERNAME: ${{ secrets.sonatypeUsername || secrets.SONATYPE_USERNAME }}
-      SONATYPE_PASSWORD: ${{ secrets.sonatypePassword || secrets.SONATYPE_PASSWORD }}
-      GPG_SIGNING_KEY: ${{ secrets.signingKey || secrets.GPG_SIGNING_KEY }}
-      GPG_PASSPHRASE: ${{ secrets.signingPassword || secrets.GPG_PASSPHRASE }}
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-
-      - name: Set up JDK 25
-        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
-        with:
-          java-version: '25'
-          distribution: 'corretto'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0
-
-      - name: Check Sonatype credentials
-        shell: bash
-        run: |
-          test -n "$SONATYPE_USERNAME"
-          test -n "$SONATYPE_PASSWORD"
-          test -n "$GPG_SIGNING_KEY"
-          test -n "$GPG_PASSPHRASE"
-
-      - name: Publish Gradle plugin snapshots to Sonatype
-        run: >
-          ./gradlew
-          publishToSonatype
-          -Pversion="${VERSION}"
+      sonatype_username: ${{ secrets.sonatypeUsername || secrets.SONATYPE_USERNAME }}
+      sonatype_password: ${{ secrets.sonatypePassword || secrets.SONATYPE_PASSWORD }}
+      gpg_signing_key: ${{ secrets.signingKey || secrets.GPG_SIGNING_KEY }}
+      gpg_passphrase: ${{ secrets.signingPassword || secrets.GPG_PASSPHRASE }}
