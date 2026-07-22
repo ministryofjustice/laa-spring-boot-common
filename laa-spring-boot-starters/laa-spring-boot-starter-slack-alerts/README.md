@@ -8,7 +8,7 @@ Simplifies sending rich Slack notifications from Spring Boot applications via an
 
 ```groovy
 dependencies {
-    implementation "uk.gov.laa.springboot:laa-spring-boot-starter-slack-alerts"
+    implementation "uk.gov.justice.service.laa:laa-spring-boot-starter-slack-alerts"
 }
 ```
 

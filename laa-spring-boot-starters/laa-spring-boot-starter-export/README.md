@@ -10,7 +10,7 @@ Provides a supported CSV export framework for LAA Spring Boot services, includin
 
 ```groovy
 dependencies {
-    implementation "uk.gov.laa.springboot:laa-spring-boot-starter-export"
+    implementation "uk.gov.justice.service.laa:laa-spring-boot-starter-export"
 }
 ```
 
@@ -72,8 +72,8 @@ Example definition files are available in:
 
 SQL code generation is automatically enabled when both are true:
 
-- your project applies `uk.gov.laa.springboot.laa-spring-boot-gradle-plugin`
-- your project depends on `uk.gov.laa.springboot:laa-spring-boot-starter-export`
+- your project applies `uk.gov.justice.service.laa.laa-spring-boot-gradle-plugin`
+- your project depends on `uk.gov.justice.service.laa:laa-spring-boot-starter-export`
 
 This provides:
 

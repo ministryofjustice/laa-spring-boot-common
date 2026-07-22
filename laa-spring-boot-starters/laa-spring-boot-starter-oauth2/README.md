@@ -13,7 +13,7 @@ roles and scopes that Entra is configured to issue in access tokens.
 
 ```groovy
 dependencies {
-    implementation 'uk.gov.laa.springboot:laa-spring-boot-starter-oauth2'
+    implementation 'uk.gov.justice.service.laa:laa-spring-boot-starter-oauth2'
 }
 ```
 

@@ -14,7 +14,7 @@ The starter auto-configures:
 ### 1. Declare dependency
 ```groovy
 dependencies {
-    implementation "uk.gov.laa.springboot:laa-spring-boot-starter-cookie-consent"
+    implementation "uk.gov.justice.service.laa:laa-spring-boot-starter-cookie-consent"
 }
 ```
 

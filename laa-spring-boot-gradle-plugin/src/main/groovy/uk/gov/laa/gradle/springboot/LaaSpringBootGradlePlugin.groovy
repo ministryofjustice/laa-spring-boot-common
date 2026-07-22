@@ -10,7 +10,7 @@ import uk.gov.laa.gradle.springboot.starter.export.SpringBootStarterExportCodege
 
 class LaaSpringBootGradlePlugin implements Plugin<Project> {
 
-  public static final String BOM_COORDINATES = "uk.gov.laa.springboot:laa-spring-boot-dependencies:" +
+  public static final String BOM_COORDINATES = "uk.gov.justice.service.laa:laa-spring-boot-dependencies:" +
           LaaSpringBootGradlePlugin.class.getPackage().getImplementationVersion()
 
   @Override
@@ -49,6 +49,7 @@ class LaaSpringBootGradlePlugin implements Plugin<Project> {
       return false
     }
     return dep.name == 'laa-spring-boot-starter-export'
-        && (dep.group == null || dep.group == 'uk.gov.laa.springboot')
+        && (dep.group == null
+            || dep.group == 'uk.gov.justice.service.laa')
   }
 }

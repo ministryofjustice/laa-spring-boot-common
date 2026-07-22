@@ -1,7 +1,11 @@
 plugins {
     id 'checkstyle'
     id 'com.adarshr.test-logger' version '4.0.0'
+    id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
 }
+
+ext.mavenCentralGroup = "uk.gov.justice.service.laa"
+group = ext.mavenCentralGroup
 
 // Set Global Versions
 
@@ -21,8 +25,60 @@ ext.checkstyleVersion = "10.26.0"
 // com.adarshr:gradle-test-logger-plugin
 ext.testLoggerPluginVersion = "4.0.0"
 
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
+            username = findProperty("sonatypeUsername") ?: System.getenv("SONATYPE_USERNAME")
+            password = findProperty("sonatypePassword") ?: System.getenv("SONATYPE_PASSWORD")
+        }
+    }
+    useStaging.set(provider {
+        !version.toString().endsWith("-SNAPSHOT")
+    })
+}
+
+// Whether Sonatype credentials are actually available in this build's environment.
+// The shared laa-ccms-common-workflows pipeline runs a generic './gradlew publish' step
+// (for build/versioning purposes) without these credentials; only our dedicated
+// publish-maven-central(-snapshot) CI job supplies them. Everywhere else, publishing to
+// Sonatype (and signing, which only Sonatype needs) should be a silent no-op, not a failure.
+ext.sonatypeCredentialsPresent = providers.provider {
+    (findProperty("sonatypeUsername") ?: System.getenv("SONATYPE_USERNAME")) &&
+            (findProperty("sonatypePassword") ?: System.getenv("SONATYPE_PASSWORD"))
+}
+def verifySonatypePublications = tasks.register("verifySonatypePublications") {
+    group = "publishing"
+    description = "Checks that every Sonatype publication is in the verified Maven Central namespace."
+
+    doLast {
+        def invalidPublications = subprojects.collectMany { subproject ->
+            def publishing = subproject.extensions.findByType(PublishingExtension)
+            if (publishing == null) {
+                return []
+            }
+
+            publishing.publications.withType(MavenPublication)
+                    .findAll {
+                        it.groupId != rootProject.ext.mavenCentralGroup &&
+                                !it.groupId.startsWith("${rootProject.ext.mavenCentralGroup}.")
+                    }
+                    .collect { "${subproject.path}:${it.name} (${it.groupId}:${it.artifactId})" }
+        }
+
+        if (!invalidPublications.isEmpty()) {
+            throw new GradleException(
+                    "Publications outside the verified Maven Central namespace:\n" +
+                            invalidPublications.collect { " - ${it}" }.join("\n")
+            )
+        }
+    }
+}
 
 subprojects {
+    group = rootProject.ext.mavenCentralGroup
+
     // See https://github.com/gradle/gradle/issues/22317
     tasks.withType(Test).configureEach {
         it.jvmArgs = ["--add-opens=java.base/java.lang=ALL-UNNAMED"]
@@ -33,27 +89,82 @@ subprojects {
         gradlePluginPortal()
     }
 
+    // All publishable modules now publish only to Maven Central (via the nexus-publish-plugin's
+    // 'sonatype' repository, configured at the root). GitHub Packages publishing has been removed.
     apply plugin: 'maven-publish'
+    apply plugin: 'signing'
     apply plugin: 'com.adarshr.test-logger'
 
-    publishing.repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/ministryofjustice/${rootProject.name}")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
+    plugins.withType(JavaPlugin).configureEach {
+        java {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
+
+    // Maven Central requires a javadoc jar; relax strict HTML doclint so that
+    // pre-existing (non-standard) Javadoc comments don't fail the build.
+    tasks.withType(Javadoc).configureEach {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+
+    publishing.publications.withType(MavenPublication).configureEach {
+        pom {
+            name = "${groupId}:${artifactId}"
+            description = "Common Java and Spring Boot Gradle build logic for Legal Aid Agency applications."
+            url = "https://github.com/ministryofjustice/laa-spring-boot-common"
+            licenses {
+                license {
+                    name = "MIT License"
+                    url = "https://opensource.org/license/mit"
+                }
+            }
+            developers {
+                developer {
+                    id = "ministryofjustice"
+                    name = "Ministry of Justice"
+                    organization = "Ministry of Justice"
+                    organizationUrl = "https://www.gov.uk/government/organisations/ministry-of-justice"
+                }
+            }
+            scm {
+                connection = "scm:git:https://github.com/ministryofjustice/laa-spring-boot-common.git"
+                developerConnection = "scm:git:ssh://git@github.com:ministryofjustice/laa-spring-boot-common.git"
+                url = "https://github.com/ministryofjustice/laa-spring-boot-common"
             }
         }
     }
 
-    tasks.withType(AbstractPublishToMaven).tap {
-        configureEach {
-            doLast {
-                logger.lifecycle("Published Maven artifact: " +
-                        "${publication.groupId}:${publication.artifactId}:${publication.version}")
+    signing {
+        def signingKey = findProperty("signingKey") ?: System.getenv("GPG_SIGNING_KEY")
+        def signingPassword = findProperty("signingPassword") ?: System.getenv("GPG_PASSPHRASE")
+
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign publishing.publications
+
+        // Only require (and error on missing) a signatory when we're actually publishing to
+        // Sonatype; otherwise skip signing silently (see sonatypeCredentialsPresent above).
+        required = { rootProject.ext.sonatypeCredentialsPresent.get() }
+    }
+
+    tasks.withType(PublishToMavenRepository).configureEach {
+        onlyIf {
+            if (repository.name != "sonatype") {
+                return true
             }
+
+            rootProject.ext.sonatypeCredentialsPresent.get()
         }
+    }
+
+    tasks.withType(AbstractPublishToMaven).configureEach {
+        doLast {
+            logger.lifecycle("Published Maven artifact: " +
+                    "${publication.groupId}:${publication.artifactId}:${publication.version}")
+        }
+    }
+
+    tasks.matching { it.name == "publishToSonatype" }.configureEach {
+        dependsOn(verifySonatypePublications)
     }
 }
-

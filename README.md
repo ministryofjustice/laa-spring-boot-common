@@ -9,7 +9,7 @@ and a set of starters that provide individual pieces of common functionality.
 
 - `main`: Spring Boot 4.x / Jackson 3 line; use releases from this branch if your service is on Boot 4.
 - `spring3`: Spring Boot 3.x / Jackson 2 line; pin plugin and starter versions from releases built off this branch if you have not upgraded yet.
-- Avoid mixing artifacts across the two lines; pick the branch that matches your Spring Boot major version when selecting versions from GitHub Packages.
+- Avoid mixing artifacts across the two lines; pick the release line from Maven Central that matches your Spring Boot major version.
 
 ## Available Plugins
 
@@ -29,7 +29,7 @@ In addition to this an `integrationTest` gradle task will be provided, that will
 
 ```groovy
 plugins {
-    id 'uk.gov.laa.java.laa-java-gradle-plugin' version '<latest>'
+    id 'uk.gov.justice.service.laa.laa-java-gradle-plugin' version '<latest>'
 }
 ```
 
@@ -43,7 +43,7 @@ A SpringBoot convention plugin for LAA projects. All of the above + SpringBoot d
 
 ```groovy
 plugins {
-    id 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin' version '<latest>'
+    id 'uk.gov.justice.service.laa.laa-spring-boot-gradle-plugin' version '<latest>'
 }
 ```
 
@@ -54,7 +54,7 @@ Use this if you want both SQL and controller generation explicitly.
 
 ```groovy
 plugins {
-    id 'uk.gov.laa.springboot.laa-spring-boot-starter-export-codegen-gradle-plugin' version '<latest>'
+    id 'uk.gov.justice.service.laa.laa-spring-boot-starter-export-codegen-gradle-plugin' version '<latest>'
 }
 ```
 
@@ -63,7 +63,7 @@ plugins {
 
 ## Using the Plugins
 
-For the plugins to work in your project, you will need to configure the plugin repository and provide your GitHub credentials in your local `gradle.properties` file.
+For the plugins to work in your project, configure Maven Central as a plugin repository.
 
 ### Define the Plugin repository
 
@@ -73,36 +73,18 @@ To configure the plugin repository, add this **to the top** your project's `sett
 pluginManagement {
     repositories {
         maven {
-            name = "gitHubPackages"
-            url = uri('https://maven.pkg.github.com/ministryofjustice/laa-spring-boot-common')
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")?.trim() ?: settings.ext.find('project.ext.gitPackageUser')
-                password = System.getenv("GITHUB_TOKEN")?.trim() ?: settings.ext.find('project.ext.gitPackageKey')
+            url = uri('https://central.sonatype.com/repository/maven-snapshots/')
+            mavenContent {
+                snapshotsOnly()
             }
         }
-        maven { url = uri("https://plugins.gradle.org/m2/") }
+        mavenCentral()
         gradlePluginPortal()
     }
 }
 ```
 
-This tells Gradle where to search for plugins. The plugins in this repository are published to GitHub packages, under the same namespace. For further information see [Working with the Gradle registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry).
-
-### Provide your repository credentials
-
-Your credentials to the GitHub Packages repository need to be defined in your local `gradle.properties` file, which you can find in your home directory, e.g. `~/.gradle/gradle.properties`.
-
-Before doing this, ensure you have [created a personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)
-in GitHub and configured it with `repo`, `write:packages` and `read:packages` access. The token must also be [authorized with (MoJ) SSO](https://docs.github.com/en/enterprise-cloud@latest/authentication/authenticating-with-saml-single-sign-on/authorizing-a-personal-access-token-for-use-with-saml-single-sign-on).
-
-Once you have your personal access token, please add the following parameters to `~/.gradle/gradle.properties`:
-
-```yaml
-project.ext.gitPackageUser = <your GitHub username>
-project.ext.gitPackageKey = <your GitHub access token>
-```
-
-Do not include `'` or `"` around your username or token as these are treated literally as part of the value by gradle.
+The Sonatype snapshots repository is only required for snapshot versions. Releases resolve from Maven Central.
 
 ### Applying the Plugin
 
@@ -110,16 +92,16 @@ In your (root) `build.gradle`, add the plugin dependency via the Gradle Plugin D
 
 ```groovy
 plugins {
-    id 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin' version '<LATEST>' apply false
+    id 'uk.gov.justice.service.laa.laa-spring-boot-gradle-plugin' version '<LATEST>' apply false
 }
 ```
 
-Where `<LATEST>` is the latest **release** version found [here](https://github.com/orgs/ministryofjustice/packages?repo_name=laa-spring-boot-common).
+Where `<LATEST>` is the latest **release** version published for `uk.gov.justice.service.laa:laa-spring-boot-gradle-plugin`.
 
 If this is not a multi-project build, you can remove `apply false` to apply the plugin at the root level. Otherwise, in your subprojects where the plugin is required you will need to apply the plugin:
 
 ```groovy
-apply plugin: 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin'
+apply plugin: 'uk.gov.justice.service.laa.laa-spring-boot-gradle-plugin'
 ```
 
 ## Available Starters
@@ -140,7 +122,7 @@ Follow the [contribution guide](./CONTRIBUTING.md) to make code changes.
 ## Downstream bump automation
 
 This repository includes a workflow that opens downstream PRs to bump:
-`uk.gov.laa.springboot.laa-spring-boot-gradle-plugin`
+`uk.gov.justice.service.laa.laa-spring-boot-gradle-plugin`
 
 The update step scans Gradle build files recursively in the downstream repository,
 including nested module paths such as `some-module/build.gradle` and Kotlin DSL variants (`*.gradle.kts`).
