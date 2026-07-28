@@ -106,6 +106,7 @@ subprojects {
     // pre-existing (non-standard) Javadoc comments don't fail the build.
     tasks.withType(Javadoc).configureEach {
         options.addStringOption('Xdoclint:none', '-quiet')
+        options.addBooleanOption('-no-fonts', true)
     }
 
     publishing.publications.withType(MavenPublication).configureEach {
