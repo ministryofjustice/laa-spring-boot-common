@@ -1,5 +1,9 @@
 [![Ministry of Justice Repository Compliance Badge](https://github-community.service.justice.gov.uk/repository-standards/api/laa-spring-boot-common/badge)](https://github-community.service.justice.gov.uk/repository-standards/laa-spring-boot-common)
 
+## Useful links
+
+- [LAA Java Community Technical Guidance](https://ministryofjustice.github.io/laa-java-community-technical-guidance/)
+
 # LAA Spring Boot Common
 
 Provides 2 plugins that configure plugins and apply common build logic,
