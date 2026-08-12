@@ -5,6 +5,9 @@
 Provides 2 plugins that configure plugins and apply common build logic,
 and a set of starters that provide individual pieces of common functionality.
 
+## Useful links
+- [LAA Java Community Technical Guidance](https://ministryofjustice.github.io/laa-java-community-technical-guidance/)
+
 ## Branch compatibility
 
 - `main`: Spring Boot 4.x / Jackson 3 line; use releases from this branch if your service is on Boot 4.
