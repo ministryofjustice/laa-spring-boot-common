@@ -11,7 +11,7 @@ group = ext.mavenCentralGroup
 
 // org.springframework.boot:spring-boot-gradle-plugin
 // org.springframework.boot:spring-boot-dependencies
-ext.springBootVersion = "4.1.0"
+ext.springBootVersion = "4.1.1"
 
 // io.spring.gradle:dependency-management-plugin
 ext.springBootDependencyManagementPluginVersion = "1.1.7"
