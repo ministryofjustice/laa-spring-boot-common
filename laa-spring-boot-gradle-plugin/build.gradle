@@ -15,9 +15,9 @@ dependencies {
     implementation project(':laa-java-gradle-plugin')
     implementation "org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion"
     implementation "io.spring.gradle:dependency-management-plugin:$springBootDependencyManagementPluginVersion"
-    implementation 'org.yaml:snakeyaml:2.6'
+    implementation 'org.yaml:snakeyaml:2.7'
 
-    testImplementation platform('org.junit:junit-bom:6.1.2')
+    testImplementation platform('org.junit:junit-bom:6.1.3')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
