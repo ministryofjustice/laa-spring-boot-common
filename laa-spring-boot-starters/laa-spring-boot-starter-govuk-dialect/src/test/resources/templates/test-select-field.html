@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:govuk="http://www.thymeleaf.org" xmlns:th="http://www.thymeleaf.org" lang="EN">
+<body>
+<form th:object="${form}">
+  <govuk:select field="officeId" label="Office" th:items="${offices}" itemValue="id" itemLabel="name"
+                labelHeading="h2" labelClasses="govuk-label--m" placeholder="Please select"/>
+  <govuk:select field="address.country" label="Country" th:items="${countries}" placeholder="Please select"/>
+  <govuk:select field="relationship" id="rel" label="Relationship" th:items="${relationships}"
+                errorMessage="Overridden message"/>
+</form>
+</body>
+</html>
