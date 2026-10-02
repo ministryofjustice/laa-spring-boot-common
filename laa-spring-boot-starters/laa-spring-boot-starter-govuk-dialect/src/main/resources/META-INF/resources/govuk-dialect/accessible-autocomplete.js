@@ -14,6 +14,16 @@
     })[0];
   }
 
+  // Keeps the current option when its text still matches, so duplicate labels keep their value.
+  function syncToText(select, text) {
+    var current = select.options[select.selectedIndex];
+    if (current && current.value && optionText(current) === text) {
+      return;
+    }
+    var match = findOption(select, text);
+    setValue(select, match ? match.value : '');
+  }
+
   function escapeHtml(text) {
     var element = document.createElement('div');
     element.textContent = text;
@@ -46,23 +56,61 @@
   function enhance(select) {
     var id = select.id;
     var describedBy = (select.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean);
+    var options = [].filter.call(select.options, function (option) {
+      return option.value;
+    }).map(function (option) {
+      return { value: option.value, text: optionText(option) };
+    });
+    var explicit = false;
 
     window.accessibleAutocomplete.enhanceSelectElement({
       selectElement: select,
       showAllValues: select.getAttribute('data-show-all-values') === 'true',
       // Keeps the placeholder text out of the input.
       defaultValue: '',
-      // The library renders suggestions as HTML; option text must stay text.
-      templates: { suggestion: escapeHtml },
+      // Options are objects so a picked option keeps its value.
+      source: function (query, populate) {
+        var lower = query.toLowerCase();
+        populate(options.filter(function (option) {
+          return option.text.toLowerCase().indexOf(lower) !== -1;
+        }));
+      },
+      templates: {
+        inputValue: function (option) {
+          return option ? option.text : '';
+        },
+        // The library renders suggestions as HTML; option text must stay text.
+        suggestion: function (option) {
+          return option ? escapeHtml(option.text) : '';
+        }
+      },
       inputClasses: select.classList.contains('govuk-select--error') ? 'govuk-input--error' : null,
-      // Clears the select when the text matches no option, so a stale value isn't submitted.
+      // A click or Enter takes the option picked; a blur only follows the text.
       onConfirm: function (confirmed) {
+        if (confirmed && explicit) {
+          setValue(select, confirmed.value);
+          return;
+        }
         var input = document.getElementById(id);
-        var text = confirmed !== undefined ? confirmed : (input ? input.value : '');
-        var match = findOption(select, text);
-        setValue(select, match ? match.value : '');
+        syncToText(select, confirmed ? confirmed.text : (input ? input.value : ''));
       }
     });
+
+    var container = select.previousElementSibling;
+    var markExplicit = function () {
+      explicit = true;
+      setTimeout(function () { explicit = false; }, 0);
+    };
+    container.addEventListener('click', function (event) {
+      if (event.target.closest('li')) {
+        markExplicit();
+      }
+    }, true);
+    container.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || (event.key === ' ' && event.target.tagName === 'LI')) {
+        markExplicit();
+      }
+    }, true);
 
     var input = document.getElementById(id);
     if (input) {
@@ -71,6 +119,12 @@
       }
       if (describedBy.length) {
         keepDescribedBy(input, describedBy);
+      }
+      // Enter can submit without a confirm or blur, so sync the typed text first.
+      if (select.form) {
+        select.form.addEventListener('submit', function () {
+          syncToText(select, input.value);
+        });
       }
     }
     select.setAttribute('data-autocomplete-enhanced', 'true');
