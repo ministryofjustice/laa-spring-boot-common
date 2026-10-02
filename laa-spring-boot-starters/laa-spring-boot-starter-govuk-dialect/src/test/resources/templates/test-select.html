@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:govuk="http://www.thymeleaf.org" lang="EN">
+<head>
+    <title>Select Test</title>
+</head>
+<body>
+
+<govuk:select id="court" label="Court" th:items="${courts}" itemValue="code"
+              itemLabel="description" placeholder="Please select" th:value="${selectedCourt}"
+              showAllValues/>
+
+<govuk:select id="country" name="address.country" label="Country" th:items="${countries}"
+              th:showAllValues="${false}"/>
+
+<govuk:select id="relationship" label="Relationship" th:items="${relationships}"
+              hint="Relationship to the client" errorMessage="Select a relationship"
+              classes="govuk-!-width-one-half" th:showAllValues="${true}"/>
+
+<govuk:select id="colour" label="Colour" th:items="${colours}" itemValue="code"
+              itemLabel="label" th:data-display-value-id="'colourDisplayValue'" disabled/>
+
+<govuk:select id="unsafe" label="Pick <one>" th:items="${unsafe}" th:value="${'a&b'}"/>
+
+<govuk:select id="nullFlags" label="Null flags" th:items="${relationships}"
+              th:disabled="${missing}" th:showAllValues="${missing}" th:hint="${missing}"/>
+
+</body>
+</html>

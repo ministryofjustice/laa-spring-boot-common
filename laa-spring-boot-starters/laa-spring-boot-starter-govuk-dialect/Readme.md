@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This project provides a custom Thymeleaf dialect to simplify the creation and customization of GOV.UK-styled buttons.
+This project provides a custom Thymeleaf dialect for GOV.UK-styled components (buttons, details, selects and the MOJ date picker).
 Using this custom dialect, developers can generate button HTML elements with the GOV.UK Design System's standards,
 reducing repetitive boilerplate code and ensuring consistency.
 
@@ -142,3 +142,77 @@ Add the `moj:datepicker` tag to your Thymeleaf template with the required parame
     dataMaxDate="2025-12-31"
     value="2024-01-01">
 </moj:datepicker>
+```
+
+### Select (accessible autocomplete) Element Tag Processor
+
+`govuk:select` renders a GOV.UK [select](https://design-system.service.gov.uk/components/select/) with label,
+hint and error message, enhanced client-side into the
+[accessible autocomplete](https://github.com/alphagov/accessible-autocomplete). Without JavaScript it is a
+plain `<select>`.
+
+#### Parameters
+
+| Parameter       | Type                     | Description                                                                 | Default |
+|-----------------|--------------------------|-----------------------------------------------------------------------------|---------|
+| `field`         | String                   | Binds to a `th:object` property like `th:field` (id, name, value, errors).  |         |
+| `id`            | String                   | Select id. Required unless `field` is set.                                  | `field` |
+| `name`          | String                   | Submitted name.                                                             | `id`    |
+| `label`         | String                   | Label text.                                                                 |         |
+| `labelClasses`  | String                   | Extra label classes, e.g. `govuk-label--m`.                                 |         |
+| `labelHeading`  | String                   | Wraps the label in a heading (`h1`–`h6`).                                   |         |
+| `hint`          | String                   | Hint text.                                                                  |         |
+| `errorMessage`  | String                   | Error message.                                                              |         |
+| `items`         | Collection, array or Map | Options. Use `th:items`. Map keys are values, map values are labels.        |         |
+| `itemValue`     | String                   | Item property or map key for the option value. Defaults to the item.        |         |
+| `itemLabel`     | String                   | Item property or map key for the option text. Defaults to the value.        |         |
+| `value`         | String                   | Selected value.                                                             |         |
+| `placeholder`   | String                   | Text for an empty first option.                                             |         |
+| `showAllValues` | Boolean                  | Show all options on click, with a dropdown arrow.                           | `false` |
+| `classes`       | String                   | Extra select classes.                                                       |         |
+| `disabled`      | Boolean                  | Disables the field.                                                         | `false` |
+| `data-*`        | String                   | Passed through to the select.                                               |         |
+
+Booleans can be bare (`showAllValues`), `"true"`/`"false"` or an expression. Explicit `id`, `name`, `value`
+and `errorMessage` override `field`. All text is HTML-escaped.
+
+#### Usage
+
+```html
+<govuk:select id="court" label="Court" th:items="${courts}" itemValue="code" itemLabel="description"
+              placeholder="Please select" th:value="${selectedCourt}" showAllValues/>
+```
+
+In a `th:object` form:
+
+```html
+<govuk:select field="relationship" th:label="#{client.relationship}" th:items="${relationships}"
+              itemValue="code" itemLabel="description" th:placeholder="#{site.select}" showAllValues/>
+```
+
+As the page heading:
+
+```html
+<govuk:select field="officeId" th:label="#{office.select}" labelHeading="h1" labelClasses="govuk-label--l"
+              th:items="${offices}" itemValue="id" itemLabel="name"/>
+```
+
+A hand-written `<select>` can opt in with `data-module="accessible-autocomplete"` and optionally
+`data-show-all-values="true"`.
+
+#### Enabling the autocomplete
+
+The starter serves `/govuk-dialect/accessible-autocomplete.js` and `/govuk-dialect/accessible-autocomplete.css`.
+Load them after the `accessible-autocomplete` library, which the application provides:
+
+```html
+<link rel="stylesheet" th:href="@{/assets/accessible-autocomplete.min.css}">
+<link rel="stylesheet" th:href="@{/govuk-dialect/accessible-autocomplete.css}">
+<script th:src="@{/assets/accessible-autocomplete.min.js}"></script>
+<script th:src="@{/govuk-dialect/accessible-autocomplete.js}"></script>
+```
+
+- With Spring Security, permit `/govuk-dialect/**`.
+- Selects are enhanced on page load. For content added later, call `window.GovUkAccessibleAutocomplete.init(element)`.
+- The script keeps the hint and error linked to the input, applies the error style, clears the select when the
+  text matches no option, and fires `change` on the select when its value changes.

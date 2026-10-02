@@ -40,4 +40,30 @@ public class ProcessorUtils {
     return resolvedAttributes;
   }
 
+  /**
+   * Like parseAttributes, but keeps values as objects. Expressions resolving to null are omitted.
+   */
+  public static Map<String, Object> parseAttributeValues(ITemplateContext context,
+                                                         IProcessableElementTag tag) {
+    Map<String, String> attributes = tag.getAttributeMap();
+    Map<String, Object> resolvedAttributes = new HashMap<>();
+    IStandardExpressionParser parser =
+        StandardExpressions.getExpressionParser(context.getConfiguration());
+
+    for (Map.Entry<String, String> entry : attributes.entrySet()) {
+      String key = entry.getKey();
+      String value = entry.getValue();
+      if (key.startsWith("th:")) {
+        Object resolved = parser.parseExpression(context, value).execute(context);
+        if (resolved != null) {
+          resolvedAttributes.put(key.substring("th:".length()), resolved);
+        }
+      } else {
+        resolvedAttributes.put(key, value);
+      }
+    }
+
+    return resolvedAttributes;
+  }
+
 }
