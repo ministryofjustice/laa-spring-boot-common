@@ -14,6 +14,12 @@
     })[0];
   }
 
+  function escapeHtml(text) {
+    var element = document.createElement('div');
+    element.textContent = text;
+    return element.innerHTML;
+  }
+
   function setValue(select, value) {
     if (select.value !== value) {
       select.value = value;
@@ -46,6 +52,8 @@
       showAllValues: select.getAttribute('data-show-all-values') === 'true',
       // Keeps the placeholder text out of the input.
       defaultValue: '',
+      // The library renders suggestions as HTML; option text must stay text.
+      templates: { suggestion: escapeHtml },
       inputClasses: select.classList.contains('govuk-select--error') ? 'govuk-input--error' : null,
       // Clears the select when the text matches no option, so a stale value isn't submitted.
       onConfirm: function (confirmed) {

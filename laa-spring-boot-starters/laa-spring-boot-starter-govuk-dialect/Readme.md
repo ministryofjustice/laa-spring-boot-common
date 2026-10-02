@@ -214,5 +214,6 @@ Load them after the `accessible-autocomplete` library, which the application pro
 
 - With Spring Security, permit `/govuk-dialect/**`.
 - Selects are enhanced on page load. For content added later, call `window.GovUkAccessibleAutocomplete.init(element)`.
-- The script keeps the hint and error linked to the input, applies the error style, clears the select when the
-  text matches no option, and fires `change` on the select when its value changes.
+- The script keeps the hint and error linked to the input, applies the error style, escapes option text in
+  the menu, clears the select when the text matches no option, and fires `change` on the select when its value
+  changes.
