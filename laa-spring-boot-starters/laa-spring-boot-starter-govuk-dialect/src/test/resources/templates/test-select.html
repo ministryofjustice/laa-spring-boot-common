@@ -24,5 +24,8 @@
 <govuk:select id="nullFlags" label="Null flags" th:items="${relationships}"
               th:disabled="${missing}" th:showAllValues="${missing}" th:hint="${missing}"/>
 
+<govuk:select id="reserved" label="Reserved" th:items="${relationships}" showAllValues
+              data-module="govuk-select" data-show-all-values="false" data-extra="kept"/>
+
 </body>
 </html>
