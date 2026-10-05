@@ -217,3 +217,4 @@ Load them after the `accessible-autocomplete` library, which the application pro
 - The script keeps the hint and error linked to the input, applies the error style, escapes option text in
   the menu, clears the select when the text matches no option, and fires `change` on the select when its value
   changes.
+- With a `placeholder`, an empty input offers it first, so clearing the field leaves the select empty.

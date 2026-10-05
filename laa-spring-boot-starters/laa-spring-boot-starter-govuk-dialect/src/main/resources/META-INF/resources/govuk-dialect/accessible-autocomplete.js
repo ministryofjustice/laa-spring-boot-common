@@ -61,6 +61,11 @@
     }).map(function (option) {
       return { value: option.value, text: optionText(option) };
     });
+    var placeholder = [].filter.call(select.options, function (option) {
+      return !option.value;
+    })[0];
+    // Offered first for an empty query, so clearing the input can leave the select empty.
+    var empty = placeholder ? { value: '', text: optionText(placeholder) } : null;
     var explicit = false;
 
     window.accessibleAutocomplete.enhanceSelectElement({
@@ -70,6 +75,10 @@
       defaultValue: '',
       // Options are objects so a picked option keeps its value.
       source: function (query, populate) {
+        if (!query && empty) {
+          populate([empty].concat(options));
+          return;
+        }
         var lower = query.toLowerCase();
         populate(options.filter(function (option) {
           return option.text.toLowerCase().indexOf(lower) !== -1;
@@ -77,7 +86,7 @@
       },
       templates: {
         inputValue: function (option) {
-          return option ? option.text : '';
+          return option && option.value ? option.text : '';
         },
         // The library renders suggestions as HTML; option text must stay text.
         suggestion: function (option) {
@@ -87,6 +96,10 @@
       inputClasses: select.classList.contains('govuk-select--error') ? 'govuk-input--error' : null,
       // A click or Enter takes the option picked; a blur only follows the text.
       onConfirm: function (confirmed) {
+        if (confirmed && !confirmed.value) {
+          setValue(select, '');
+          return;
+        }
         if (confirmed && explicit) {
           setValue(select, confirmed.value);
           return;
