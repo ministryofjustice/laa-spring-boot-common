@@ -40,7 +40,7 @@
   // Keeps the current option when its text still matches, so duplicate labels keep their value.
   function syncToText(select, text) {
     var current = select.options[select.selectedIndex];
-    if (current && current.value && optionText(current) === text) {
+    if (current && current.value && normalise(optionText(current)) === normalise(text)) {
       return;
     }
     var match = findOption(select, text);
@@ -125,7 +125,7 @@
       defaultValue: '',
       // Options are objects so a picked option keeps its value.
       source: function (query, populate) {
-        if (!query && empty) {
+        if (!normalise(query) && empty) {
           populate([empty].concat(options));
           return;
         }
