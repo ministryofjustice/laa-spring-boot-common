@@ -29,6 +29,8 @@ public class SelectElementTagProcessor extends AbstractElementTagProcessor {
   private static final String DATA_MODULE = "accessible-autocomplete";
 
   private static final Set<String> HEADINGS = Set.of("h1", "h2", "h3", "h4", "h5", "h6");
+  private static final Set<String> RESERVED_DATA_ATTRIBUTES =
+      Set.of("data-module", "data-show-all-values");
   private static final String TAG_NAME = "select";
   private static final int PRECEDENCE = 900;
 
@@ -154,7 +156,9 @@ public class SelectElementTagProcessor extends AbstractElementTagProcessor {
     }
     String name = Objects.requireNonNullElse(text(attributes, "name"), id);
     html.append("\" id=\"").append(escape(id))
-        .append("\" name=\"").append(escape(name)).append("\"");
+        .append("\" name=\"").append(escape(name)).append("\"")
+        // Stops the browser restoring the select on back navigation out of step with the input.
+        .append(" autocomplete=\"off\"");
     if (!describedBy.isEmpty()) {
       html.append(" aria-describedby=\"").append(escape(String.join(" ", describedBy)))
           .append("\"");
@@ -225,6 +229,7 @@ public class SelectElementTagProcessor extends AbstractElementTagProcessor {
   private static void appendDataAttributes(StringBuilder html, Map<String, Object> attributes) {
     attributes.entrySet().stream()
         .filter(entry -> entry.getKey().startsWith("data-"))
+        .filter(entry -> !RESERVED_DATA_ATTRIBUTES.contains(entry.getKey()))
         .sorted(Map.Entry.comparingByKey())
         .forEach(entry -> html.append(" ").append(escape(entry.getKey())).append("=\"")
             .append(escape(asString(entry.getValue()))).append("\""));

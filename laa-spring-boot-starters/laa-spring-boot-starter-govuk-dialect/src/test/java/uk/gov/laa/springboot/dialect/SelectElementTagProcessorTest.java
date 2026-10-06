@@ -47,7 +47,7 @@ class SelectElementTagProcessorTest {
 
     assertThat(renderedHtml).contains(
         "<div class=\"govuk-form-group\"><label class=\"govuk-label\" for=\"court\">Court</label>"
-            + "<select class=\"govuk-select\" id=\"court\" name=\"court\" "
+            + "<select class=\"govuk-select\" id=\"court\" name=\"court\" autocomplete=\"off\" "
             + "data-module=\"accessible-autocomplete\" data-show-all-values=\"true\">"
             + "<option value=\"\">Please select</option>"
             + "<option value=\"C1\">Bristol Crown Court</option>"
@@ -60,7 +60,7 @@ class SelectElementTagProcessorTest {
     String renderedHtml = templateEngine.process("test-select", context);
 
     assertThat(renderedHtml).contains(
-        "<select class=\"govuk-select\" id=\"country\" name=\"address.country\" "
+        "<select class=\"govuk-select\" id=\"country\" name=\"address.country\" autocomplete=\"off\" "
             + "data-module=\"accessible-autocomplete\" data-show-all-values=\"false\">"
             + "<option value=\"GBR\">United Kingdom</option>"
             + "<option value=\"IRL\">Ireland</option>"
@@ -78,7 +78,7 @@ class SelectElementTagProcessorTest {
             + "<p id=\"relationship-error\" class=\"govuk-error-message\">"
             + "<span class=\"govuk-visually-hidden\">Error:</span> Select a relationship</p>"
             + "<select class=\"govuk-select govuk-select--error govuk-!-width-one-half\" "
-            + "id=\"relationship\" name=\"relationship\" "
+            + "id=\"relationship\" name=\"relationship\" autocomplete=\"off\" "
             + "aria-describedby=\"relationship-hint relationship-error\" "
             + "data-module=\"accessible-autocomplete\" data-show-all-values=\"true\">"
             + "<option value=\"Parent\">Parent</option>"
@@ -91,7 +91,7 @@ class SelectElementTagProcessorTest {
     String renderedHtml = templateEngine.process("test-select", context);
 
     assertThat(renderedHtml).contains(
-        "<select class=\"govuk-select\" id=\"colour\" name=\"colour\" "
+        "<select class=\"govuk-select\" id=\"colour\" name=\"colour\" autocomplete=\"off\" "
             + "data-module=\"accessible-autocomplete\" data-show-all-values=\"false\" "
             + "data-display-value-id=\"colourDisplayValue\" disabled>"
             + "<option value=\"R\">Red</option>"
@@ -105,8 +105,18 @@ class SelectElementTagProcessorTest {
 
     assertThat(renderedHtml).contains(
         "<label class=\"govuk-label\" for=\"nullFlags\">Null flags</label>"
-            + "<select class=\"govuk-select\" id=\"nullFlags\" name=\"nullFlags\" "
+            + "<select class=\"govuk-select\" id=\"nullFlags\" name=\"nullFlags\" autocomplete=\"off\" "
             + "data-module=\"accessible-autocomplete\" data-show-all-values=\"false\">");
+  }
+
+  @Test
+  void shouldNotDuplicateTheDataAttributesItSets() {
+    String renderedHtml = templateEngine.process("test-select", context);
+
+    assertThat(renderedHtml).contains(
+        "id=\"reserved\" name=\"reserved\" autocomplete=\"off\" "
+            + "data-module=\"accessible-autocomplete\" data-show-all-values=\"true\" "
+            + "data-extra=\"kept\">");
   }
 
   @Test

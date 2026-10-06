@@ -215,5 +215,10 @@ Load them after the `accessible-autocomplete` library, which the application pro
 - With Spring Security, permit `/govuk-dialect/**`.
 - Selects are enhanced on page load. For content added later, call `window.GovUkAccessibleAutocomplete.init(element)`.
 - The script keeps the hint and error linked to the input, applies the error style, escapes option text in
-  the menu, clears the select when the text matches no option, and fires `change` on the select when its value
-  changes.
+  the menu, and fires `change` on the select when its value changes.
+- The posted value follows the input: a picked option keeps its value even when labels repeat; on blur, Escape
+  or submit the select matches the visible text, ignoring case and surrounding spaces. When nothing matches it
+  is emptied if it has a `placeholder`, otherwise it keeps its current value.
+- Matches are listed exact first, then by prefix, then by containing the text.
+- With a `placeholder` and `showAllValues`, an empty input lists the placeholder first, so clearing the field
+  leaves the select empty.

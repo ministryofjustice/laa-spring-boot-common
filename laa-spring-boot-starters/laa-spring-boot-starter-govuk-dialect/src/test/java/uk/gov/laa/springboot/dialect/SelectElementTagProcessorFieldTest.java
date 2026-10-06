@@ -44,7 +44,7 @@ class SelectElementTagProcessorFieldTest {
     assertThat(renderedHtml).contains(
         "<div class=\"govuk-form-group\"><h2 class=\"govuk-label-wrapper\">"
             + "<label class=\"govuk-label govuk-label--m\" for=\"officeId\">Office</label></h2>"
-            + "<select class=\"govuk-select\" id=\"officeId\" name=\"officeId\" "
+            + "<select class=\"govuk-select\" id=\"officeId\" name=\"officeId\" autocomplete=\"off\" "
             + "data-module=\"accessible-autocomplete\" data-show-all-values=\"false\">"
             + "<option value=\"\">Please select</option>"
             + "<option value=\"11\">Bristol</option>"
@@ -62,7 +62,7 @@ class SelectElementTagProcessorFieldTest {
             + "<p id=\"address.country-error\" class=\"govuk-error-message\">"
             + "<span class=\"govuk-visually-hidden\">Error:</span> Select a country</p>"
             + "<select class=\"govuk-select govuk-select--error\" id=\"address.country\" "
-            + "name=\"address.country\" aria-describedby=\"address.country-error\" "
+            + "name=\"address.country\" autocomplete=\"off\" aria-describedby=\"address.country-error\" "
             + "data-module=\"accessible-autocomplete\" data-show-all-values=\"false\">"
             + "<option value=\"\" selected>Please select</option>"
             + "<option value=\"GBR\">United Kingdom</option>"
@@ -76,7 +76,7 @@ class SelectElementTagProcessorFieldTest {
     assertThat(renderedHtml)
         .contains("<p id=\"rel-error\" class=\"govuk-error-message\">"
             + "<span class=\"govuk-visually-hidden\">Error:</span> Overridden message</p>")
-        .contains("id=\"rel\" name=\"relationship\"")
+        .contains("id=\"rel\" name=\"relationship\" autocomplete=\"off\"")
         .contains("<option value=\"SIB\" selected>SIB</option>");
   }
 
