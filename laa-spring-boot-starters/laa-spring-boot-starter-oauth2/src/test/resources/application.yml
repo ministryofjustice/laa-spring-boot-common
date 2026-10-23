@@ -30,6 +30,8 @@ laa.springboot.starter.oauth2:
   unprotected-uris: ["/actuator/**", "/resource1/unrestricted/**"]
   roles-claim-path: "roles"
   scopes-claim-path: "scope"
+  additionalSecurityFilters:
+    - uk.gov.laa.springboot.oauth2.XAuthorizationFilter
 
 spring:
   security:
@@ -37,3 +39,4 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: "https://example.test.local/issuer"
+          jwk-set-uri: "https://example.test.local/jwks"

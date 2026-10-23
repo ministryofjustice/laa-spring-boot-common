@@ -13,10 +13,10 @@ import uk.gov.laa.springboot.oauth2.utils.JwtValidation;
 /**
  * Spring configuration for the X-Authorization header JWT validation.
  *
- * <p>This configuration class — and all beans it declares — only exist in the Spring context when
- * {@code feature.disable-security=false}. When the flag is off, neither the decoder nor the filter
- * bean is created, and the filter is never registered in the security chain.
+ * <p>Applications explicitly import this configuration when they want to use the
+ * X-Authorization filter.
  */
+@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
 @Configuration
 public class XAuthorizationConfig {
 
@@ -35,8 +35,8 @@ public class XAuthorizationConfig {
    *
    * @return a configured JwtDecoder bean for X-Authorization tokens
    */
-  @Bean("xAuthorizationJwtDecoder")
-  public JwtDecoder xAuthorizationJwtDecoder() {
+  @Bean(name = "xAuthorizationJwtDecoder", autowireCandidate = false)
+  public JwtDecoder xauthorizationJwtDecoder() {
     NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
     decoder.setJwtValidator(JwtValidation.requiringExpiryWithIssuer(issuerUri));
     return decoder;
@@ -46,21 +46,22 @@ public class XAuthorizationConfig {
    * Filter bean that validates the X-Authorization header and merges roles into the existing {@link
    * org.springframework.security.core.context.SecurityContext}.
    *
-   * @param secondaryAuthorizationJwtDecoder the decoder for the X-Authorization JWT
+   * @param properties OAuth2 authorization properties supplying the role authority prefix
    * @return a configured {@link XAuthorizationFilter}
    */
   @Bean("xAuthorizationFilter")
-  public OncePerRequestFilter xAuthorizationFilter(
-      @Qualifier("xAuthorizationJwtDecoder") JwtDecoder secondaryAuthorizationJwtDecoder) {
-    return new XAuthorizationFilter(secondaryAuthorizationJwtDecoder);
+  public OncePerRequestFilter xauthorizationFilter(
+      Oauth2AuthorizationProperties properties) {
+    return new XAuthorizationFilter(
+        xauthorizationJwtDecoder(), properties.getRoleAuthorityPrefix());
   }
 
   @Bean("xAuthorizationFilterRegistration")
-  FilterRegistrationBean<OncePerRequestFilter> xAuthorizationFilterRegistration(
-      @Qualifier("xAuthorizationFilter") OncePerRequestFilter xAuthorizationFilter) {
+  FilterRegistrationBean<OncePerRequestFilter> xauthorizationFilterRegistration(
+      @Qualifier("xAuthorizationFilter") OncePerRequestFilter xauthorizationFilter) {
 
-    FilterRegistrationBean<OncePerRequestFilter> registration =
-        new FilterRegistrationBean<>(xAuthorizationFilter);
+    FilterRegistrationBean<OncePerRequestFilter> registration = new FilterRegistrationBean<>(
+        xauthorizationFilter);
     registration.setEnabled(false);
     return registration;
   }

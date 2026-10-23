@@ -32,16 +32,17 @@ import uk.gov.laa.springboot.oauth2.utils.SecurityHelper;
  * <p>Logic:
  *
  * <ol>
- *   <li>Read the {@code X-Authorization} header; absent → 401.
+ *   <li>Read the {@code X-Authorization} header; absent → continue with OBO authentication.
  *   <li>Decode and validate the JWT via the injected {@code xAuthorizationJwtDecoder}; invalid →
  *       401.
  *   <li>Compare the Entra {@code oid} claim against the existing OBO JWT; mismatch → 401.
  *   <li>Merge the allow-listed {@code LAA_APP_ROLES} and {@code LAA_ACCOUNTS} claims into the OBO
  *       JWT.
- *   <li>Merge {@code APPROLE_*} authorities into a JWT-backed {@link Authentication} and update the
- *       {@link SecurityContextHolder}.
+ *   <li>Merge configured role-prefix authorities into a JWT-backed {@link Authentication} and
+ *       update the {@link SecurityContextHolder}.
  * </ol>
  */
+@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
 public class XAuthorizationFilter extends OncePerRequestFilter {
 
   private static final Logger log = LoggerFactory.getLogger(XAuthorizationFilter.class);
@@ -49,12 +50,13 @@ public class XAuthorizationFilter extends OncePerRequestFilter {
   private static final String X_AUTHORIZATION_HEADER = "X-Authorization";
   private static final String LAA_APP_ROLES_CLAIM = "LAA_APP_ROLES";
   private static final String LAA_ACCOUNTS_CLAIM = "LAA_ACCOUNTS";
-  private static final String AUTHORITY_PREFIX = "APPROLE_";
-
   private final JwtDecoder secondaryAuthorizationJwtDecoder;
+  private final String roleAuthorityPrefix;
 
-  public XAuthorizationFilter(JwtDecoder secondaryAuthorizationJwtDecoder) {
+  public XAuthorizationFilter(
+      JwtDecoder secondaryAuthorizationJwtDecoder, String roleAuthorityPrefix) {
     this.secondaryAuthorizationJwtDecoder = secondaryAuthorizationJwtDecoder;
+    this.roleAuthorityPrefix = roleAuthorityPrefix;
   }
 
   @Override
@@ -103,7 +105,7 @@ public class XAuthorizationFilter extends OncePerRequestFilter {
 
     Set<GrantedAuthority> mergedAuthorities = new HashSet<>(existingAuth.getAuthorities());
     appRoles.forEach(
-        role -> mergedAuthorities.add(new SimpleGrantedAuthority(AUTHORITY_PREFIX + role)));
+        role -> mergedAuthorities.add(new SimpleGrantedAuthority(roleAuthorityPrefix + role)));
 
     JwtAuthenticationToken merged =
         new JwtAuthenticationToken(

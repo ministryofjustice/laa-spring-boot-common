@@ -1,12 +1,18 @@
 package uk.gov.laa.springboot.oauth2;
 
+import jakarta.servlet.Filter;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.support.BeanDefinitionValidationException;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -20,6 +26,7 @@ import org.springframework.security.config.annotation.web.configurers.oauth2.ser
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.ClassUtils;
@@ -84,7 +91,9 @@ public class SecurityFilterChainAutoConfiguration {
       JwtAuthenticationConverter jwtConverter,
       ObjectProvider<AuthenticationManagerResolver<HttpServletRequest>>
           authenticationManagerResolver,
-      ObjectMapper objectMapper)
+      ObjectMapper objectMapper,
+      Oauth2AuthorizationProperties properties,
+      ApplicationContext applicationContext)
       throws Exception {
     if (isApiKeyStarterPresent()) {
       httpSecurity.securityMatcher(bearerRequestMatcher());
@@ -109,8 +118,56 @@ public class SecurityFilterChainAutoConfiguration {
                 .accessDeniedHandler(new Oauth2AccessDeniedHandler(objectMapper)))
         .oauth2ResourceServer(resourceServerConfigurer(
             authenticationManagerResolver.getIfAvailable(), jwtConverter));
+    addAdditionalSecurityFilters(httpSecurity, properties, applicationContext);
 
     return httpSecurity.build();
+  }
+
+  private void addAdditionalSecurityFilters(
+      HttpSecurity httpSecurity,
+      Oauth2AuthorizationProperties properties,
+      ApplicationContext applicationContext) {
+    Class<? extends Filter> previousFilterClass = BearerTokenAuthenticationFilter.class;
+    for (String filterClassName : properties.getAdditionalSecurityFilters()) {
+      ResolvedFilter resolvedFilter = resolveFilter(filterClassName, applicationContext);
+      httpSecurity.addFilterAfter(resolvedFilter.filter(), previousFilterClass);
+      previousFilterClass = resolvedFilter.filterClass();
+    }
+  }
+
+  private ResolvedFilter resolveFilter(
+      String filterClassName, ApplicationContext applicationContext) {
+    if (filterClassName == null || filterClassName.isBlank()) {
+      throw new BeanDefinitionValidationException(
+          "Additional security filter class names must not be blank.");
+    }
+
+    Class<?> configuredClass;
+    try {
+      configuredClass = ClassUtils.forName(filterClassName, getClass().getClassLoader());
+    } catch (ClassNotFoundException e) {
+      throw new BeanDefinitionValidationException(
+          "Additional security filter class '%s' was not found.".formatted(filterClassName));
+    }
+    if (!Filter.class.isAssignableFrom(configuredClass)) {
+      throw new BeanDefinitionValidationException(
+          "Additional security filter class '%s' does not implement jakarta.servlet.Filter."
+              .formatted(filterClassName));
+    }
+
+    @SuppressWarnings("unchecked")
+    Class<? extends Filter> filterClass = (Class<? extends Filter>) configuredClass;
+    Map<String, ? extends Filter> beans = new LinkedHashMap<>(
+        applicationContext.getBeansOfType(filterClass));
+    if (beans.size() != 1) {
+      throw new BeanDefinitionValidationException(
+          "Additional security filter class '%s' must have exactly one Spring bean; found %d."
+              .formatted(filterClassName, beans.size()));
+    }
+    return new ResolvedFilter(filterClass, beans.values().iterator().next());
+  }
+
+  private record ResolvedFilter(Class<? extends Filter> filterClass, Filter filter) {
   }
 
   private Customizer<OAuth2ResourceServerConfigurer<HttpSecurity>> resourceServerConfigurer(
