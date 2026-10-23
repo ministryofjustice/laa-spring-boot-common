@@ -11,6 +11,12 @@ public final class JwtValidation {
 
   private JwtValidation() {}
 
+  /**
+   * Creates a validator that requires a valid expiry and the supplied issuer.
+   *
+   * @param issuer JWT issuer that must be present in validated tokens
+   * @return a combined timestamp and issuer validator
+   */
   public static OAuth2TokenValidator<Jwt> requiringExpiryWithIssuer(String issuer) {
     JwtTimestampValidator timestampValidator = new JwtTimestampValidator();
     timestampValidator.setAllowEmptyExpiryClaim(false);
@@ -18,4 +24,3 @@ public final class JwtValidation {
         timestampValidator, JwtValidators.createDefaultWithIssuer(issuer));
   }
 }
-
