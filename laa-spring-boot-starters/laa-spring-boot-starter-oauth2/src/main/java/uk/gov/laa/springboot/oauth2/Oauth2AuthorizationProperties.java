@@ -1,5 +1,6 @@
 package uk.gov.laa.springboot.oauth2;
 
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -24,6 +25,7 @@ public class Oauth2AuthorizationProperties {
   private String scopesClaimPath = DEFAULT_SCOPES_CLAIM_PATH;
   private String roleAuthorityPrefix = DEFAULT_ROLE_AUTHORITY_PREFIX;
   private String scopeAuthorityPrefix = DEFAULT_SCOPE_AUTHORITY_PREFIX;
+  private List<String> additionalSecurityFilters = List.of();
   private Resourceserver resourceserver = new Resourceserver();
 
   /** OAuth2 resource-server properties managed by the starter. */

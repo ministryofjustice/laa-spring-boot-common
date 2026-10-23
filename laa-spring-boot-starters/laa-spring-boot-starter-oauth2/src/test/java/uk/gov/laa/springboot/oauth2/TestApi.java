@@ -1,6 +1,9 @@
 package uk.gov.laa.springboot.oauth2;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -12,6 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
  * Test application used by OAuth2 endpoint authorization tests.
  */
 @SpringBootApplication
+@ComponentScan(
+    excludeFilters = @ComponentScan.Filter(
+        type = FilterType.ASSIGNABLE_TYPE, classes = XAuthorizationConfig.class))
+@Import(TestJwtConfiguration.class)
 public class TestApi {
 
   /**

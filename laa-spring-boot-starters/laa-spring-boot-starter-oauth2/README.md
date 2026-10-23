@@ -111,6 +111,78 @@ authorization, such as checking whether the signed-in user can access a specific
 author or book, must be implemented separately in the application. For app-only M2M access, the
 role normally authorizes the calling application rather than an individual user.
 
+## Adding security filters
+
+Applications can add filters to the OAuth2 security chain with
+`laa.springboot.starter.oauth2.additionalSecurityFilters`. Supply an ordered list of fully
+qualified filter class names. Each class must have exactly one corresponding Spring `Filter` bean
+in the application context; the starter does not construct filters on the application's behalf.
+
+Additional filters run after bearer-token authentication and before endpoint authorization. They
+therefore have access to the authenticated `JwtAuthenticationToken`, and changes they make to its
+authorities are available to `authorized-roles` and `authorized-scopes` checks. List order is
+execution order.
+
+```yaml
+laa.springboot.starter.oauth2:
+  additionalSecurityFilters:
+    - com.example.security.RequestEntitlementFilter
+    - com.example.security.RequestAuditFilter
+```
+
+For example, the application must provide the selected filter as a Spring bean:
+
+```java
+@Configuration
+class SecurityFilterConfiguration {
+
+  @Bean
+  RequestEntitlementFilter requestEntitlementFilter(EntitlementService entitlementService) {
+    return new RequestEntitlementFilter(entitlementService);
+  }
+}
+```
+
+The application fails at startup when an entry is blank, cannot be loaded, is not a servlet
+`Filter`, or has zero or more than one matching Spring beans. This avoids silently starting
+without an expected security filter.
+
+## Using X-Authorization
+
+`XAuthorizationFilter` is an optional additional filter for a supplementary raw JWT sent in the
+`X-Authorization` header. It validates the supplementary token, requires its Entra `oid` to match
+the authenticated bearer token's `oid`, then adds its `LAA_APP_ROLES` claim to the authenticated
+principal. Those roles use the configured `role-authority-prefix` (default `ROLE_`) and can be
+used in `authorized-roles` mappings.
+
+To enable it, explicitly import `XAuthorizationConfig` in the application and list the filter:
+
+```java
+@Configuration
+@Import(XAuthorizationConfig.class)
+class SecurityFilterConfiguration {
+}
+```
+
+```yaml
+laa.springboot.starter.oauth2:
+  additionalSecurityFilters:
+    - uk.gov.laa.springboot.oauth2.XAuthorizationFilter
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://login.microsoftonline.com/<tenant-id>/v2.0
+          jwk-set-uri: https://login.microsoftonline.com/<tenant-id>/discovery/v2.0/keys
+```
+
+The `X-Authorization` value must be the raw compact JWT, not `Bearer <token>`. The header is
+optional: without it, the normal bearer token continues through authorization unchanged. A supplied
+X-Authorization token that is invalid, is not JWT-backed by the primary request authentication, or
+has a different `oid` receives `401 Unauthorized`.
+
 ## Mocking auth in tests
 
 The starter includes `StubJwtDecoder` and `StubJwtToken` test helpers under:
