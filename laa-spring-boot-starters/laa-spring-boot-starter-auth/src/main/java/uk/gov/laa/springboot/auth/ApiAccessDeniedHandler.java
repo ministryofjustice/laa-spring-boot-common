@@ -6,6 +6,8 @@ import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import tools.jackson.databind.ObjectMapper;
 
@@ -53,10 +55,20 @@ public class ApiAccessDeniedHandler implements AccessDeniedHandler {
 
     response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
 
-    log.info(
-        "Request rejected for endpoint '{} {}': {}",
-        request.getMethod(),
-        request.getRequestURI(),
-        message);
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    log.atInfo()
+        .addKeyValue(SecurityEventFields.EVENT_TYPE, "AUTHORIZATION_DENIED")
+        .addKeyValue(SecurityEventFields.OUTCOME, "DENIED")
+        .addKeyValue(SecurityEventFields.CLIENT_ID,
+            authentication == null ? null : authentication.getName())
+        .addKeyValue(SecurityEventFields.EVENT_DETAIL,
+            request.getMethod() + " " + request.getRequestURI())
+        .addKeyValue(SecurityEventFields.HTTP_METHOD, request.getMethod())
+        .addKeyValue(SecurityEventFields.PATH, request.getRequestURI())
+        .log(
+            "Request rejected for endpoint '{} {}': {}",
+            request.getMethod(),
+            request.getRequestURI(),
+            message);
   }
 }
