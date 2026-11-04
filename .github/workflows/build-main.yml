@@ -13,7 +13,19 @@ on:
         options: [ "auto", "none", "patch", "minor", "major" ]
 
 jobs:
+  approve-release:
+    name: Approve Maven release
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: maven
+    permissions:
+      contents: read
+    steps:
+      - name: Confirm approval
+        run: echo "Maven build and release approved."
+
   release:
+    needs: approve-release
     uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@035ee98ca0047659f865532ea6234abd69529ee8 # v2.5.0
     permissions:
       contents: write
