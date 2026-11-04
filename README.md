@@ -130,7 +130,6 @@ apply plugin: 'uk.gov.justice.service.laa.laa-spring-boot-gradle-plugin'
 - [OAuth2 resource server auth](laa-spring-boot-starters/laa-spring-boot-starter-oauth2/README.md)
 - [Application exception handling](laa-spring-boot-starters/laa-spring-boot-starter-application-exception/README.md)
   (deprecated – prefer Spring's built-in `ProblemDetail`/`ErrorResponse` RFC 9457 support)
-- [Slack alerts](laa-spring-boot-starters/laa-spring-boot-starter-slack-alerts/README.md)
 - [SQL input scanning](laa-spring-boot-starters/laa-spring-boot-starter-sql-scanner/README.md)
 - [CSV exports](laa-spring-boot-starters/laa-spring-boot-starter-export/README.md)
 
