@@ -26,12 +26,7 @@ public final class SecurityHelper {
    * @return an immutable list of account codes, or an empty list when unavailable
    */
   public static List<String> getLaaAccounts() {
-    List<String> accounts =
-        getJwtAuthentication()
-            .map(JwtAuthenticationToken::getToken)
-            .map(jwt -> jwt.getClaimAsStringList(LAA_ACCOUNTS_CLAIM))
-            .orElse(null);
-    return accounts == null ? List.of() : List.copyOf(accounts);
+    return getStringListClaim(LAA_ACCOUNTS_CLAIM);
   }
 
   /**
@@ -40,27 +35,16 @@ public final class SecurityHelper {
    * @return an immutable list of application roles, or an empty list when unavailable
    */
   public static List<String> getLaaAppRoles() {
-    List<String> appRoles =
-        getJwtAuthentication()
-            .map(JwtAuthenticationToken::getToken)
-            .map(jwt -> jwt.getClaimAsStringList(LAA_APP_ROLES_CLAIM))
-            .orElse(null);
-    return appRoles == null ? List.of() : List.copyOf(appRoles);
+    return getStringListClaim(LAA_APP_ROLES_CLAIM);
   }
 
   /**
    * Gets the validated Entra delegated application scopes from the current JWT authentication.
    *
-   * @return an immutable set of scopes, or an empty set when unavailable
+   * @return an immutable list of scopes, or an empty list when unavailable
    */
-  public static Set<String> getScopes() {
-    return getJwtAuthentication()
-        .map(JwtAuthenticationToken::getToken)
-        .map(jwt -> jwt.getClaimAsString(ENTRA_SCOPES_CLAIM))
-        .stream()
-        .flatMap(scopes -> Arrays.stream(scopes.split("\\s+")))
-        .filter(scope -> !scope.isBlank())
-        .collect(Collectors.toUnmodifiableSet());
+  public static List<String> getScopes() {
+    return getStringListClaim(ENTRA_SCOPES_CLAIM);
   }
 
   /**
@@ -81,6 +65,13 @@ public final class SecurityHelper {
    */
   public static Optional<String> getEntraOid(Jwt jwt) {
     return Optional.ofNullable(jwt.getClaimAsString(ENTRA_OID_CLAIM)).filter(oid -> !oid.isBlank());
+  }
+
+  private static List<String> getStringListClaim(String claimName) {
+    return getJwtAuthentication()
+            .map(JwtAuthenticationToken::getToken)
+            .map(jwt -> jwt.getClaimAsStringList(claimName))
+            .orElse(List.of());
   }
 
   private static Optional<JwtAuthenticationToken> getJwtAuthentication() {
