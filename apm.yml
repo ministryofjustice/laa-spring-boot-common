@@ -1,0 +1,8 @@
+name: laa-spring-boot-common
+version: 1.0.0
+description: LAA Spring Boot Common Library
+targets:
+  - copilot
+dependencies:
+  apm:
+    - ministryofjustice/ai-toolkit/toolkits/universal#main

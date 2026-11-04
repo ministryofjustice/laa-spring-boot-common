@@ -14,6 +14,21 @@ and a set of starters that provide individual pieces of common functionality.
 - `spring3`: Spring Boot 3.x / Jackson 2 line; pin plugin and starter versions from releases built off this branch if you have not upgraded yet.
 - Avoid mixing artifacts across the two lines; pick the release line from Maven Central that matches your Spring Boot major version.
 
+## Maven release approval
+
+The **Build main** workflow waits at the `maven` environment before running the shared
+build-and-release workflow. This applies to pushes and manual runs on `main`, including
+build-only runs (`release_type: none`). Manual runs on other branches skip the release.
+Pull request snapshot builds are unchanged.
+
+In **Settings > Environments > maven**, configure **Required reviewers** and restrict
+deployment branches to `main`. Without required reviewers, the gate proceeds automatically.
+Approval happens before the build as well as publishing; rejecting the gate prevents both.
+
+Publishing credentials must remain repository or organisation secrets: this environment
+belongs to the approval job, so its environment secrets are not available to the separate
+reusable workflow.
+
 ## Available Plugins
 
 ### `laa-java-gradle-plugin` for Java Projects
