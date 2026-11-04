@@ -1,9 +1,11 @@
 package uk.gov.laa.springboot.oauth2.utils;
 
-import java.util.LinkedHashSet;
-import java.util.Optional;
+import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 /** Projects validated request-token claims into immutable command caller facts. */
 @Component
@@ -13,20 +15,35 @@ public class AuthenticatedCallerFactory {
   public AuthenticatedCaller currentCaller() {
     return new AuthenticatedCaller(
         actorId(),
-        SecurityHelper.getScopes(),
-        new LinkedHashSet<>(SecurityHelper.getLaaAccounts()),
-        new LinkedHashSet<>(SecurityHelper.getLaaAppRoles()));
+        normalise(SecurityHelper.getScopes()),
+        normalise(SecurityHelper.getLaaAccounts()),
+        normalise(SecurityHelper.getLaaAppRoles()));
   }
 
-  private Optional<UUID> actorId() {
-    return SecurityHelper.getEntraOid().flatMap(this::asUuid);
+  private UUID actorId() {
+    return requireUuid(SecurityHelper.getEntraOid().orElseThrow(
+        () -> new IllegalArgumentException("JWT 'oid' claim must be present")));
   }
 
-  private Optional<UUID> asUuid(String value) {
-    try {
-      return Optional.of(UUID.fromString(value));
-    } catch (IllegalArgumentException exception) {
-      return Optional.empty();
+  private UUID requireUuid(String value) {
+    if (value == null) {
+      throw new IllegalArgumentException("JWT 'oid' claim must not be null");
     }
+    try {
+      return UUID.fromString(value);
+    } catch (IllegalArgumentException exception) {
+      throw new IllegalArgumentException(
+          "JWT 'oid' claim must be a valid UUID: " + value, exception);
+    }
+  }
+
+  private static Set<String> normalise(Collection<String> values) {
+    if (values == null) {
+      return Set.of();
+    }
+    return values.stream()
+        .filter(StringUtils::hasText)
+        .map(String::trim)
+        .collect(Collectors.toUnmodifiableSet());
   }
 }

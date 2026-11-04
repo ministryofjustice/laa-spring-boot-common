@@ -13,10 +13,10 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 /** Retrieves effective identity and entitlement claims for the current request. */
 public final class SecurityHelper {
 
-  private static final String LAA_ACCOUNTS_CLAIM = "LAA_ACCOUNTS";
-  private static final String LAA_APP_ROLES_CLAIM = "LAA_APP_ROLES";
-  private static final String ENTRA_OID_CLAIM = "oid";
-  private static final String ENTRA_SCOPES_CLAIM = "scp";
+  public static final String LAA_ACCOUNTS_CLAIM = "LAA_ACCOUNTS";
+  public static final String LAA_APP_ROLES_CLAIM = "LAA_APP_ROLES";
+  public static final String ENTRA_OID_CLAIM = "oid";
+  public static final String ENTRA_SCOPES_CLAIM = "scp";
 
   private SecurityHelper() {}
 

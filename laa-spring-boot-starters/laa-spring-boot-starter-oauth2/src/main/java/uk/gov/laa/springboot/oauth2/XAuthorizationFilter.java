@@ -48,8 +48,6 @@ public class XAuthorizationFilter extends OncePerRequestFilter {
   private static final Logger log = LoggerFactory.getLogger(XAuthorizationFilter.class);
 
   private static final String X_AUTHORIZATION_HEADER = "X-Authorization";
-  private static final String LAA_APP_ROLES_CLAIM = "LAA_APP_ROLES";
-  private static final String LAA_ACCOUNTS_CLAIM = "LAA_ACCOUNTS";
   private final JwtDecoder secondaryAuthorizationJwtDecoder;
   private final String roleAuthorityPrefix;
 
@@ -95,8 +93,10 @@ public class XAuthorizationFilter extends OncePerRequestFilter {
       return;
     }
 
-    List<String> appRoles = claimAsNonBlankDistinctStrings(authorizationJwt, LAA_APP_ROLES_CLAIM);
-    List<String> laaAccounts = claimAsNonBlankDistinctStrings(authorizationJwt, LAA_ACCOUNTS_CLAIM);
+    List<String> appRoles = claimAsNonBlankDistinctStrings(
+        authorizationJwt, SecurityHelper.LAA_APP_ROLES_CLAIM);
+    List<String> laaAccounts = claimAsNonBlankDistinctStrings(
+        authorizationJwt, SecurityHelper.LAA_ACCOUNTS_CLAIM);
     if (appRoles.isEmpty() && laaAccounts.isEmpty()) {
       // Authenticated but no entitlements — let method security determine access.
       chain.doFilter(request, response);
@@ -120,18 +120,21 @@ public class XAuthorizationFilter extends OncePerRequestFilter {
 
   private Jwt mergeEntitlementClaims(Jwt oboJwt, List<String> appRoles, List<String> laaAccounts) {
     Map<String, Object> claims = new LinkedHashMap<>(oboJwt.getClaims());
-    claims.put(LAA_APP_ROLES_CLAIM, appRoles);
-    claims.put(LAA_ACCOUNTS_CLAIM, laaAccounts);
+    claims.put(SecurityHelper.LAA_APP_ROLES_CLAIM, appRoles);
+    claims.put(SecurityHelper.LAA_ACCOUNTS_CLAIM, laaAccounts);
 
     Jwt.Builder builder =
         Jwt.withTokenValue(oboJwt.getTokenValue())
             .headers(headers -> headers.putAll(oboJwt.getHeaders()))
             .claims(mergedClaims -> mergedClaims.putAll(claims));
+
     if (oboJwt.getIssuedAt() != null) {
       builder.issuedAt(oboJwt.getIssuedAt());
     }
-    builder.expiresAt(
-        Objects.requireNonNull(oboJwt.getExpiresAt(), "Validated OBO JWT must contain an expiry"));
+
+    if (oboJwt.getExpiresAt() != null) {
+      builder.expiresAt(oboJwt.getExpiresAt());
+    }
     return builder.build();
   }
 

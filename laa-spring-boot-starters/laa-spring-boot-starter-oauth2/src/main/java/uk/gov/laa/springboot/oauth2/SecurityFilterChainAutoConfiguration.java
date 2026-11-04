@@ -30,6 +30,7 @@ import org.springframework.security.oauth2.server.resource.web.authentication.Be
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 import tools.jackson.databind.ObjectMapper;
 
 /**
@@ -137,7 +138,7 @@ public class SecurityFilterChainAutoConfiguration {
 
   private ResolvedFilter resolveFilter(
       String filterClassName, ApplicationContext applicationContext) {
-    if (filterClassName == null || filterClassName.isBlank()) {
+    if (!StringUtils.hasText(filterClassName)) {
       throw new BeanDefinitionValidationException(
           "Additional security filter class names must not be blank.");
     }
