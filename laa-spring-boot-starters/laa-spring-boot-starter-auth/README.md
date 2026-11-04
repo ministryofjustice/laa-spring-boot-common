@@ -4,6 +4,11 @@ This starter will enable authentication on endpoints you have specified in your 
 Roles can be defined to categorise groups of endpoints under different levels of access. These roles can then be assigned
 to clients.
 
+## Deprecation
+
+This legacy starter is deprecated. For new API integrations, we strongly recommend the
+[OAuth2 starter](../laa-spring-boot-starter-oauth2/README.md).
+
 ## Usage
 
 ### Declare the dependency

@@ -19,7 +19,11 @@ import tools.jackson.databind.ObjectMapper;
 
 /**
  * Holds the authentication context for the API.
+ *
+ * @deprecated Prefer {@code laa-spring-boot-starter-oauth2} for new API integrations. See its
+ *     README and migration guide for setup guidance.
  */
+@Deprecated
 @Slf4j
 public class TokenDetailsManager {
 

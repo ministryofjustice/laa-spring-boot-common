@@ -8,7 +8,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * Authentication properties that must be configured by an API that is implementing authentication
  * using this library.
+ *
+ * @deprecated Prefer {@code laa-spring-boot-starter-oauth2} for new API integrations. See its
+ *     README and migration guide for setup guidance.
  */
+@Deprecated
 @Getter
 @Setter
 @ConfigurationProperties(prefix = "laa.springboot.starter.auth")
