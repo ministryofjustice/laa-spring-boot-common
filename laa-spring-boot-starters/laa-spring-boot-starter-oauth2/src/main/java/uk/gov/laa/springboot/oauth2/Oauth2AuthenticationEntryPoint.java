@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import tools.jackson.databind.ObjectMapper;
 
@@ -36,10 +37,23 @@ public class Oauth2AuthenticationEntryPoint implements AuthenticationEntryPoint 
     problemDetail.setTitle(status.getReasonPhrase());
     response.getWriter().write(objectMapper.writeValueAsString(problemDetail));
 
-    log.info(
-        "Request rejected for endpoint '{} {}': {}",
-        request.getMethod(),
-        request.getRequestURI(),
-        authException.getMessage());
+    log.atInfo()
+        .addKeyValue(SecurityEventFields.EVENT_TYPE, "AUTHENTICATION_FAILURE")
+        .addKeyValue(SecurityEventFields.OUTCOME, "FAILURE")
+        .addKeyValue(SecurityEventFields.EVENT_DETAIL, failureDetail(authException))
+        .addKeyValue(SecurityEventFields.HTTP_METHOD, request.getMethod())
+        .addKeyValue(SecurityEventFields.PATH, request.getRequestURI())
+        .log(
+            "Request rejected for endpoint '{} {}': {}",
+            request.getMethod(),
+            request.getRequestURI(),
+            authException.getMessage());
+  }
+
+  private static String failureDetail(AuthenticationException authException) {
+    if (authException instanceof OAuth2AuthenticationException oauth2Exception) {
+      return oauth2Exception.getError().getErrorCode();
+    }
+    return authException.getClass().getSimpleName();
   }
 }

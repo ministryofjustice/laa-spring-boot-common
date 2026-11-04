@@ -68,8 +68,15 @@ public class ApiAuthenticationFilter extends OncePerRequestFilter {
       securityContext.setAuthentication(authentication);
       SecurityContextHolder.setContext(securityContext);
       securityContextRepository.saveContext(securityContext, request, response);
-      log.info("Endpoint '{} {}' requested by {}.", request.getMethod(), request.getRequestURI(),
-          authentication.getPrincipal().toString());
+      String client = authentication.getPrincipal().toString();
+      log.atInfo()
+          .addKeyValue(SecurityEventFields.EVENT_TYPE, "AUTHENTICATION_SUCCESS")
+          .addKeyValue(SecurityEventFields.OUTCOME, "SUCCESS")
+          .addKeyValue(SecurityEventFields.CLIENT_ID, client)
+          .addKeyValue(SecurityEventFields.HTTP_METHOD, request.getMethod())
+          .addKeyValue(SecurityEventFields.PATH, request.getRequestURI())
+          .log("Endpoint '{} {}' requested by {}.", request.getMethod(), request.getRequestURI(),
+              client);
 
       filterChain.doFilter(request, response);
 
@@ -81,8 +88,14 @@ public class ApiAuthenticationFilter extends OncePerRequestFilter {
 
       ErrorResponse errorResponse = new ErrorResponse(code, "UNAUTHORIZED", message);
       response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
-      log.info("Request rejected for endpoint '{} {}': {}", request.getMethod(),
-          request.getRequestURI(), message);
+      log.atInfo()
+          .addKeyValue(SecurityEventFields.EVENT_TYPE, "AUTHENTICATION_FAILURE")
+          .addKeyValue(SecurityEventFields.OUTCOME, "FAILURE")
+          .addKeyValue(SecurityEventFields.EVENT_DETAIL, ex.getClass().getSimpleName())
+          .addKeyValue(SecurityEventFields.HTTP_METHOD, request.getMethod())
+          .addKeyValue(SecurityEventFields.PATH, request.getRequestURI())
+          .log("Request rejected for endpoint '{} {}': {}", request.getMethod(),
+              request.getRequestURI(), message);
     }
 
   }
