@@ -10,6 +10,9 @@ import java.util.Set;
  * @param name the name of the client
  * @param token the access token designated to the client
  * @param roles the roles designated to the client, which determine level of access
+ * @deprecated Prefer {@code laa-spring-boot-starter-oauth2} for new API integrations. See its
+ *     README and migration guide for setup guidance.
  */
+@Deprecated
 @JsonFormat(with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
 public record ClientCredential(String name, String token, Set<String> roles) {}
