@@ -1,0 +1,183 @@
+name: Snyk dependency scan
+
+on:
+  schedule:
+    # 07:00 and 14:00 Europe/London, which is one hour earlier in UTC during BST.
+    # Both UTC offsets are scheduled; the gate step lets only the runs at 07:00 and 14:00 UK time through.
+    - cron: '0 6,13 * * *'
+    - cron: '0 7,14 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: snyk-scan
+  cancel-in-progress: false
+
+jobs:
+  snyk-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SEVERITY_THRESHOLD: high
+    steps:
+      - name: Check it is a scan time in the UK
+        id: gate
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          uk_hour=$(TZ=Europe/London date +%H)
+          if [ "$EVENT_NAME" = "schedule" ] && [ "$uk_hour" != "07" ] && [ "$uk_hour" != "14" ]; then
+            echo "UK hour is $uk_hour, skipping this scheduled trigger"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Java
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: corretto
+          java-version: '25'
+
+      - name: Set up Snyk CLI
+        if: steps.gate.outputs.run == 'true'
+        uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
+
+      - name: Run Snyk test
+        id: scan
+        if: steps.gate.outputs.run == 'true'
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          SNYK_ORG: ${{ vars.SNYK_ORG }}
+        run: |
+          org_args=()
+          if [ -n "$SNYK_ORG" ]; then org_args=(--org="$SNYK_ORG"); fi
+          set +e
+          snyk test --all-projects \
+            --severity-threshold="$SEVERITY_THRESHOLD" \
+            --json-file-output=snyk-results.json \
+            "${org_args[@]}"
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Snyk results
+        if: always() && steps.gate.outputs.run == 'true' && hashFiles('snyk-results.json') != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: snyk-results
+          path: snyk-results.json
+          retention-days: 30
+
+      - name: Fail on operational error without alerting
+        if: steps.gate.outputs.run == 'true' && steps.scan.outputs.exit_code != '0' && steps.scan.outputs.exit_code != '1'
+        env:
+          EXIT_CODE: ${{ steps.scan.outputs.exit_code }}
+        run: |
+          echo "::error::Snyk scan did not complete (exit code $EXIT_CODE). This is an operational failure, not a vulnerability finding; no Slack alert sent."
+          exit 1
+
+      - name: Compare with previous findings
+        id: compare
+        if: steps.gate.outputs.run == 'true' && (steps.scan.outputs.exit_code == '0' || steps.scan.outputs.exit_code == '1')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          jq '[ (if type == "array" then .[] else . end) | .vulnerabilities[]? ]
+              | unique_by([.id, .packageName, .version])
+              | map({id, packageName, version, severity, fixedIn: (.fixedIn // [])})' \
+            snyk-results.json > current.json
+
+          echo '[]' > previous.json
+          previous_run=$(gh api "repos/$REPOSITORY/actions/artifacts?name=snyk-state&per_page=1" \
+            --jq '.artifacts[0] | select(.expired == false) | .workflow_run.id' || true)
+          if [ -n "$previous_run" ] && gh run download "$previous_run" --repo "$REPOSITORY" -n snyk-state -D previous-state; then
+            cp previous-state/known.json previous.json
+          else
+            echo "No previous state found, treating every finding as new"
+          fi
+
+          jq --slurpfile prev previous.json \
+            '($prev[0] | map([.id, .packageName, .version])) as $known
+             | map(select([.id, .packageName, .version] as $k | $known | index([$k]) | not))' \
+            current.json > new.json
+
+          mkdir -p snyk-state
+          cp current.json snyk-state/known.json
+
+          {
+            echo "critical=$(jq '[.[] | select(.severity == "critical")] | length' current.json)"
+            echo "high=$(jq '[.[] | select(.severity == "high")] | length' current.json)"
+            echo "new_count=$(jq 'length' new.json)"
+            echo "packages<<EOF"
+            jq -r '[.[] | "\(.packageName)@\(.version) (\(.severity))"] | unique | .[:15][]' new.json
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          if [ "$(jq 'length' current.json)" -gt 0 ]; then
+            {
+              echo "## Snyk found High/Critical vulnerabilities"
+              echo
+              echo "| Severity | Package | Version | Snyk ID | Fixed in | New |"
+              echo "| --- | --- | --- | --- | --- | --- |"
+              jq -r --slurpfile new new.json '
+                ($new[0] | map([.id, .packageName, .version])) as $newKeys
+                | .[] | "| \(.severity) | \(.packageName) | \(.version) | \(.id) | \(.fixedIn | join(", ")) | \([.id, .packageName, .version] as $k | if ($newKeys | index([$k])) != null then "yes" else "" end) |"' current.json
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Notify Slack
+        if: steps.gate.outputs.run == 'true' && steps.compare.outputs.new_count != '' && steps.compare.outputs.new_count != '0'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SNYK_ORG: ${{ vars.SNYK_ORG }}
+          CRITICAL: ${{ steps.compare.outputs.critical }}
+          HIGH: ${{ steps.compare.outputs.high }}
+          NEW_COUNT: ${{ steps.compare.outputs.new_count }}
+          PACKAGES: ${{ steps.compare.outputs.packages }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -n "$SNYK_ORG" ]; then
+            snyk_url="https://app.snyk.io/org/$SNYK_ORG"
+          else
+            snyk_url="https://app.snyk.io"
+          fi
+          scanned_at=$(date -u '+%Y-%m-%d %H:%M UTC')
+
+          text=$(printf '%s\n' \
+            ":rotating_light: *Snyk found new High/Critical vulnerabilities in ${REPOSITORY}*" \
+            "*Open in total:* Critical ${CRITICAL}, High ${HIGH} (${NEW_COUNT} new since the last scan)" \
+            "*Newly affected packages:*" \
+            "$(printf '%s\n' "$PACKAGES" | sed 's/^/• /')" \
+            "*Scanned:* ${scanned_at}" \
+            "*Workflow run:* <${RUN_URL}|View run> (full results attached as the \`snyk-results\` artifact)" \
+            "*Snyk:* <${snyk_url}|Open in Snyk>" \
+            "*Next steps:* check whether a fix is available upstream, otherwise add a dependency override in \`laa-spring-boot-dependencies\` or bump the package, then raise a PR.")
+
+          jq -n --arg text "$text" '{text: $text}' \
+            | curl --fail --silent --show-error -X POST -H 'Content-type: application/json' \
+                --data @- "$SLACK_WEBHOOK_URL"
+
+      - name: Save findings for the next scan
+        if: steps.gate.outputs.run == 'true' && steps.compare.outcome == 'success'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: snyk-state
+          path: snyk-state/known.json
+          retention-days: 30
+
+      - name: Fail on High or Critical vulnerabilities
+        if: steps.gate.outputs.run == 'true' && steps.scan.outputs.exit_code == '1'
+        run: |
+          echo "::error::Snyk found High or Critical vulnerabilities. See the job summary."
+          exit 1
