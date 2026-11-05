@@ -1,0 +1,107 @@
+name: Spring Boot release alert
+
+on:
+  schedule:
+    - cron: '0 8 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: spring-boot-release-alert
+  cancel-in-progress: false
+
+jobs:
+  check-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Find current and latest Spring Boot versions
+        id: versions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          current=$(sed -n 's/^ext\.springBootVersion *= *"\([^"]*\)".*/\1/p' build.gradle)
+          if [ -z "$current" ]; then
+            echo "::error::Could not read springBootVersion from build.gradle"
+            exit 1
+          fi
+
+          latest=$(gh api 'repos/spring-projects/spring-boot/releases?per_page=50' \
+            --jq '.[] | select(.prerelease == false and .draft == false) | .tag_name' \
+            | sed -n 's/^v\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)$/\1/p' \
+            | sort -V | tail -n 1)
+          if [ -z "$latest" ]; then
+            echo "::error::Could not find a Spring Boot GA release"
+            exit 1
+          fi
+
+          newer=$(printf '%s\n%s\n' "$current" "$latest" | sort -V | tail -n 1)
+          if [ "$latest" != "$current" ] && [ "$newer" = "$latest" ]; then
+            echo "update_available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "update_available=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+
+      - name: Check whether this release was already announced
+        id: previous
+        if: steps.versions.outputs.update_available == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          LATEST: ${{ steps.versions.outputs.latest }}
+        run: |
+          announced=""
+          previous_run=$(gh api "repos/$REPOSITORY/actions/artifacts?name=spring-boot-release-state&per_page=1" \
+            --jq '.artifacts[0] | select(.expired == false) | .workflow_run.id' || true)
+          if [ -n "$previous_run" ] && gh run download "$previous_run" --repo "$REPOSITORY" -n spring-boot-release-state -D previous-state; then
+            announced=$(cat previous-state/announced-version.txt)
+          fi
+          if [ "$announced" = "$LATEST" ]; then
+            echo "announce=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "announce=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Notify Slack
+        if: steps.previous.outputs.announce == 'true'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          CURRENT: ${{ steps.versions.outputs.current }}
+          LATEST: ${{ steps.versions.outputs.latest }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          text=$(printf '%s\n' \
+            ":spring: *Spring Boot ${LATEST} has been released*" \
+            "*laa-spring-boot-common currently uses:* ${CURRENT}" \
+            "*Release notes:* <https://github.com/spring-projects/spring-boot/releases/tag/v${LATEST}|v${LATEST}>" \
+            "Please bump \`springBootVersion\` in \`${REPOSITORY}\` if you can.")
+
+          jq -n --arg text "$text" '{text: $text}' \
+            | curl --fail --silent --show-error -X POST -H 'Content-type: application/json' \
+                --data @- "$SLACK_WEBHOOK_URL"
+
+      - name: Record announced version
+        if: steps.previous.outputs.announce == 'true'
+        env:
+          LATEST: ${{ steps.versions.outputs.latest }}
+        run: |
+          mkdir -p release-state
+          printf '%s' "$LATEST" > release-state/announced-version.txt
+
+      - name: Save announced version
+        if: steps.previous.outputs.announce == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: spring-boot-release-state
+          path: release-state/announced-version.txt
+          retention-days: 90

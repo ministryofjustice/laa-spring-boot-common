@@ -220,3 +220,14 @@ scan timestamp and a link to Snyk. Full results are kept for 30 days as the `sny
 
 Owned by `@ministryofjustice/laa-java-developers`. Join `#laa-java-devs` to be notified; when an alert fires,
 check whether a fix is available upstream, otherwise add a dependency override or bump the package.
+
+## Spring Boot release alerts
+
+`.github/workflows/spring-boot-release-alert.yml` runs on weekdays at 08:00 UTC (and on manual dispatch). It looks up the highest
+Spring Boot GA release (pre-releases are ignored) and compares it with `springBootVersion` in `build.gradle`. When a newer
+version exists, it posts to the Slack channel behind the `SLACK_WEBHOOK_URL` secret (the same one the Snyk alerts use) with the new version, the current version and a link to the release notes.
+
+Each release is announced once; the last announced version is kept in the `spring-boot-release-state` artifact (90 days).
+If the artifact has expired the latest release is announced again. A failure of the check itself does not post to Slack.
+
+Required secret: `SLACK_WEBHOOK_URL`, shared with the Snyk scan. To change the channel for both, replace the webhook.
