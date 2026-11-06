@@ -46,14 +46,17 @@ public class XAuthorizationConfig {
    * Filter bean that validates the X-Authorization header and merges roles into the existing {@link
    * org.springframework.security.core.context.SecurityContext}.
    *
-   * @param properties OAuth2 authorization properties supplying the role authority prefix
+   * @param oauth2Properties OAuth2 authorization properties supplying filter configuration
    * @return a configured {@link XAuthorizationFilter}
    */
   @Bean("xAuthorizationFilter")
   public OncePerRequestFilter xauthorizationFilter(
-      Oauth2AuthorizationProperties properties) {
+      Oauth2AuthorizationProperties oauth2Properties) {
     return new XAuthorizationFilter(
-        xauthorizationJwtDecoder(), properties.getRoleAuthorityPrefix());
+        xauthorizationJwtDecoder(),
+        oauth2Properties.getRoleAuthorityPrefix(),
+        oauth2Properties.getXAuthorizationFilter().getHeader(),
+        oauth2Properties.getXAuthorizationFilter().getClaims());
   }
 
   @Bean("xAuthorizationFilterRegistration")

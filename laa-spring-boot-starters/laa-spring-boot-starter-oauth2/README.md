@@ -151,9 +151,9 @@ without an expected security filter.
 
 `XAuthorizationFilter` is an optional additional filter for a supplementary raw JWT sent in the
 `X-Authorization` header. It validates the supplementary token, requires its Entra `oid` to match
-the authenticated bearer token's `oid`, then adds its `LAA_APP_ROLES` claim to the authenticated
-principal. Those roles use the configured `role-authority-prefix` (default `ROLE_`) and can be
-used in `authorized-roles` mappings.
+the authenticated bearer token's `oid`, then merges selected claims into the authenticated
+principal. By default, it merges `LAA_APP_ROLES` and `LAA_ACCOUNTS`. Roles use the configured
+`role-authority-prefix` (default `ROLE_`) and can be used in `authorized-roles` mappings.
 
 To enable it, explicitly import `XAuthorizationConfig` in the application and list the filter:
 
@@ -165,9 +165,19 @@ class SecurityFilterConfiguration {
 ```
 
 ```yaml
-laa.springboot.starter.oauth2:
-  additionalSecurityFilters:
-    - uk.gov.laa.springboot.oauth2.XAuthorizationFilter
+laa:
+  springboot:
+    starter:
+      oauth2:
+        additionalSecurityFilters:
+          - uk.gov.laa.springboot.oauth2.XAuthorizationFilter
+        xAuthorizationFilter:
+          header: X-Authorization
+          claims:
+            - LAA_APP_ROLES
+            - LAA_ACCOUNTS
+            - PROFILE_ID
+            - FIRM_CODE
 
 spring:
   security:
@@ -178,10 +188,17 @@ spring:
           jwk-set-uri: https://login.microsoftonline.com/<tenant-id>/discovery/v2.0/keys
 ```
 
-The `X-Authorization` value must be the raw compact JWT, not `Bearer <token>`. The header is
-optional: without it, the normal bearer token continues through authorization unchanged. A supplied
-X-Authorization token that is invalid, is not JWT-backed by the primary request authentication, or
-has a different `oid` receives `401 Unauthorized`.
+The supplementary-token header can be renamed with
+`laa.springboot.starter.oauth2.xAuthorizationFilter.header`. The
+`laa.springboot.starter.oauth2.xAuthorizationFilter.claims` list may contain any selection of
+`LAA_APP_ROLES`, `LAA_ACCOUNTS`, `PROFILE_ID`, and `FIRM_CODE`; unselected claims are not taken
+from the supplementary token. `PROFILE_ID` and `FIRM_CODE` are available as nullable fields on
+`AuthenticatedCaller`.
+
+The header value must be the raw compact JWT, not `Bearer <token>`. The header is optional: without
+it, the normal bearer token continues through authorization unchanged. A supplied supplementary
+token that is invalid, is not JWT-backed by the primary request authentication, or has a different
+`oid` receives `401 Unauthorized`.
 
 ## Mocking auth in tests
 

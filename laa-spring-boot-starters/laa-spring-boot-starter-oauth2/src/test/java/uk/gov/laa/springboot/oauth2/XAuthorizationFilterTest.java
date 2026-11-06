@@ -1,6 +1,7 @@
 package uk.gov.laa.springboot.oauth2;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 import jakarta.servlet.FilterChain;
 import java.time.Instant;
@@ -18,6 +19,7 @@ import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import uk.gov.laa.springboot.oauth2.utils.SecurityHelper;
 
 class XAuthorizationFilterTest {
 
@@ -58,6 +60,75 @@ class XAuthorizationFilterTest {
         .containsExactly("CASEWORKER");
     assertThat(authentication.getToken().getClaimAsStringList("LAA_ACCOUNTS"))
         .containsExactly("account-1");
+  }
+
+  @Test
+  void mergesConfiguredClaimsFromConfiguredHeader() throws Exception {
+    Jwt oboJwt = jwt("obo-token", Map.of("oid", OID));
+    Jwt authorizationJwt = jwt(
+        "supplementary-token",
+        Map.of(
+            "oid", OID,
+            "LAA_APP_ROLES", List.of("CASEWORKER"),
+            "LAA_ACCOUNTS", List.of("account-1"),
+            "PROFILE_ID", "profile-1",
+            "FIRM_CODE", "firm-1"));
+    SecurityContextHolder.getContext().setAuthentication(authentication(oboJwt));
+    XAuthorizationFilter filter = new XAuthorizationFilter(
+        token -> authorizationJwt,
+        "ROLE_",
+        "Supplementary-Authorization",
+        List.of(
+            SecurityHelper.LAA_APP_ROLES_CLAIM,
+            SecurityHelper.LAA_ACCOUNTS_CLAIM,
+            SecurityHelper.PROFILE_ID_CLAIM,
+            SecurityHelper.FIRM_CODE_CLAIM));
+
+    filter.doFilter(
+        requestWithHeader("Supplementary-Authorization", "supplementary-token"),
+        new MockHttpServletResponse(),
+        calledFilterChain(new AtomicBoolean()));
+
+    JwtAuthenticationToken authentication =
+        (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+    assertThat(authentication.getAuthorities())
+        .extracting(authority -> authority.getAuthority())
+        .contains("ROLE_CASEWORKER");
+    assertThat(authentication.getToken().getClaimAsStringList("LAA_ACCOUNTS"))
+        .containsExactly("account-1");
+    assertThat(authentication.getToken().getClaimAsString("PROFILE_ID")).isEqualTo("profile-1");
+    assertThat(authentication.getToken().getClaimAsString("FIRM_CODE")).isEqualTo("firm-1");
+  }
+
+  @Test
+  void removesSelectedClaimWhenItIsAbsentFromSupplementaryToken() throws Exception {
+    Jwt oboJwt = jwt("obo-token", Map.of("oid", OID, "PROFILE_ID", "primary-profile"));
+    SecurityContextHolder.getContext().setAuthentication(authentication(oboJwt));
+    XAuthorizationFilter filter = new XAuthorizationFilter(
+        token -> jwt(token, Map.of("oid", OID)),
+        "ROLE_",
+        "X-Authorization",
+        List.of(SecurityHelper.PROFILE_ID_CLAIM));
+
+    filter.doFilter(
+        requestWithXAuthorization("supplementary-token"),
+        new MockHttpServletResponse(),
+        calledFilterChain(new AtomicBoolean()));
+
+    JwtAuthenticationToken authentication =
+        (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+    assertThat(authentication.getToken().getClaimAsString("PROFILE_ID")).isNull();
+  }
+
+  @Test
+  void rejectsUnsupportedClaimConfiguration() {
+    assertThatIllegalArgumentException()
+        .isThrownBy(() -> new XAuthorizationFilter(
+            token -> jwt(token, Map.of()),
+            "ROLE_",
+            "X-Authorization",
+            List.of("UNSUPPORTED_CLAIM")))
+        .withMessageContaining("must be selected");
   }
 
   @Test
@@ -117,8 +188,12 @@ class XAuthorizationFilterTest {
   }
 
   private MockHttpServletRequest requestWithXAuthorization(String token) {
+    return requestWithHeader("X-Authorization", token);
+  }
+
+  private MockHttpServletRequest requestWithHeader(String header, String token) {
     MockHttpServletRequest request = new MockHttpServletRequest();
-    request.addHeader("X-Authorization", token);
+    request.addHeader(header, token);
     return request;
   }
 

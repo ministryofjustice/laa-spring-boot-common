@@ -15,6 +15,8 @@ public final class SecurityHelper {
 
   public static final String LAA_ACCOUNTS_CLAIM = "LAA_ACCOUNTS";
   public static final String LAA_APP_ROLES_CLAIM = "LAA_APP_ROLES";
+  public static final String PROFILE_ID_CLAIM = "PROFILE_ID";
+  public static final String FIRM_CODE_CLAIM = "FIRM_CODE";
   public static final String ENTRA_OID_CLAIM = "oid";
   public static final String ENTRA_SCOPES_CLAIM = "scp";
 
@@ -36,6 +38,24 @@ public final class SecurityHelper {
    */
   public static List<String> getLaaAppRoles() {
     return getStringListClaim(LAA_APP_ROLES_CLAIM);
+  }
+
+  /**
+   * Gets the validated profile identifier from the current JWT authentication.
+   *
+   * @return the profile identifier, or {@code null} when unavailable
+   */
+  public static String getProfileId() {
+    return getStringClaim(PROFILE_ID_CLAIM);
+  }
+
+  /**
+   * Gets the validated firm code from the current JWT authentication.
+   *
+   * @return the firm code, or {@code null} when unavailable
+   */
+  public static String getFirmCode() {
+    return getStringClaim(FIRM_CODE_CLAIM);
   }
 
   /**
@@ -72,6 +92,15 @@ public final class SecurityHelper {
             .map(JwtAuthenticationToken::getToken)
             .map(jwt -> jwt.getClaimAsStringList(claimName))
             .orElse(List.of());
+  }
+
+  private static String getStringClaim(String claimName) {
+    return getJwtAuthentication()
+        .map(JwtAuthenticationToken::getToken)
+        .map(jwt -> jwt.getClaimAsString(claimName))
+        .filter(value -> !value.isBlank())
+        .map(String::trim)
+        .orElse(null);
   }
 
   private static Optional<JwtAuthenticationToken> getJwtAuthentication() {

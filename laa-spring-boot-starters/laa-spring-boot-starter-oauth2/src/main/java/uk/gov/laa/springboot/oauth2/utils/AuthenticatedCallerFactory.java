@@ -15,6 +15,8 @@ public class AuthenticatedCallerFactory {
   public AuthenticatedCaller currentCaller() {
     return new AuthenticatedCaller(
         actorId(),
+        SecurityHelper.getProfileId(),
+        SecurityHelper.getFirmCode(),
         normalise(SecurityHelper.getScopes()),
         normalise(SecurityHelper.getLaaAccounts()),
         normalise(SecurityHelper.getLaaAppRoles()));
