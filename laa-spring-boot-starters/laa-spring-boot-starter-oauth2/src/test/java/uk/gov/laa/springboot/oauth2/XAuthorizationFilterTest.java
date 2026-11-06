@@ -1,0 +1,213 @@
+package uk.gov.laa.springboot.oauth2;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+
+import jakarta.servlet.FilterChain;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.BadJwtException;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import uk.gov.laa.springboot.oauth2.utils.SecurityHelper;
+
+class XAuthorizationFilterTest {
+
+  private static final String OID = "user-1";
+
+  @AfterEach
+  void clearSecurityContext() {
+    SecurityContextHolder.clearContext();
+  }
+
+  @Test
+  void mergesXAuthorizationRolesAndAccountsIntoOboAuthentication() throws Exception {
+    Jwt oboJwt = jwt("obo-token", Map.of("oid", OID));
+    Jwt authorizationJwt = jwt(
+        "x-authorization-token",
+        Map.of(
+            "oid", OID,
+            "LAA_APP_ROLES", List.of("CASEWORKER", "CASEWORKER", " "),
+            "LAA_ACCOUNTS", List.of("account-1", "account-1")));
+    SecurityContextHolder.getContext().setAuthentication(
+        new JwtAuthenticationToken(
+            oboJwt, List.of(new SimpleGrantedAuthority("SCOPE_read")), "caller"));
+    XAuthorizationFilter filter = new XAuthorizationFilter(token -> authorizationJwt, "ROLE_");
+    AtomicBoolean chainCalled = new AtomicBoolean();
+
+    filter.doFilter(
+        requestWithXAuthorization("x-authorization-token"),
+        new MockHttpServletResponse(),
+        calledFilterChain(chainCalled));
+
+    JwtAuthenticationToken authentication =
+        (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+    assertThat(chainCalled).isTrue();
+    assertThat(authentication.getAuthorities())
+        .extracting(authority -> authority.getAuthority())
+        .containsExactlyInAnyOrder("SCOPE_read", "ROLE_CASEWORKER");
+    assertThat(authentication.getToken().getClaimAsStringList("LAA_APP_ROLES"))
+        .containsExactly("CASEWORKER");
+    assertThat(authentication.getToken().getClaimAsStringList("LAA_ACCOUNTS"))
+        .containsExactly("account-1");
+  }
+
+  @Test
+  void mergesConfiguredClaimsFromConfiguredHeader() throws Exception {
+    Jwt oboJwt = jwt("obo-token", Map.of("oid", OID));
+    Jwt authorizationJwt = jwt(
+        "supplementary-token",
+        Map.of(
+            "oid", OID,
+            "LAA_APP_ROLES", List.of("CASEWORKER"),
+            "LAA_ACCOUNTS", List.of("account-1"),
+            "PROFILE_ID", "profile-1",
+            "FIRM_CODE", "firm-1"));
+    SecurityContextHolder.getContext().setAuthentication(authentication(oboJwt));
+    XAuthorizationFilter filter = new XAuthorizationFilter(
+        token -> authorizationJwt,
+        "ROLE_",
+        "Supplementary-Authorization",
+        List.of(
+            SecurityHelper.LAA_APP_ROLES_CLAIM,
+            SecurityHelper.LAA_ACCOUNTS_CLAIM,
+            SecurityHelper.PROFILE_ID_CLAIM,
+            SecurityHelper.FIRM_CODE_CLAIM));
+
+    filter.doFilter(
+        requestWithHeader("Supplementary-Authorization", "supplementary-token"),
+        new MockHttpServletResponse(),
+        calledFilterChain(new AtomicBoolean()));
+
+    JwtAuthenticationToken authentication =
+        (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+    assertThat(authentication.getAuthorities())
+        .extracting(authority -> authority.getAuthority())
+        .contains("ROLE_CASEWORKER");
+    assertThat(authentication.getToken().getClaimAsStringList("LAA_ACCOUNTS"))
+        .containsExactly("account-1");
+    assertThat(authentication.getToken().getClaimAsString("PROFILE_ID")).isEqualTo("profile-1");
+    assertThat(authentication.getToken().getClaimAsString("FIRM_CODE")).isEqualTo("firm-1");
+  }
+
+  @Test
+  void removesSelectedClaimWhenItIsAbsentFromSupplementaryToken() throws Exception {
+    Jwt oboJwt = jwt("obo-token", Map.of("oid", OID, "PROFILE_ID", "primary-profile"));
+    SecurityContextHolder.getContext().setAuthentication(authentication(oboJwt));
+    XAuthorizationFilter filter = new XAuthorizationFilter(
+        token -> jwt(token, Map.of("oid", OID)),
+        "ROLE_",
+        "X-Authorization",
+        List.of(SecurityHelper.PROFILE_ID_CLAIM));
+
+    filter.doFilter(
+        requestWithXAuthorization("supplementary-token"),
+        new MockHttpServletResponse(),
+        calledFilterChain(new AtomicBoolean()));
+
+    JwtAuthenticationToken authentication =
+        (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+    assertThat(authentication.getToken().getClaimAsString("PROFILE_ID")).isNull();
+  }
+
+  @Test
+  void rejectsUnsupportedClaimConfiguration() {
+    assertThatIllegalArgumentException()
+        .isThrownBy(() -> new XAuthorizationFilter(
+            token -> jwt(token, Map.of()),
+            "ROLE_",
+            "X-Authorization",
+            List.of("UNSUPPORTED_CLAIM")))
+        .withMessageContaining("must be selected");
+  }
+
+  @Test
+  void continuesWithoutXAuthorizationHeader() throws Exception {
+    JwtAuthenticationToken authentication = authentication(jwt("obo-token", Map.of("oid", OID)));
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+    XAuthorizationFilter filter = new XAuthorizationFilter(token -> jwt(token, Map.of()), "ROLE_");
+    AtomicBoolean chainCalled = new AtomicBoolean();
+
+    filter.doFilter(new MockHttpServletRequest(), new MockHttpServletResponse(), calledFilterChain(chainCalled));
+
+    assertThat(chainCalled).isTrue();
+    assertThat(SecurityContextHolder.getContext().getAuthentication()).isSameAs(authentication);
+  }
+
+  @Test
+  void rejectsInvalidXAuthorizationToken() throws Exception {
+    JwtDecoder decoder = token -> {
+      throw new BadJwtException("invalid");
+    };
+    XAuthorizationFilter filter = new XAuthorizationFilter(decoder, "ROLE_");
+    SecurityContextHolder.getContext().setAuthentication(authentication(jwt("obo-token", Map.of("oid", OID))));
+    MockHttpServletResponse response = new MockHttpServletResponse();
+
+    filter.doFilter(requestWithXAuthorization("invalid"), response, calledFilterChain(new AtomicBoolean()));
+
+    assertThat(response.getStatus()).isEqualTo(401);
+  }
+
+  @Test
+  void rejectsXAuthorizationTokenWhenExistingAuthenticationIsNotJwtBacked() throws Exception {
+    XAuthorizationFilter filter = new XAuthorizationFilter(
+        token -> jwt(token, Map.of("oid", OID)), "ROLE_");
+    SecurityContextHolder.getContext().setAuthentication(
+        new UsernamePasswordAuthenticationToken("caller", "password"));
+    MockHttpServletResponse response = new MockHttpServletResponse();
+
+    filter.doFilter(requestWithXAuthorization("x-token"), response, calledFilterChain(new AtomicBoolean()));
+
+    assertThat(response.getStatus()).isEqualTo(401);
+  }
+
+  @Test
+  void rejectsXAuthorizationTokenForAnotherUser() throws Exception {
+    XAuthorizationFilter filter = new XAuthorizationFilter(
+        token -> jwt(token, Map.of("oid", "another-user")), "ROLE_");
+    SecurityContextHolder.getContext().setAuthentication(authentication(jwt("obo-token", Map.of("oid", OID))));
+    MockHttpServletResponse response = new MockHttpServletResponse();
+
+    filter.doFilter(requestWithXAuthorization("x-token"), response, calledFilterChain(new AtomicBoolean()));
+
+    assertThat(response.getStatus()).isEqualTo(401);
+  }
+
+  private JwtAuthenticationToken authentication(Jwt jwt) {
+    return new JwtAuthenticationToken(jwt, List.of(new SimpleGrantedAuthority("ROLE_EXISTING")));
+  }
+
+  private MockHttpServletRequest requestWithXAuthorization(String token) {
+    return requestWithHeader("X-Authorization", token);
+  }
+
+  private MockHttpServletRequest requestWithHeader(String header, String token) {
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    request.addHeader(header, token);
+    return request;
+  }
+
+  private FilterChain calledFilterChain(AtomicBoolean chainCalled) {
+    return (request, response) -> chainCalled.set(true);
+  }
+
+  private Jwt jwt(String token, Map<String, Object> claims) {
+    return Jwt.withTokenValue(token)
+        .header("alg", "none")
+        .claim("sub", "caller")
+        .claims(jwtClaims -> jwtClaims.putAll(claims))
+        .issuedAt(Instant.now())
+        .expiresAt(Instant.now().plusSeconds(3600))
+        .build();
+  }
+}
