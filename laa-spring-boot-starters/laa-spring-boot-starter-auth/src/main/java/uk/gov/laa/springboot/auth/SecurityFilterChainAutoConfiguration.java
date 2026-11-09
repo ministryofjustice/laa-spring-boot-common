@@ -25,7 +25,11 @@ import tools.jackson.databind.ObjectMapper;
  * (group). See <a
  * href="https://docs.spring.io/spring-security/reference/servlet/configuration/java.html#jc-httpsecurity">HTTP
  * Security Configuration</a>.
+ *
+ * @deprecated Prefer {@code laa-spring-boot-starter-oauth2} for new API integrations. See its
+ *     README and migration guide for setup guidance.
  */
+@Deprecated
 @Slf4j
 @AutoConfiguration
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)

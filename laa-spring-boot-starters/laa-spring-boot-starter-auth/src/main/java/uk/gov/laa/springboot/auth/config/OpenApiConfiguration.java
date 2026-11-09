@@ -13,7 +13,11 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Provides configuration of the OpenAPI specification unless explicitly disabled.
+ *
+ * @deprecated Prefer {@code laa-spring-boot-starter-oauth2} for new API integrations. See its
+ *     README and migration guide for setup guidance.
  */
+@Deprecated
 @Slf4j
 @Configuration
 @ConditionalOnProperty(
