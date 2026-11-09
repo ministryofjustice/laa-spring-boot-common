@@ -21,7 +21,11 @@ import tools.jackson.databind.ObjectMapper;
 
 /**
  * API access token authentication filter.
+ *
+ * @deprecated Prefer {@code laa-spring-boot-starter-oauth2} for new API integrations. See its
+ *     README and migration guide for setup guidance.
  */
+@Deprecated
 @Slf4j
 public class ApiAuthenticationFilter extends OncePerRequestFilter {
 

@@ -8,7 +8,11 @@ import tools.jackson.databind.ObjectMapper;
 
 /**
  * Custom Api token configurer.
+ *
+ * @deprecated Prefer {@code laa-spring-boot-starter-oauth2} for new API integrations. See its
+ *     README and migration guide for setup guidance.
  */
+@Deprecated
 public class ApiTokenConfigurer extends AbstractHttpConfigurer<ApiTokenConfigurer, HttpSecurity> {
 
   private final ObjectMapper objectMapper;
