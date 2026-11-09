@@ -1,6 +1,0 @@
-#Keep this empty
-laa:
-  springboot:
-    starter:
-      slack-alerts:
-        webhook:
