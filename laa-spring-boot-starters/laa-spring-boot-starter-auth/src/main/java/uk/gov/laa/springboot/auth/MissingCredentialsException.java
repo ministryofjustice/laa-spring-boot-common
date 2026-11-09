@@ -4,7 +4,11 @@ import org.springframework.security.core.AuthenticationException;
 
 /**
  * Thrown when no credentials have been provided, but are required.
+ *
+ * @deprecated Prefer {@code laa-spring-boot-starter-oauth2} for new API integrations. See its
+ *     README and migration guide for setup guidance.
  */
+@Deprecated
 public class MissingCredentialsException extends AuthenticationException {
 
   /**

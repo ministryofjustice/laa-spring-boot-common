@@ -10,7 +10,10 @@ import java.util.Objects;
  *
  * @param uri the uri pattern that is accessible to clients that have this role
  * @param methods the HTTP methods that are permitted for this uri pattern, or {@code null} for all
+ * @deprecated Prefer {@code laa-spring-boot-starter-oauth2} for new API integrations. See its
+ *     README and migration guide for setup guidance.
  */
+@Deprecated
 @JsonFormat(with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
 public record AuthorizedRoleUri(String uri, String[] methods) {
 

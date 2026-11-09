@@ -12,7 +12,11 @@ import tools.jackson.databind.exc.InvalidFormatException;
 
 /**
  * Deserializes authorized role uri entries, supporting both string and object formats.
+ *
+ * @deprecated Prefer {@code laa-spring-boot-starter-oauth2} for new API integrations. See its
+ *     README and migration guide for setup guidance.
  */
+@Deprecated
 public class AuthorizedRoleUriDeserializer extends StdDeserializer<AuthorizedRoleUri> {
 
   private static final String URI_FIELD = "uri";
