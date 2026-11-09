@@ -12,7 +12,7 @@ import org.thymeleaf.processor.element.IElementTagStructureHandler;
 import org.thymeleaf.templatemode.TemplateMode;
 
 /**
- * Transforms <moj:datepicker/> elements into standard HTML button elements.
+ * Transforms {@code <moj:datepicker/>} elements into date picker components.
  */
 public class DatePickerElementTagProcessor extends AbstractElementTagProcessor {
 

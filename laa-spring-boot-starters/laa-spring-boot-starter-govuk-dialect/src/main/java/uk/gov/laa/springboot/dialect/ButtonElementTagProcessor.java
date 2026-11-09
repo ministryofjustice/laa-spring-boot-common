@@ -13,7 +13,7 @@ import org.thymeleaf.templatemode.TemplateMode;
 
 
 /**
- * Transforms <govuk:button/> elements into standard HTML button elements.
+ * Transforms {@code <govuk:button/>} elements into standard HTML button elements.
  */
 public class ButtonElementTagProcessor extends AbstractElementTagProcessor {
 
@@ -98,4 +98,3 @@ public class ButtonElementTagProcessor extends AbstractElementTagProcessor {
     structureHandler.replaceWith(model, false);
   }
 }
-

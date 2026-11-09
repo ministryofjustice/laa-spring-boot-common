@@ -15,7 +15,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 /**
  * API authentication service responsible for determining the authentication outcome for a given
  * client request.
+ *
+ * @deprecated Prefer {@code laa-spring-boot-starter-oauth2} for new API integrations. See its
+ *     README and migration guide for setup guidance.
  */
+@Deprecated
 @Slf4j
 public class ApiAuthenticationProvider implements AuthenticationProvider {
 

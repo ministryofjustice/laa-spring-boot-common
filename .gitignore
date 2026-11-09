@@ -184,3 +184,6 @@ gradle-app.setting
 ### Gradle Patch ###
 # Java heap dump
 *.hprof
+
+# APM dependencies
+apm_modules/

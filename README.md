@@ -14,6 +14,21 @@ and a set of starters that provide individual pieces of common functionality.
 - `spring3`: Spring Boot 3.x / Jackson 2 line; pin plugin and starter versions from releases built off this branch if you have not upgraded yet.
 - Avoid mixing artifacts across the two lines; pick the release line from Maven Central that matches your Spring Boot major version.
 
+## Maven release approval
+
+The **Build main** workflow waits at the `maven` environment before running the shared
+build-and-release workflow. This applies to pushes and manual runs on `main`, including
+build-only runs (`release_type: none`). Manual runs on other branches skip the release.
+Pull request snapshot builds are unchanged.
+
+In **Settings > Environments > maven**, configure **Required reviewers** and restrict
+deployment branches to `main`. Without required reviewers, the gate proceeds automatically.
+Approval happens before the build as well as publishing; rejecting the gate prevents both.
+
+Publishing credentials must remain repository or organisation secrets: this environment
+belongs to the approval job, so its environment secrets are not available to the separate
+reusable workflow.
+
 ## Available Plugins
 
 ### `laa-java-gradle-plugin` for Java Projects
@@ -109,13 +124,9 @@ apply plugin: 'uk.gov.justice.service.laa.laa-spring-boot-gradle-plugin'
 
 ## Available Starters
 
-- [Gov-uk custom thymeleaf dialect](laa-spring-boot-starters/laa-spring-boot-starter-govuk-dialect)
-
-- [Authentication](laa-spring-boot-starters/laa-spring-boot-starter-auth/README.md)
+- [Legacy API-key authentication (deprecated)](laa-spring-boot-starters/laa-spring-boot-starter-auth/README.md)
 - [OAuth2 resource server auth](laa-spring-boot-starters/laa-spring-boot-starter-oauth2/README.md)
-- [Application exception handling](laa-spring-boot-starters/laa-spring-boot-starter-application-exception/README.md)
-  (deprecated – prefer Spring's built-in `ProblemDetail`/`ErrorResponse` RFC 9457 support)
-- [Slack alerts](laa-spring-boot-starters/laa-spring-boot-starter-slack-alerts/README.md)
+- [Gov-uk custom thymeleaf dialect](laa-spring-boot-starters/laa-spring-boot-starter-govuk-dialect)
 - [SQL input scanning](laa-spring-boot-starters/laa-spring-boot-starter-sql-scanner/README.md)
 - [CSV exports](laa-spring-boot-starters/laa-spring-boot-starter-export/README.md)
 

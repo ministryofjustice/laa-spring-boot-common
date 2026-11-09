@@ -12,7 +12,11 @@ import tools.jackson.databind.ObjectMapper;
 /**
  * Exception Handler for requests that have been authenticated, but do not have sufficient
  * privileges to access the requested endpoint.
+ *
+ * @deprecated Prefer {@code laa-spring-boot-starter-oauth2} for new API integrations. See its
+ *     README and migration guide for setup guidance.
  */
+@Deprecated
 @Slf4j
 public class ApiAccessDeniedHandler implements AccessDeniedHandler {
 

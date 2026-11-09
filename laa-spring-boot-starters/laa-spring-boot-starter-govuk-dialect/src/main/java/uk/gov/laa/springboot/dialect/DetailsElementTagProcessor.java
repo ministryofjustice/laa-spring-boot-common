@@ -10,7 +10,7 @@ import org.thymeleaf.processor.element.IElementTagStructureHandler;
 import org.thymeleaf.templatemode.TemplateMode;
 
 /**
- * Transforms <govuk:button/> elements into standard HTML button elements.
+ * Transforms {@code <govuk:details/>} elements into standard HTML details elements.
  */
 public class DetailsElementTagProcessor extends AbstractElementTagProcessor {
 
