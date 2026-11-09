@@ -124,13 +124,9 @@ apply plugin: 'uk.gov.justice.service.laa.laa-spring-boot-gradle-plugin'
 
 ## Available Starters
 
-- [Gov-uk custom thymeleaf dialect](laa-spring-boot-starters/laa-spring-boot-starter-govuk-dialect)
-
-- [Authentication](laa-spring-boot-starters/laa-spring-boot-starter-auth/README.md)
+- [Legacy API-key authentication (deprecated)](laa-spring-boot-starters/laa-spring-boot-starter-auth/README.md)
 - [OAuth2 resource server auth](laa-spring-boot-starters/laa-spring-boot-starter-oauth2/README.md)
-- [Application exception handling](laa-spring-boot-starters/laa-spring-boot-starter-application-exception/README.md)
-  (deprecated – prefer Spring's built-in `ProblemDetail`/`ErrorResponse` RFC 9457 support)
-- [Slack alerts](laa-spring-boot-starters/laa-spring-boot-starter-slack-alerts/README.md)
+- [Gov-uk custom thymeleaf dialect](laa-spring-boot-starters/laa-spring-boot-starter-govuk-dialect)
 - [SQL input scanning](laa-spring-boot-starters/laa-spring-boot-starter-sql-scanner/README.md)
 - [CSV exports](laa-spring-boot-starters/laa-spring-boot-starter-export/README.md)
 
