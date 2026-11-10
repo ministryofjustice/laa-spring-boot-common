@@ -35,10 +35,17 @@ public class Oauth2AccessDeniedHandler implements AccessDeniedHandler {
     problemDetail.setTitle(status.getReasonPhrase());
     response.getWriter().write(objectMapper.writeValueAsString(problemDetail));
 
-    log.info(
-        "Request rejected for endpoint '{} {}': {}",
-        request.getMethod(),
-        request.getRequestURI(),
-        message);
+    log.atInfo()
+        .addKeyValue(SecurityEventFields.EVENT_TYPE, "AUTHORIZATION_DENIED")
+        .addKeyValue(SecurityEventFields.OUTCOME, "DENIED")
+        .addKeyValue(
+            SecurityEventFields.EVENT_DETAIL, request.getMethod() + " " + request.getRequestURI())
+        .addKeyValue(SecurityEventFields.HTTP_METHOD, request.getMethod())
+        .addKeyValue(SecurityEventFields.PATH, request.getRequestURI())
+        .log(
+            "Request rejected for endpoint '{} {}': {}",
+            request.getMethod(),
+            request.getRequestURI(),
+            message);
   }
 }
