@@ -59,7 +59,7 @@ class SecurityEventLoggingTest {
     when(authenticationManager.authenticate(any()))
         .thenReturn(
             ApiAuthenticationToken.authenticated(
-                "caab-service", TOKEN, AuthorityUtils.createAuthorityList("ROLE_ALL")));
+                "test-laa-service", TOKEN, AuthorityUtils.createAuthorityList("ROLE_ALL")));
 
     runFilter();
 
@@ -67,7 +67,7 @@ class SecurityEventLoggingTest {
     assertThat(fields(event))
         .containsEntry("event_type", "AUTHENTICATION_SUCCESS")
         .containsEntry("outcome", "SUCCESS")
-        .containsEntry("client_id", "caab-service")
+        .containsEntry("client_id", "test-laa-service")
         .containsEntry("http_method", "POST")
         .containsEntry("path", "/cases");
     assertThat(event.getLevel()).isEqualTo(Level.INFO);
@@ -107,7 +107,7 @@ class SecurityEventLoggingTest {
     SecurityContextHolder.getContext()
         .setAuthentication(
             ApiAuthenticationToken.authenticated(
-                "caab-service", TOKEN, AuthorityUtils.createAuthorityList("ROLE_READ")));
+                "test-laa-service", TOKEN, AuthorityUtils.createAuthorityList("ROLE_READ")));
     var handler = new ApiAccessDeniedHandler(new ObjectMapper());
     var response = new MockHttpServletResponse();
 
@@ -119,7 +119,7 @@ class SecurityEventLoggingTest {
     assertThat(fields(event))
         .containsEntry("event_type", "AUTHORIZATION_DENIED")
         .containsEntry("outcome", "DENIED")
-        .containsEntry("client_id", "caab-service")
+        .containsEntry("client_id", "test-laa-service")
         .containsEntry("event_detail", "POST /cases");
     assertThat(event.getLevel()).isEqualTo(Level.INFO);
     assertNoToken(event);
