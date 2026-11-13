@@ -5,13 +5,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -191,9 +192,9 @@ public class XAuthorizationFilter extends OncePerRequestFilter {
       List<String> laaAccounts) {
     claims.remove(claimName);
     if (SecurityHelper.LAA_APP_ROLES_CLAIM.equals(claimName)) {
-      claims.put(claimName, appRoles);
+      claims.put(claimName, String.join(", ", appRoles));
     } else if (SecurityHelper.LAA_ACCOUNTS_CLAIM.equals(claimName)) {
-      claims.put(claimName, laaAccounts);
+      claims.put(claimName, String.join(", ", laaAccounts));
     } else {
       String value = claimAsNonBlankString(authorizationJwt, claimName);
       if (value != null) {
@@ -203,14 +204,26 @@ public class XAuthorizationFilter extends OncePerRequestFilter {
   }
 
   private List<String> claimAsNonBlankDistinctStrings(Jwt jwt, String claimName) {
-    List<String> values = jwt.getClaimAsStringList(claimName);
-    return values == null
-        ? List.of()
-        : values.stream()
-        .filter(Objects::nonNull)
-        .filter(value -> !value.isBlank())
-        .distinct()
-        .toList();
+    Object claimValue = jwt.getClaim(claimName);
+    if (claimValue == null) {
+      return List.of();
+    }
+    if (claimValue instanceof Iterable<?> values) {
+      return StreamSupport.stream(values.spliterator(), false)
+          .map(String::valueOf)
+          .map(String::trim)
+          .filter(value -> !value.isBlank())
+          .distinct()
+          .toList();
+    }
+    if (claimValue instanceof String value) {
+      return Arrays.stream(value.split("[,\\s]+"))
+          .map(String::trim)
+          .filter(v -> !v.isBlank())
+          .distinct()
+          .toList();
+    }
+    return List.of(String.valueOf(claimValue).trim());
   }
 
   private String claimAsNonBlankString(Jwt jwt, String claimName) {

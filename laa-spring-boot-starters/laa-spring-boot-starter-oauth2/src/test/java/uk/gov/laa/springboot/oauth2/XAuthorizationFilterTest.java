@@ -37,8 +37,8 @@ class XAuthorizationFilterTest {
         "x-authorization-token",
         Map.of(
             "oid", OID,
-            "LAA_APP_ROLES", List.of("CASEWORKER", "CASEWORKER", " "),
-            "LAA_ACCOUNTS", List.of("account-1", "account-1")));
+            "LAA_APP_ROLES", "CASEWORKER, CASEWORKER, ,",
+            "LAA_ACCOUNTS", "account-1, account-1, ,"));
     SecurityContextHolder.getContext().setAuthentication(
         new JwtAuthenticationToken(
             oboJwt, List.of(new SimpleGrantedAuthority("SCOPE_read")), "caller"));
@@ -56,10 +56,10 @@ class XAuthorizationFilterTest {
     assertThat(authentication.getAuthorities())
         .extracting(authority -> authority.getAuthority())
         .containsExactlyInAnyOrder("SCOPE_read", "ROLE_CASEWORKER");
-    assertThat(authentication.getToken().getClaimAsStringList("LAA_APP_ROLES"))
-        .containsExactly("CASEWORKER");
-    assertThat(authentication.getToken().getClaimAsStringList("LAA_ACCOUNTS"))
-        .containsExactly("account-1");
+    assertThat(authentication.getToken().getClaimAsString("LAA_APP_ROLES"))
+        .isEqualTo("CASEWORKER");
+    assertThat(authentication.getToken().getClaimAsString("LAA_ACCOUNTS"))
+        .isEqualTo("account-1");
   }
 
   @Test
@@ -69,8 +69,8 @@ class XAuthorizationFilterTest {
         "supplementary-token",
         Map.of(
             "oid", OID,
-            "LAA_APP_ROLES", List.of("CASEWORKER"),
-            "LAA_ACCOUNTS", List.of("account-1"),
+            "LAA_APP_ROLES", "CASEWORKER",
+            "LAA_ACCOUNTS", "account-1",
             "PROFILE_ID", "profile-1",
             "FIRM_CODE", "firm-1"));
     SecurityContextHolder.getContext().setAuthentication(authentication(oboJwt));
@@ -94,8 +94,8 @@ class XAuthorizationFilterTest {
     assertThat(authentication.getAuthorities())
         .extracting(authority -> authority.getAuthority())
         .contains("ROLE_CASEWORKER");
-    assertThat(authentication.getToken().getClaimAsStringList("LAA_ACCOUNTS"))
-        .containsExactly("account-1");
+    assertThat(authentication.getToken().getClaimAsString("LAA_ACCOUNTS"))
+        .isEqualTo("account-1");
     assertThat(authentication.getToken().getClaimAsString("PROFILE_ID")).isEqualTo("profile-1");
     assertThat(authentication.getToken().getClaimAsString("FIRM_CODE")).isEqualTo("firm-1");
   }
