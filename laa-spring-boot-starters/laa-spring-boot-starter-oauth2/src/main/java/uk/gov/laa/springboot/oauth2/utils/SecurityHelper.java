@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -89,9 +90,19 @@ public final class SecurityHelper {
 
   private static List<String> getStringListClaim(String claimName) {
     return getJwtAuthentication()
-            .map(JwtAuthenticationToken::getToken)
-            .map(jwt -> jwt.getClaimAsStringList(claimName))
-            .orElse(List.of());
+        .map(JwtAuthenticationToken::getToken)
+        .map(jwt -> parseClaimValues(jwt.getClaimAsString(claimName)))
+        .orElse(List.of());
+  }
+
+  private static List<String> parseClaimValues(String claimValue) {
+    if (claimValue == null) {
+      return List.of();
+    }
+    return Arrays.stream(claimValue.split("[,\\s]+"))
+        .map(String::trim)
+        .filter(v -> !v.isBlank())
+        .toList();
   }
 
   private static String getStringClaim(String claimName) {

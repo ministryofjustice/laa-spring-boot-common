@@ -29,9 +29,9 @@ class AuthenticatedCallerFactoryTest {
         "oid", ACTOR_ID.toString(),
         "PROFILE_ID", "profile-1",
         "FIRM_CODE", "firm-1",
-        "scp", List.of("scope:read ", " scope:write"),
-        "LAA_ACCOUNTS", List.of("account-1", "account-2"),
-        "LAA_APP_ROLES", List.of("CASEWORKER", "USER")));
+        "scp", "scope:read scope:write",
+        "LAA_ACCOUNTS", "account-1,account-2",
+        "LAA_APP_ROLES", "CASEWORKER, USER"));
 
     AuthenticatedCaller caller = factory.currentCaller();
 
