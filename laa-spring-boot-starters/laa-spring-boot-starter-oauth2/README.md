@@ -140,6 +140,14 @@ class SecurityFilterConfiguration {
   RequestEntitlementFilter requestEntitlementFilter(EntitlementService entitlementService) {
     return new RequestEntitlementFilter(entitlementService);
   }
+
+  // Disable auto-registration of the filter, so it is only added to the OAuth2 security chain
+  @Bean
+  FilterRegistrationBean<RequestEntitlementFilter> requestEntitlementFilterRegistration(RequestEntitlementFilter filter) {
+    var registration = new FilterRegistrationBean<>(filter);
+    registration.setEnabled(false);
+    return registration;
+  }
 }
 ```
 

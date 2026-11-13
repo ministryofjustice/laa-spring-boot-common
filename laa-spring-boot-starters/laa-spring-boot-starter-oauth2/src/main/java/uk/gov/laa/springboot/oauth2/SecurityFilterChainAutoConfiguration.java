@@ -32,6 +32,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 import tools.jackson.databind.ObjectMapper;
+import uk.gov.laa.springboot.oauth2.utils.AuthenticatedCallerFactory;
 
 /**
  * Security configuration for OAuth2 JWT authentication and role/scope endpoint authorization.
@@ -71,6 +72,12 @@ public class SecurityFilterChainAutoConfiguration {
     JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
     converter.setJwtGrantedAuthoritiesConverter(new JwtAuthoritiesConverter(properties));
     return converter;
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public AuthenticatedCallerFactory authenticatedCallerFactory() {
+    return new AuthenticatedCallerFactory();
   }
 
   /**
@@ -132,7 +139,7 @@ public class SecurityFilterChainAutoConfiguration {
     for (String filterClassName : properties.getAdditionalSecurityFilters()) {
       ResolvedFilter resolvedFilter = resolveFilter(filterClassName, applicationContext);
       httpSecurity.addFilterAfter(resolvedFilter.filter(), previousFilterClass);
-      previousFilterClass = resolvedFilter.filterClass();
+      previousFilterClass = resolvedFilter.filter().getClass();
     }
   }
 
