@@ -96,6 +96,14 @@ class Oauth2EndpointAuthorizationTest {
   }
 
   @Test
+  void unknownSupplementaryTokenIsUnauthorized() throws Exception {
+    mockMvc.perform(get("/resource1/requires-group1-role")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer obo-without-roles")
+            .header("X-Authorization", "unknown-supplementary-token"))
+        .andExpect(status().is(HttpStatus.UNAUTHORIZED.value()));
+  }
+
+  @Test
   void scopeMappingAllowsConfiguredScope() throws Exception {
     mockMvc.perform(get("/resource1/requires-scope")
             .header(HttpHeaders.AUTHORIZATION, "Bearer scope-read"))

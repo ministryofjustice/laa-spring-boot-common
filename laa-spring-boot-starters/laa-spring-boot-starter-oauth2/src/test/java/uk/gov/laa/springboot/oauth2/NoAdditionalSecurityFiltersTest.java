@@ -32,5 +32,9 @@ class NoAdditionalSecurityFiltersTest {
 
     mockMvc.perform(get("/resource1/unrestricted"))
         .andExpect(status().is(HttpStatus.NO_CONTENT.value()));
+
+    mockMvc.perform(get("/resource1/unrestricted")
+            .header("X-Authorization", "x-authorization-group1"))
+        .andExpect(status().is(HttpStatus.NO_CONTENT.value()));
   }
 }

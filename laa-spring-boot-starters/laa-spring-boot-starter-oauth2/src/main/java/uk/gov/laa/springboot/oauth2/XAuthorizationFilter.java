@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
@@ -111,7 +112,7 @@ public class XAuthorizationFilter extends OncePerRequestFilter {
     Jwt authorizationJwt;
     try {
       authorizationJwt = secondaryAuthorizationJwtDecoder.decode(token);
-    } catch (JwtException e) {
+    } catch (JwtException | OAuth2AuthenticationException e) {
       log.warn("X-Authorization token invalid: {}", e.getMessage());
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;

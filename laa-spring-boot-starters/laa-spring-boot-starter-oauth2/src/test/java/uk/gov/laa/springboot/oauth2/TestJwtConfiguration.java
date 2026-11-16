@@ -3,10 +3,12 @@ package uk.gov.laa.springboot.oauth2;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.web.filter.OncePerRequestFilter;
 import uk.gov.laa.springboot.oauth2.testsupport.StubJwtDecoder;
 import uk.gov.laa.springboot.oauth2.testsupport.StubJwtToken;
 
@@ -58,5 +60,14 @@ class TestJwtConfiguration {
   XAuthorizationFilter xAuthorizationFilter(
       @Qualifier("xAuthorizationJwtDecoder") JwtDecoder xAuthorizationJwtDecoder) {
     return new XAuthorizationFilter(xAuthorizationJwtDecoder, "ROLE_");
+  }
+
+  @Bean("xAuthorizationFilterRegistration")
+  FilterRegistrationBean<OncePerRequestFilter> xAuthorizationFilterRegistration(
+      XAuthorizationFilter xAuthorizationFilter) {
+    FilterRegistrationBean<OncePerRequestFilter> registration =
+        new FilterRegistrationBean<>(xAuthorizationFilter);
+    registration.setEnabled(false);
+    return registration;
   }
 }
