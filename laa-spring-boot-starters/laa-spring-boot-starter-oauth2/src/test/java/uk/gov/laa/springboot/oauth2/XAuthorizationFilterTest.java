@@ -63,6 +63,26 @@ class XAuthorizationFilterTest {
   }
 
   @Test
+  void removesOboAccountsWhenSupplementaryTokenProvidesOnlyRoles() throws Exception {
+    Jwt oboJwt = jwt("obo-token", Map.of("oid", OID, "LAA_ACCOUNTS", "existing-account"));
+    Jwt authorizationJwt = jwt(
+        "x-authorization-token", Map.of("oid", OID, "LAA_APP_ROLES", "CASEWORKER"));
+    SecurityContextHolder.getContext().setAuthentication(authentication(oboJwt));
+    XAuthorizationFilter filter = new XAuthorizationFilter(token -> authorizationJwt, "ROLE_");
+
+    filter.doFilter(
+        requestWithXAuthorization("x-authorization-token"),
+        new MockHttpServletResponse(),
+        calledFilterChain(new AtomicBoolean()));
+
+    JwtAuthenticationToken authentication =
+        (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+    assertThat(authentication.getToken().getClaimAsString("LAA_APP_ROLES"))
+        .isEqualTo("CASEWORKER");
+    assertThat(authentication.getToken().getClaimAsString("LAA_ACCOUNTS")).isEmpty();
+  }
+
+  @Test
   void mergesConfiguredClaimsFromConfiguredHeader() throws Exception {
     Jwt oboJwt = jwt("obo-token", Map.of("oid", OID));
     Jwt authorizationJwt = jwt(

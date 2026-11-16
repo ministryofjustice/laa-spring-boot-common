@@ -144,10 +144,6 @@ public class XAuthorizationFilter extends OncePerRequestFilter {
     List<String> laaAccounts = claimsToMerge.contains(SecurityHelper.LAA_ACCOUNTS_CLAIM)
         ? claimAsNonBlankDistinctStrings(authorizationJwt, SecurityHelper.LAA_ACCOUNTS_CLAIM)
         : List.of();
-    if (containsOnlyEntitlementClaims() && appRoles.isEmpty() && laaAccounts.isEmpty()) {
-      chain.doFilter(request, response);
-      return;
-    }
     Set<GrantedAuthority> mergedAuthorities = new HashSet<>(existingAuth.getAuthorities());
     appRoles.forEach(
         role -> mergedAuthorities.add(new SimpleGrantedAuthority(roleAuthorityPrefix + role)));
@@ -230,12 +226,6 @@ public class XAuthorizationFilter extends OncePerRequestFilter {
   private String claimAsNonBlankString(Jwt jwt, String claimName) {
     String value = jwt.getClaimAsString(claimName);
     return StringUtils.hasText(value) ? value.trim() : null;
-  }
-
-  private boolean containsOnlyEntitlementClaims() {
-    return claimsToMerge.stream().allMatch(claimName ->
-        SecurityHelper.LAA_APP_ROLES_CLAIM.equals(claimName)
-            || SecurityHelper.LAA_ACCOUNTS_CLAIM.equals(claimName));
   }
 
   private Set<String> validateClaims(List<String> configuredClaims) {
