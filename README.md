@@ -183,38 +183,38 @@ Examples:
 
 ## Snyk vulnerability alerts
 
-A daily workflow scans the Gradle dependencies of this repository with Snyk and alerts the Java community
-when actionable vulnerabilities are found, so maintainers can assess remediation (dependency override,
-library bump) before downstream services discover them.
+A scheduled workflow scans the Gradle dependencies of this repository with Snyk and alerts when vulnerabilities are
+found, so maintainers can assess remediation (dependency override, library bump) before downstream services discover them.
 
 Workflow file:
-- `.github/workflows/snyk-scan.yml`
+- `.github/workflows/snyk-scan.yml`, a caller of the shared
+  [`snyk-sca-scan.yml`](https://github.com/ministryofjustice/laa-reusable-github-actions/blob/main/docs/README-snyk-sca-scan.md)
+  workflow in `laa-reusable-github-actions`. Scan behaviour and Slack alerting are documented there.
 
 ### Triggers
 
-- `schedule`: every day at 07:00 and 14:00 UK time (UTC crons for both BST and GMT are registered and a gate step lets only the 07:00 and 14:00 `Europe/London` runs through).
+- `schedule`: every day at 07:00 and 14:00 UK time (UTC crons for both BST and GMT are registered and a gate job lets only the 07:00 and 14:00 `Europe/London` runs through).
 - `workflow_dispatch`: allows manual runs from the Actions tab.
 
 ### Alert thresholds
 
 | Result | Workflow | Slack |
 | --- | --- | --- |
-| No High or Critical vulnerabilities | Passes | No alert |
-| High or Critical vulnerabilities, at least one not seen in the previous scan | Fails | Posted to `#laa-java-devs` |
-| High or Critical vulnerabilities, all already reported | Fails | No alert |
+| No vulnerabilities at or above the threshold | Passes | No alert |
+| Vulnerabilities at or above the threshold | Fails | Posted to `#laa-snyk-alerts` and `#laa-java-devs` |
 | Snyk or build error (auth, network, Gradle failure) | Fails | No alert |
 
-Low and Medium findings are ignored. To avoid a repeat alert every morning, Slack is only notified when a finding is new
-since the previous scan; the run still fails while any High or Critical finding is open. Known findings are carried between
-runs in the `snyk-state` artifact (30 days); if it is missing or expired, every finding is treated as new.
-The Slack message contains the repository, workflow run URL, counts by severity, newly affected packages,
-scan timestamp and a link to Snyk. Full results are kept for 30 days as the `snyk-results` run artifact.
+The threshold defaults to `high` (High and Critical). Set the repository variable `SNYK_MINIMUM_THRESHOLD` to `low`,
+`medium`, `high` or `critical` to change it without editing the workflow. Every failing run alerts, so a finding keeps
+being reported until it is fixed, the dependency is upgraded, or an ignore with a reason and expiry is added to a
+`.snyk` policy file.
 
 ### Required secrets and variables
 
-- Secret `SNYK_TOKEN`: Snyk API token.
-- Secret `SLACK_WEBHOOK_URL`: incoming webhook for `#laa-java-devs`.
-- Variable `SNYK_ORG` (optional): Snyk organisation, used for the scan and the link in the alert.
+- Secrets `SNYK_CLIENT_ID` and `SNYK_CLIENT_SECRET`: Snyk OAuth credentials, exchanged for a short-lived token (or `SNYK_TOKEN` as a fallback).
+- Secret `SLACK_WEBHOOK_URL`: incoming webhook for the shared `#laa-snyk-alerts` channel.
+- Secret `TEAM_SLACK_WEBHOOK_URL`: incoming webhook for `#laa-java-devs`, also used by the Spring Boot release alert.
+- Variable `SNYK_MINIMUM_THRESHOLD` (optional): minimum severity, default `high`.
 
 ### Ownership
 
@@ -225,9 +225,9 @@ check whether a fix is available upstream, otherwise add a dependency override o
 
 `.github/workflows/spring-boot-release-alert.yml` runs on weekdays at 08:00 UTC (and on manual dispatch). It looks up the highest
 Spring Boot GA release (pre-releases are ignored) and compares it with `springBootVersion` in `build.gradle`. When a newer
-version exists, it posts to the Slack channel behind the `SLACK_WEBHOOK_URL` secret (the same one the Snyk alerts use) with the new version, the current version and a link to the release notes.
+version exists, it posts to `#laa-java-devs` (the webhook in the `TEAM_SLACK_WEBHOOK_URL` secret) with the new version, the current version and a link to the release notes.
 
 Each release is announced once; the last announced version is kept in the `spring-boot-release-state` artifact (90 days).
 If the artifact has expired the latest release is announced again. A failure of the check itself does not post to Slack.
 
-Required secret: `SLACK_WEBHOOK_URL`, shared with the Snyk scan. To change the channel for both, replace the webhook.
+Required secret: `TEAM_SLACK_WEBHOOK_URL`, shared with the Snyk scan's team channel alert.

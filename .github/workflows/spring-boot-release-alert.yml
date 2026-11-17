@@ -75,7 +75,7 @@ jobs:
       - name: Notify Slack
         if: steps.previous.outputs.announce == 'true'
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.TEAM_SLACK_WEBHOOK_URL }}
           CURRENT: ${{ steps.versions.outputs.current }}
           LATEST: ${{ steps.versions.outputs.latest }}
           REPOSITORY: ${{ github.repository }}
