@@ -1,8 +1,10 @@
 package uk.gov.laa.springboot.oauth2;
 
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import uk.gov.laa.springboot.oauth2.utils.SecurityHelper;
 
 /**
  * OAuth2 authorization properties used by the starter.
@@ -24,6 +26,10 @@ public class Oauth2AuthorizationProperties {
   private String scopesClaimPath = DEFAULT_SCOPES_CLAIM_PATH;
   private String roleAuthorityPrefix = DEFAULT_ROLE_AUTHORITY_PREFIX;
   private String scopeAuthorityPrefix = DEFAULT_SCOPE_AUTHORITY_PREFIX;
+  private List<String> additionalSecurityFilters = List.of();
+  @SuppressWarnings("checkstyle:MemberName")
+  private XAuthorizationFilterProperties xAuthorizationFilter =
+      new XAuthorizationFilterProperties();
   private Resourceserver resourceserver = new Resourceserver();
 
   /** OAuth2 resource-server properties managed by the starter. */
@@ -31,5 +37,15 @@ public class Oauth2AuthorizationProperties {
   @Setter
   public static class Resourceserver {
     private MultiTenantJwtProperties jwt = new MultiTenantJwtProperties();
+  }
+
+  /** Configuration for {@link XAuthorizationFilter}. */
+  @Getter
+  @Setter
+  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+  public static class XAuthorizationFilterProperties {
+    private String header = XAuthorizationFilter.DEFAULT_HEADER;
+    private List<String> claims = List.of(
+        SecurityHelper.LAA_APP_ROLES_CLAIM, SecurityHelper.LAA_ACCOUNTS_CLAIM);
   }
 }
