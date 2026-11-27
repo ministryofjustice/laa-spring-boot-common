@@ -113,6 +113,11 @@
     var explicit = false;
     var cancelled = false;
 
+    var selectedText = function () {
+      var current = select.options[select.selectedIndex];
+      return current && current.value ? optionText(current) : '';
+    };
+
     var typedText = function () {
       var input = document.getElementById(id);
       return input ? input.value : '';
@@ -121,12 +126,14 @@
     window.accessibleAutocomplete.enhanceSelectElement({
       selectElement: select,
       showAllValues: select.getAttribute('data-show-all-values') === 'true',
-      // Keeps the placeholder text out of the input.
+      // Keeps the placeholder text out of the input; it shows as the input's placeholder instead.
       defaultValue: '',
-      // Options are objects so a picked option keeps its value.
+      placeholder: empty ? empty.text : '',
+      // Options are objects so a picked option keeps its value. An empty or untouched input lists
+      // every option, like a native select.
       source: function (query, populate) {
-        if (!normalise(query) && empty) {
-          populate([empty].concat(options));
+        if (!normalise(query) || query === selectedText()) {
+          populate(empty ? [empty].concat(options) : options);
           return;
         }
         populate(rank(options, query));
