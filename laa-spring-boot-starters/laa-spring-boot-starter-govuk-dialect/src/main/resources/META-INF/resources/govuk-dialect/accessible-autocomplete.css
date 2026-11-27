@@ -18,3 +18,8 @@
 .autocomplete__wrapper {
   z-index: 0;
 }
+
+/* Sizes the select like the input it becomes, so the page doesn't shift when the script runs. */
+.js-enabled select[data-module="accessible-autocomplete"]:not([data-autocomplete-enhanced="true"]) {
+  width: 100%;
+}
