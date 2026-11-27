@@ -34,7 +34,7 @@ jobs:
     needs: gate
     if: needs.gate.outputs.run == 'true'
     # Pinned to the commit of the open PR that adds Slack alerts; replace with the merged SHA.
-    uses: ministryofjustice/laa-reusable-github-actions/.github/workflows/snyk-sca-scan.yml@b623df6a5c417d74d3fbb26e3398b5743714ec77 # feat/snyk-sca-slack-alerts
+    uses: ministryofjustice/laa-reusable-github-actions/.github/workflows/snyk-sca-scan.yml@ce279fe6457112080aa01b824f67c37293811a42 # feat/snyk-sca-slack-alerts
     permissions:
       contents: read
       security-events: write
